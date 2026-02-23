@@ -56,3 +56,8 @@ This command uses `concurrently` to start:
 - **Role-Based Routing**: Dedicated views for Owners, Admins, and Customers.
 - **Modern UI**: Styled with Tailwind CSS v4 and a professional Dark Blue/White/Black palette.
 - **API Health Check**: Integrated status monitor on the homepage to verify server connectivity.
+
+blue -> #051094
+tailwind, MERN stack
+1. we use .jsx file for frontend (vite)
+2. .js files for backend
