@@ -1,0 +1,85 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const ProductCard = ({ product, isOwner = false, onDelete }) => {
+  return (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-100 flex flex-col h-full">
+      <div className="relative h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+        {product.imageUrl ? (
+          <>
+            <img src={product.imageUrl} alt={product.name} className="object-cover w-full h-full" />
+            {product.modelUrl && (
+              <div className="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-xs font-semibold flex items-center">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                3D Available
+              </div>
+            )}
+          </>
+        ) : product.modelUrl ? (
+          <div className="flex flex-col items-center text-gray-400">
+            <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <span className="text-sm font-medium">3D Model Available</span>
+          </div>
+        ) : (
+          <div className="text-gray-400 flex flex-col items-center">
+             <span className="text-sm font-medium">No Image</span>
+          </div>
+        )}
+        <div className="absolute top-2 right-2 bg-[#051094] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
+          {product.type || 'Standard'}
+        </div>
+      </div>
+      
+      <div className="flex-1 p-5 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{product.name}</h3>
+          <span className="text-lg font-bold text-emerald-600 ml-2">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</span>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">{product.description}</p>
+        
+        <div className="mt-auto pt-4 border-t border-gray-100">
+          {isOwner ? (
+            <div className="flex items-center space-x-2">
+              <Link 
+                to={`/customer/products/${product._id}`}
+                className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                title="View Product"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </Link>
+              <Link 
+                to={`/owner/products/edit/${product._id}`}
+                className="flex-1 text-center bg-[#051094]/10 text-[#051094] hover:bg-[#051094]/20 py-2 rounded-lg font-medium transition-colors text-sm"
+              >
+                Edit
+              </Link>
+              <button 
+                onClick={() => onDelete(product._id)}
+                className="flex-1 bg-red-50 text-red-700 hover:bg-red-100 py-2 rounded-lg font-medium transition-colors text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to={`/customer/products/${product._id}`}
+              className="block w-full text-center bg-[#051094] hover:bg-[#051094]/90 text-white py-2 rounded-lg font-medium transition-colors shadow-sm"
+            >
+              View Details
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
