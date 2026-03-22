@@ -25,12 +25,8 @@ export default function Login() {
       login(response.data);
       toast.success('Welcome back!', { icon: '✅', style: { color: 'green' } });
 
-      // Role-based redirection - making it case insensitive
-      if (response.data.role?.toUpperCase() === 'OWNER') {
-        navigate('/owner-dashboard');
-      } else {
-        navigate('/landing');
-      }
+      // Redirect everyone to landing page after login, regardless of role
+      navigate('/landing');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed', { icon: '❌', style: { color: 'red' } });
     } finally {

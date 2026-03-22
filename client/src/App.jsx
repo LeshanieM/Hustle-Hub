@@ -70,7 +70,14 @@ function App() {
         />
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/store-editor" element={<StoreEditor />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute requiredRole="OWNER">
+              <Analytics />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         <Route path="*" element={<NotFoundPage />} />
