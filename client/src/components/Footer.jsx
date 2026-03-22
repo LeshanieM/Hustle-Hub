@@ -1,17 +1,8 @@
 // components/Footer.jsx
 import React from 'react';
 
-const MaterialIcon = ({ name, size = 20 }) => (
-  <span
-    className="material-symbols-rounded"
-    style={{ fontSize: size, lineHeight: 1 }}
-  >
-    {name}
-  </span>
-);
-
 const Footer = () => {
-  const footerLinks = ["Terms", "Privacy", "Support", "Careers"];
+  const footerLinks = ["Terms", "Privacy", "Support", "Marketplace"];
 
   return (
     <footer className="border-t border-[rgba(10,10,15,0.1)] px-4 sm:px-10 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
