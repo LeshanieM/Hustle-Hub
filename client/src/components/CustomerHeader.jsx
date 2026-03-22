@@ -27,12 +27,22 @@ const Header = () => {
       <div className="flex gap-3 items-center">
         {user ? (
           <>
+            <Link to="/">
+              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+                Home
+              </button>
+            </Link>
+            <Link to="/customer/products">
+              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+                Products
+              </button>
+            </Link>
             <Link to="/profile">
               <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
                 Profile
               </button>
             </Link>
-            <button 
+            <button
               onClick={handleLogout}
               className="bg-[#0a0a0f] text-[#f5f3ee] border-none cursor-pointer font-semibold text-sm px-5 py-2 rounded-lg hover:bg-[#ff4444] hover:-translate-y-[1px] transition-all"
             >
