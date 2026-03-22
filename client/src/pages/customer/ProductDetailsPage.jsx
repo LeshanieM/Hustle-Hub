@@ -5,6 +5,7 @@ import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
 import CustomerHeader from '../../components/CustomerHeader';
 import Footer from '../../components/Footer';
+import ReviewSection from '../../components/reviews/ReviewSection';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -138,6 +139,12 @@ const ProductDetailsPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Customer Reviews Integration */}
+      <div className="bg-white border-t border-gray-100 mt-8">
+        <ReviewSection targetType="product" targetId={id} />
+      </div>
+      
       <Footer />
     </div>
   );
