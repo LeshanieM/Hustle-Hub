@@ -12,6 +12,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+
 // Basic API Route
 app.get('/api/health', (req, res) => {
     res.json({ message: 'API is working!' });
