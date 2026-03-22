@@ -44,8 +44,6 @@ const OwnerDashboard = () => {
         }
     };
 
-    if (!user || user.role !== 'owner') return <div className="text-red-500 font-bold text-xl p-4">Access Denied</div>;
-
     // Calculate stats safely
     const stats = {
         totalRevenue: orders.reduce((acc, curr) => acc + curr.totalAmount, 0),

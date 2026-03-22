@@ -8,11 +8,21 @@ import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
 import Profile from './pages/Profile';
 import Landing from './pages/Landing';
+import OwnerDashboard from './pages/owner/OwnerDashboard';
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+import StoreEditor from './pages/owner/StoreEditor';
+import Analytics from './pages/admin/Analytics';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
+  
+  if (requiredRole && user.role?.toUpperCase() !== requiredRole.toUpperCase()) {
+    return <NotFoundPage />;
+  }
+  
   return children;
 };
 
@@ -47,6 +57,21 @@ function App() {
             </ProtectedRoute>
           } 
         />
+
+
+        {/* Temporary Dashboard Routes */}
+        <Route 
+          path="/owner-dashboard" 
+          element={
+            <ProtectedRoute requiredRole="OWNER">
+              <OwnerDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+        <Route path="/store-editor" element={<StoreEditor />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
