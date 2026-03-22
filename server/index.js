@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const productRoutes = require('./routes/productRoutes');
+const path = require('path');
 
 const app = express();
 
@@ -14,6 +16,9 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/products', productRoutes);
+
+
 
 // Basic API Route
 app.get('/api/health', (req, res) => {
