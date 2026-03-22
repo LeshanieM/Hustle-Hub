@@ -5,8 +5,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import Register from './pages/Register';
 import VerifyOTP from './pages/VerifyOTP';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 import { useAuth } from './context/AuthContext';
+import Profile from './pages/Profile';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -28,12 +28,12 @@ function App() {
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Dashboard */}
+        {/* Protected Profile */}
         <Route 
-          path="/dashboard" 
+          path="/profile" 
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Profile />
             </ProtectedRoute>
           } 
         />
