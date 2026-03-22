@@ -16,7 +16,7 @@ const Header = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-10 py-[18px] bg-white/80 backdrop-blur-md border-b border-[rgba(10,10,15,0.1)]">
       <Link
-        to="/"
+        to={user ? "/landing" : "/"}
         className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f]"
       >
         <span className="w-[30px] h-[30px] bg-[#0000ff] rounded-lg grid place-items-center text-white text-base font-bold">

@@ -7,6 +7,7 @@ import VerifyOTP from './pages/VerifyOTP';
 import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
 import Profile from './pages/Profile';
+import Landing from './pages/Landing';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -34,6 +35,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/landing" 
+          element={
+            <ProtectedRoute>
+              <Landing />
             </ProtectedRoute>
           } 
         />
