@@ -1,10 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { User as UserIcon, ShieldCheck } from 'lucide-react';
 import { useEffect } from 'react';
+import AdminHeader from '../components/AdminHeader';
+import CustomerHeader from '../components/CustomerHeader';
+import OwnerHeader from '../components/OwnerHeader';
+import Footer from '../components/Footer';
 
-export default function Dashboard() {
-  const { user, logout, loading } = useAuth();
+export default function Profile() {
+  const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,14 +21,23 @@ export default function Dashboard() {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-[#051094] font-bold">Loading...</div>;
   }
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const renderHeader = () => {
+    switch (user.role) {
+      case 'ADMIN':
+        return <AdminHeader />;
+      case 'OWNER':
+        return <OwnerHeader />;
+      case 'CUSTOMER':
+      default:
+        return <CustomerHeader />;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center">
-      <div className="max-w-3xl w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-xl mt-12 transition-all">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center">
+      {renderHeader()}
+      
+      <div className="max-w-3xl w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-xl mt-24 mb-12 transition-all">
         <div className="flex justify-between items-center mb-8 bg-[#051094] p-6 sm:p-8 rounded-3xl shadow-lg">
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -35,9 +48,6 @@ export default function Dashboard() {
             </h1>
             <p className="text-blue-100 mt-2 font-medium">Welcome back to Hustle Hub!</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 bg-white text-[#D12806] hover:bg-gray-100 py-2.5 px-6 rounded-full font-bold transition-all shadow-md active:scale-95">
-            <LogOut className="w-5 h-5" /> Logout
-          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -64,6 +74,10 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="w-full mt-auto">
+        <Footer />
       </div>
     </div>
   );

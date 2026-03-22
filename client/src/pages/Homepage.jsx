@@ -243,7 +243,7 @@ export default function HomePage() {
           <div className="flex gap-3 mt-10 justify-center flex-wrap">
             <button className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.25)] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(5,16,148,0.35)] transition-all">
               <MaterialIcon name="person_add" size={18} />
-              Create Seller Account
+              Create Account
             </button>
             <button className="bg-[#0a0a0f] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 hover:-translate-y-[2px] transition-all">
               <MaterialIcon name="shopping_cart" size={18} />
