@@ -6,6 +6,8 @@ import {
     LineChart, Line
 } from 'recharts';
 import regression from 'regression';
+import OwnerHeader from '../../components/OwnerHeader';
+import Footer from '../../components/Footer';
 
 const Analytics = () => {
     const { user } = useAuth();
@@ -100,8 +102,10 @@ const Analytics = () => {
     const dailyProgress = targets.daily > 0 ? (todaySales / targets.daily) * 100 : 0;
 
     return (
-        <div className="max-w-7xl mx-auto p-4 sm:px-6 lg:px-8 pb-12">
-            <h1 className="text-3xl font-bold mb-8 text-gray-800">Analytics & Growth</h1>
+        <>
+            <OwnerHeader />
+            <div className="max-w-7xl mx-auto p-4 sm:px-6 lg:px-8 pb-12">
+                <h1 className="text-3xl font-bold mb-8 text-gray-800">Analytics & Growth</h1>
 
             {/* Top Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -230,6 +234,8 @@ const Analytics = () => {
                 </div>
             </div>
         </div >
+        <Footer />
+        </>
     );
 };
 

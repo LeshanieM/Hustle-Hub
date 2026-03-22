@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import OwnerHeader from '../../components/OwnerHeader';
+import Footer from '../../components/Footer';
 
 const OwnerDashboard = () => {
     const { user } = useAuth();
@@ -52,8 +54,10 @@ const OwnerDashboard = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold mb-8 text-gray-800">Owner Dashboard</h1>
+        <>
+            <OwnerHeader />
+            <div className="max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-bold mb-8 text-gray-800">Owner Dashboard</h1>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -124,6 +128,8 @@ const OwnerDashboard = () => {
                 </div>
             </div>
         </div>
+        <Footer />
+        </>
     );
 };
 
