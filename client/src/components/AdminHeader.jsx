@@ -60,6 +60,10 @@ const AdminHeader = () => {
       {/* Right section - Admin actions */}
       <div className="flex items-center gap-3">
         {/* Quick Actions */}
+        <a href="/admin/reviews" className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors cursor-pointer mr-2">
+          <MessageCircle size={18} />
+          <span>Reviews Management</span>
+        </a>
         <button className="hidden sm:flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm text-[#6b6860] hover:text-[#0a0a0f] transition-all border border-gray-200 cursor-pointer">
           <Plus size={18} />
           <span>Quick Add</span>

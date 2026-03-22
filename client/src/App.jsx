@@ -21,6 +21,10 @@ import OwnerProductsDashboard from './pages/owner/OwnerProductsDashboard';
 import AddProductPage from './pages/owner/AddProductPage';
 import EditProductPage from './pages/owner/EditProductPage';
 
+// Admin Pages
+import ReviewsDashboard from './pages/admin/ReviewsDashboard';
+import AdminHeader from './components/AdminHeader';
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
@@ -59,6 +63,14 @@ function App() {
         <Route path="/owner/products" element={<OwnerProductsDashboard />} />
         <Route path="/owner/products/add" element={<AddProductPage />} />
         <Route path="/owner/products/edit/:id" element={<EditProductPage />} />
+        
+        {/* ===== ADMIN ROUTES ===== */}
+        <Route path="/admin/reviews" element={
+          <ProtectedRoute>
+            <AdminHeader />
+            <ReviewsDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>

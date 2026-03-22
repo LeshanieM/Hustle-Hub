@@ -24,7 +24,7 @@ const protect = async (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'ADMIN') {
+    if (req.user && req.user.role && req.user.role.toUpperCase() === 'ADMIN') {
         next();
     } else {
         res.status(403).json({ message: 'Not authorized as an admin' });
@@ -40,7 +40,7 @@ const isOwner = (req, res, next) => {
 };
 
 const isCustomer = (req, res, next) => {
-    if (req.user && req.user.role === 'CUSTOMER') {
+    if (req.user && req.user.role && req.user.role.toUpperCase() === 'CUSTOMER') {
         next();
     } else {
         res.status(403).json({ message: 'Not authorized as a customer' });
