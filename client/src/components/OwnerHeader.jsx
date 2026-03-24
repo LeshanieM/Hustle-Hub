@@ -27,13 +27,13 @@ const OwnerHeader = () => {
       <div className="flex items-center gap-6">
         <Link to="/profile" className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f]">
           <span className="w-[32px] h-[32px] bg-[#051094] rounded-lg grid place-items-center text-white text-base font-bold">
-            O
+            H
           </span>
-          <span className="text-[#0a0a0f]">Owner Hub</span>
+          <span className="text-[#0a0a0f]">Hustle Hub</span>
         </Link>
-        
+
         <div className="hidden md:flex items-center gap-6 text-sm">
-          {/*<Link to="/owner/shop" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link> */}
+          <Link to="/stores" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Customer View</Link>
           <Link to="/store-editor" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link>
           <Link to="/owner/products" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Products</Link>
           <Link to="/owner/orders" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Orders</Link>
@@ -50,7 +50,7 @@ const OwnerHeader = () => {
 
         {/* Profile */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
           >
@@ -62,7 +62,7 @@ const OwnerHeader = () => {
 
           {isProfileMenuOpen && (
             <>
-              <div 
+              <div
                 className="fixed inset-0 z-40"
                 onClick={() => setIsProfileMenuOpen(false)}
               />
@@ -71,18 +71,18 @@ const OwnerHeader = () => {
                   <div className="text-sm font-bold text-[#0a0a0f]">{user?.firstName} {user?.lastName}</div>
                   <div className="text-xs text-[#6b6860]">{user?.studentEmail}</div>
                 </div>
-                
+
                 <Link to="/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-[#6b6860] hover:bg-gray-50 hover:text-[#0a0a0f] rounded-lg transition-colors no-underline">
                   <User size={18} />
                   <span>My Profile</span>
                 </Link>
-                <Link to="/owner/settings" className="flex items-center gap-3 px-3 py-2 text-sm text-[#6b6860] hover:bg-gray-50 hover:text-[#0a0a0f] rounded-lg transition-colors no-underline">
+                <Link to="/store-editor" className="flex items-center gap-3 px-3 py-2 text-sm text-[#6b6860] hover:bg-gray-50 hover:text-[#0a0a0f] rounded-lg transition-colors no-underline">
                   <Settings size={18} />
                   <span>Settings</span>
                 </Link>
-                
+
                 <div className="border-t border-gray-100 my-2"></div>
-                
+
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#ff4444] hover:bg-red-50 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
