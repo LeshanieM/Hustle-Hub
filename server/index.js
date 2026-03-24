@@ -28,7 +28,8 @@ app.use('/api/analytics', analyticsRoutes);
 
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/admin/reviews', require('./routes/adminReviewRoutes'));
-
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 
 // Basic API Route

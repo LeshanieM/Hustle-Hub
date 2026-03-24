@@ -6,13 +6,16 @@ import toast from 'react-hot-toast';
 import CustomerHeader from '../../components/CustomerHeader';
 import Footer from '../../components/Footer';
 import ReviewSection from '../../components/reviews/ReviewSection';
+import BookingModal from '../../components/BookingModal';
+import BookingSuccess from '../../components/BookingSuccess';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isBooking, setIsBooking] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -31,14 +34,19 @@ const ProductDetailsPage = () => {
     fetchProduct();
   }, [id, navigate]);
 
-  const handleBook = () => {
-    setIsBooking(true);
-    // Simulate booking action
-    setTimeout(() => {
-      setIsBooking(false);
-      toast.success(`Successfully booked ${product.name}!`);
-      // Keeping user on page after booking indicator
-    }, 1500);
+  const handleBookingSuccess = (bookingData) => {
+    setShowBooking(false);
+    setConfirmedBooking(bookingData);
+    toast.success(`Successfully booked ${product?.name}!`);
+  };
+
+  const handleSuccessClose = () => {
+    setConfirmedBooking(null);
+  };
+
+  const handleViewOrders = () => {
+    setConfirmedBooking(null);
+    navigate('/orders');
   };
 
   if (isLoading) {
@@ -109,33 +117,19 @@ const ProductDetailsPage = () => {
               
               <div className="mt-auto pt-8 border-t border-gray-100">
                 <button
-                  onClick={handleBook}
-                  disabled={isBooking}
-                  className="w-full py-4 px-8 bg-[#051094] hover:bg-[#051094]/90 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                  onClick={() => setShowBooking(true)}
+                  className="w-full py-4 px-8 bg-[#051094] hover:bg-[#051094]/90 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:-translate-y-1"
                 >
-                  {isBooking ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      Book Now
-                    </>
-                  )}
+                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  Book Now
                 </button>
                 <p className="text-center text-sm text-gray-500 mt-4 font-medium">
                   Booking reserves this product. Payment is handled securely.
                 </p>
               </div>
             </div>
-            
           </div>
         </div>
       </div>
@@ -146,6 +140,24 @@ const ProductDetailsPage = () => {
       </div>
       
       <Footer />
+
+      {/* Booking Modal */}
+      {showBooking && (
+        <BookingModal
+          product={product}
+          onClose={() => setShowBooking(false)}
+          onSuccess={handleBookingSuccess}
+        />
+      )}
+
+      {/* Booking Success Overlay */}
+      {confirmedBooking && (
+        <BookingSuccess
+          booking={confirmedBooking}
+          onClose={handleSuccessClose}
+          onViewOrders={handleViewOrders}
+        />
+      )}
     </div>
   );
 };

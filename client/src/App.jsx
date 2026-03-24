@@ -18,18 +18,21 @@ import CustomerProductsPage from './pages/customer/CustomerProductsPage';
 import ProductDetailsPage from './pages/customer/ProductDetailsPage';
 import StorefrontView from './pages/customer/StorefrontView';
 import BrowseStores from './pages/customer/BrowseStores';
-
+import OwnerOrders from './pages/owner/OwnerOrders';
 import Landing from './pages/Landing';
 import OwnerDashboard from './pages/owner/OwnerDashboard';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import StoreEditor from './pages/owner/StoreEditor';
 import Analytics from './pages/admin/Analytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import OrderHistory from './pages/OrderHistory';
+
 
 // Owner Pages
 import OwnerProductsDashboard from './pages/owner/OwnerProductsDashboard';
 import AddProductPage from './pages/owner/AddProductPage';
 import EditProductPage from './pages/owner/EditProductPage';
+import AdminOrders from './pages/admin/AdminOrders';
 
 // Admin Pages
 import ReviewsDashboard from './pages/admin/ReviewsDashboard';
@@ -86,6 +89,7 @@ function App() {
         <Route path="/store/:storeName" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><StorefrontView /></ProtectedRoute>} />
         <Route path="/customer/products" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><CustomerProductsPage /></ProtectedRoute>} />
         <Route path="/customer/products/:id" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><ProductDetailsPage /></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
 
         {/* ===== OWNER ONLY ===== */}
         <Route path="/owner-dashboard" element={<ProtectedRoute allowedRoles={['OWNER']}><OwnerDashboard /></ProtectedRoute>} />
@@ -94,6 +98,7 @@ function App() {
         <Route path="/owner/products" element={<ProtectedRoute allowedRoles={['OWNER']}><OwnerProductsDashboard /></ProtectedRoute>} />
         <Route path="/owner/products/add" element={<ProtectedRoute allowedRoles={['OWNER']}><AddProductPage /></ProtectedRoute>} />
         <Route path="/owner/products/edit/:id" element={<ProtectedRoute allowedRoles={['OWNER']}><EditProductPage /></ProtectedRoute>} />
+       <Route path="/owner/orders" element={<ProtectedRoute><OwnerOrders /></ProtectedRoute>} />
 
         {/* ===== ADMIN ONLY ===== */}
         <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
@@ -103,7 +108,13 @@ function App() {
             <ReviewsDashboard />
           </ProtectedRoute>
         } />
-
+        
+         <Route path="/admin/orders" element={
+          <ProtectedRoute>
+            <AdminHeader />
+            <AdminOrders />
+          </ProtectedRoute>
+        } />
         {/* ===== CATCH-ALL ===== */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

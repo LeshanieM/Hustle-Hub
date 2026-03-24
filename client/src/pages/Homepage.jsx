@@ -52,7 +52,7 @@ export default function HomePage() {
           <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(5,16,148,0.12),transparent_70%)] top-[-100px] right-[-100px] pointer-events-none animate-[float1_8s_ease-in-out_infinite]" />
           <div className="absolute w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(5,16,148,0.10),transparent_70%)] bottom-[-50px] left-[-80px] pointer-events-none animate-[float2_10s_ease-in-out_infinite]" />
 
-          <style jsx>{`
+          <style>{`
             @keyframes float1 {
               0%,
               100% {
@@ -78,7 +78,7 @@ export default function HomePage() {
             Now live on 12+ campuses
           </div>
 
-          <style jsx>{`
+          <style>{`
             @keyframes pulse {
               0%,
               100% {
@@ -113,7 +113,7 @@ export default function HomePage() {
             Hustlers
           </h1>
 
-          <style jsx>{`
+          <style>{`
             @keyframes underlineIn {
               to {
                 transform: scaleX(1);

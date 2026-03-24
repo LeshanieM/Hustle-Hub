@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+:root {
+  --color-background-primary: #050c1f;
+  --color-background-secondary: #0a142f;
+  --color-background-tertiary: #111f42;
+  --color-background-info: #051094;
+  --color-text-info: #ffffff;
+  
+  --color-background-warning: rgba(245, 158, 11, 0.2);
+  --color-text-warning: #fbbf24;
+  
+  --color-background-success: rgba(16, 185, 129, 0.2);
+  --color-text-success: #34d399;
+  
+  --color-background-danger: rgba(239, 68, 68, 0.2);
+  --color-text-danger: #f87171;
+}
+
 @layer base {
   body {
     font-family: 'Work Sans', sans-serif;
@@ -39,4 +56,15 @@
 
 .animate-fade-in-up {
   animation: fadeInUp 0.4s ease-out both;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg, var(--color-background-secondary) 25%, var(--color-background-tertiary) 50%, var(--color-background-secondary) 75%);
+  background-size: 200% 100%;
 }
