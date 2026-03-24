@@ -1,4 +1,5 @@
 const Review = require('../models/Review');
+const Product = require('../models/Product');
 const aiSummaryService = require('../services/aiSummaryService');
 
 // @desc    Create a review
@@ -151,6 +152,28 @@ const getReviewSummary = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// @desc    Get all reviews for products owned by the logged-in owner
+// @route   GET /api/reviews/owner/my-reviews
+// @access  Private (OWNER)
+const getOwnerReviews = async (req, res) => {
+    try {
+        const ownerId = req.user._id.toString();
+        
+        // Find all products owned by this user
+        const ownerProducts = await Product.find({ ownerId }).select('_id');
+        const productIds = ownerProducts.map(p => p._id);
+
+        const reviews = await Review.find({ product_id: { $in: productIds } })
+            .populate('product_id', 'name imageUrl category type')
+            .populate('user_id', 'firstName lastName')
+            .sort({ created_at: -1 });
+            
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 module.exports = {
     createReview,
@@ -159,5 +182,6 @@ module.exports = {
     deleteReview,
     updateReview,
     getReviewSummary,
-    getAllReviews
+    getAllReviews,
+     getOwnerReviews
 };
