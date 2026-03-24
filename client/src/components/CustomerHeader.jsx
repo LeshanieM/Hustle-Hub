@@ -27,14 +27,19 @@ const Header = () => {
       <div className="flex gap-3 items-center">
         {user ? (
           <>
-            <Link to="/">
+            <Link to="/landing">
               <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
-                Home
+                Marketplace
               </button>
             </Link>
             <Link to="/customer/products">
               <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
                 Products
+              </button>
+            </Link>
+            <Link to="/stores">
+              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+                Stores
               </button>
             </Link>
             <Link to="/profile">

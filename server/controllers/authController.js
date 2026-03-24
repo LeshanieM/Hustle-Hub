@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const TempUser = require('../models/TempUser');
+const Store = require('../models/Store');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { extractStudentId } = require('../services/ocrService');
@@ -103,7 +104,8 @@ const verifyOTP = async (req, res) => {
         }
 
         // OTP MATcHED! Now officially save to the Database.
-        await User.create({
+        //await User.create({
+        const user = await User.create({
             username: tempUser.username,
             studentId: tempUser.studentId,
             firstName: tempUser.firstName,
@@ -114,6 +116,16 @@ const verifyOTP = async (req, res) => {
             studentIdImage: tempUser.studentIdImage,
             isVerified: true
         });
+
+        // Auto-create store if user is an OWNER
+        if (tempUser.role === 'OWNER') {
+            await Store.create({
+                ownerId: user._id,
+                storeName: `${user.username}'s Store`,
+                description: `Welcome to ${user.username}'s official storefront!`,
+                status: 'ACTIVE' // Auto-activating for now as per "auto-created" request
+            });
+        }
 
         // Clean up the temporary document
         await TempUser.deleteOne({ _id: tempUser._id });
@@ -150,6 +162,7 @@ const loginUser = async (req, res) => {
                 lastName: user.lastName,
                 studentEmail: user.studentEmail,
                 role: user.role,
+                createdAt: user.createdAt,
                 token: generateToken(user._id)
             });
         } else {

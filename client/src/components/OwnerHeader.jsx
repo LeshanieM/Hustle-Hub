@@ -33,7 +33,8 @@ const OwnerHeader = () => {
         </Link>
         
         <div className="hidden md:flex items-center gap-6 text-sm">
-          <Link to="/owner/shop" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link>
+          {/*<Link to="/owner/shop" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link> */}
+          <Link to="/store-editor" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link>
           <Link to="/owner/products" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Products</Link>
           <Link to="/owner/orders" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Orders</Link>
         </div>

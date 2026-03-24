@@ -7,6 +7,7 @@ export default {
     theme: {
         extend: {
             colors: {
+                primary: '#1111d4',
                 indigo: {
                     50: '#eef1ff',
                     100: '#e0e5ff',
