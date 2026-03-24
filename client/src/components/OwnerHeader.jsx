@@ -26,10 +26,8 @@ const OwnerHeader = () => {
       {/* Left section - Logo and Profile */}
       <div className="flex items-center gap-6">
         <Link to="/profile" className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f]">
-          <span className="w-[32px] h-[32px] bg-[#051094] rounded-lg grid place-items-center text-white text-base font-bold">
-            H
-          </span>
-          <span className="text-[#0a0a0f]">Hustle Hub</span>
+          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[64px] h-[64px] object-contain rounded-lg" />
+          <span className="font-bold"><span className="text-[#051094]">Hustle</span>-<span className="text-[#33cdff]">Hub</span></span>
         </Link>
 
         <div className="hidden md:flex items-center gap-6 text-sm">
