@@ -57,7 +57,21 @@ This command uses `concurrently` to start:
 - **Modern UI**: Styled with Tailwind CSS v4 and a professional Dark Blue/White/Black palette.
 - **API Health Check**: Integrated status monitor on the homepage to verify server connectivity.
 
-blue -> #051094
-tailwind, MERN stack
-1. We use .jsx file for frontend (vite)
-2. .js files for backend
+## 🎨 3D Model Credits
+
+The following 3D models are used in this project under the **Creative Commons Attribution (CC-BY)** license via Poly Pizza:
+
+- Flower Pot — Zsky  
+- Bird House — Zsky  
+- Pillar — Zsky  
+- Garden Lamp — Zsky  
+- M939 Truck — J-Toastie  
+- Suit — Quaternius  
+
+🔗 Source: Poly Pizza  
+https://poly.pizza/
+
+> These assets are licensed under CC-BY, which allows reuse with proper attribution to the original creators.
+
+### 🎨 Theme
+- Primary Color: `#051094` (Blue)
