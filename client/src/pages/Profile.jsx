@@ -1,21 +1,36 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, ShieldCheck } from 'lucide-react';
-import { useEffect } from 'react';
+import { User as UserIcon, ShieldCheck ,ClipboardList} from 'lucide-react';
+import { useEffect,useState } from 'react';
 import AdminHeader from '../components/AdminHeader';
 import CustomerHeader from '../components/CustomerHeader';
 import OwnerHeader from '../components/OwnerHeader';
 import Footer from '../components/Footer';
+import { getMyBookings } from '../services/bookingService';
 
 export default function Profile() {
   const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const [orderStats, setOrderStats] = useState({ total: 0, pending: 0 });
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
     }
+   if (!loading && !user) navigate('/login');
   }, [user, loading, navigate]);
+
+  // Fetch order stats for customer
+  useEffect(() => {
+    if (user?.role === 'CUSTOMER') {
+      getMyBookings().then(data => {
+        setOrderStats({
+          total:   data.length,
+          pending: data.filter(b => b.status === 'pending').length,
+        });
+      }).catch(() => {});
+    }
+  }, [user]);
 
   if (loading || !user) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-[#051094] font-bold">Loading...</div>;
@@ -73,6 +88,41 @@ export default function Profile() {
               </div>
             </div>
           </div>
+          
+          {/* Order History card — customers only */}
+          {user.role === 'CUSTOMER' && (
+            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 hover:border-[#051094]/30 transition-colors shadow-sm flex flex-col">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="bg-[#051094]/10 p-3.5 rounded-2xl border border-[#051094]/20 shadow-sm">
+                  <ClipboardList className="w-8 h-8 text-[#051094]" />
+                </div>
+                <div>
+                  <h3 className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-0.5">Order History</h3>
+                  <p className="text-xl text-gray-900 font-bold">My Bookings</p>
+                </div>
+              </div>
+              <div className="space-y-3 bg-white p-4 rounded-xl border border-gray-100 mb-5">
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-gray-500 font-medium">Total Orders</span>
+                  <span className="text-gray-900 font-bold bg-gray-100 px-3 py-1 rounded-lg">{orderStats.total}</span>
+                </div>
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-gray-500 font-medium">Pending</span>
+                  <span className="font-bold px-3 py-1 rounded-lg"
+                    style={{ background: orderStats.pending > 0 ? '#fef3c7' : '#f3f4f6', color: orderStats.pending > 0 ? '#92400e' : '#6b7280' }}>
+                    {orderStats.pending}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/orders')}
+                className="mt-auto w-full py-3 px-6 bg-[#051094] hover:bg-[#051094]/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <ClipboardList className="w-4 h-4" />
+                View Order History
+              </button>
+            </div>
+          )}
         </div>
       </div>
       
