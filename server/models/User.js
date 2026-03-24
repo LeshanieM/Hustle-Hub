@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema({
     },
     otpExpiry: {
         type: Date
+    },
+    analyticsTargets: {
+        daily: { type: Number, default: 0 },
+        monthly: { type: Number, default: 0 },
+        yearly: { type: Number, default: 0 }
     }
 }, { timestamps: true });
 

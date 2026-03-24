@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const productRoutes = require('./routes/productRoutes');
+const storeRoutes = require('./routes/storeRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 const path = require('path');
 
 const app = express();
@@ -17,6 +20,12 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', productRoutes);
+
+app.use('/api/stores', storeRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/admin/reviews', require('./routes/adminReviewRoutes'));
 
