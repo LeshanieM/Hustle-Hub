@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -6,6 +7,7 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const RoomBuilder = () => {
+  const navigate = useNavigate();
   const [selectedScene, setSelectedScene] = useState('office');
   const [placedItems, setPlacedItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -13,6 +15,21 @@ const RoomBuilder = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productError, setProductError] = useState(null);
   const containerRef = useRef(null);
+
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('hustlehub_favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const toggleFavorite = (productId) => {
+    setFavorites(prev => {
+      const newFavs = prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId];
+      localStorage.setItem('hustlehub_favorites', JSON.stringify(newFavs));
+      return newFavs;
+    });
+  };
 
   // Fetch products from the backend
   useEffect(() => {
@@ -88,6 +105,15 @@ const RoomBuilder = () => {
       {/* Sidebar Controls */}
       <div className="w-full lg:w-80 bg-white shadow-xl z-20 flex flex-col p-6 space-y-8 overflow-y-auto">
         <div className="space-y-2">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors mb-2"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back
+          </button>
           <h2 className="text-2xl font-bold text-gray-800">Room Builder</h2>
           <p className="text-sm text-gray-500">Simulate product placement in your space.</p>
         </div>
@@ -141,8 +167,17 @@ const RoomBuilder = () => {
                   key={product._id}
                   onClick={() => addItem(product)}
                   title={product.name}
-                  className="flex flex-col items-center p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all group"
+                  className="relative flex flex-col items-center p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all group"
                 >
+                  <div 
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(product._id); }} 
+                    className="absolute top-1 right-1 z-10 p-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-gray-400 hover:text-rose-500 transition-colors"
+                    title={favorites.includes(product._id) ? "Remove from Favorites" : "Add to Favorites"}
+                  >
+                    <svg className={`w-3.5 h-3.5 ${favorites.includes(product._id) ? 'fill-rose-500 text-rose-500' : 'fill-none'}`} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
                   {product.imageUrl ? (
                     <img
                       src={product.imageUrl}

@@ -80,7 +80,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Homepage />} />
-
+        <Route path="/hero" element={<Homepage />} />
         {/* ===== PUBLIC AUTH ROUTES ===== */}
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
@@ -129,14 +129,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+       {/* <Route
           path="/customer/products"
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
               <CustomerProductsPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/customer/products/:id"
           element={
@@ -245,7 +245,7 @@ function App() {
         {/* ===== CATCH-ALL ===== */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-       <ChatBot />
+      <ChatBot />
     </Router>
   );
 }

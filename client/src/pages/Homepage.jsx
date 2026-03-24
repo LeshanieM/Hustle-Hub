@@ -1,7 +1,11 @@
 // pages/HomePage.jsx
 import React from 'react';
 import { useEffect } from 'react';
-import Header from '../components/CustomerHeader';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import CustomerHeader from '../components/CustomerHeader';
+import OwnerHeader from '../components/OwnerHeader';
+import AdminHeader from '../components/AdminHeader';
 import Footer from '../components/Footer';
 
 const MaterialIcon = ({ name, size = 20 }) => (
@@ -33,7 +37,39 @@ const useReveal = () => {
 };
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   useReveal();
+
+  const renderHeader = () => {
+    if (!user) return <CustomerHeader />;
+    
+    switch(user.role) {
+      case 'OWNER':
+        return <OwnerHeader />;
+      case 'ADMIN':
+        return <AdminHeader />;
+      case 'CUSTOMER':
+      default:
+        return <CustomerHeader />;
+    }
+  };
+
+  const handleStartSelling = () => {
+    navigate('/register?role=seller');
+  };
+
+  const handleExploreMarketplace = () => {
+    navigate('/customer/products');
+  };
+
+  const handleCreateAccount = () => {
+    navigate('/register');
+  };
+
+  const handleBrowseMarketplace = () => {
+    navigate('/stores');
+  };
 
   return (
     <>
@@ -43,7 +79,7 @@ export default function HomePage() {
       />
 
       <div className="min-h-screen bg-[#f5f3ee] text-[#0a0a0f]">
-        <Header />
+        {renderHeader()}
 
         {/* HERO */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-10 pt-[120px] pb-20 relative overflow-hidden text-center">
@@ -127,11 +163,17 @@ export default function HomePage() {
           </p>
 
           <div className="flex gap-3 mt-10 flex-wrap justify-center animate-[fadeUp_0.7s_ease_0.35s_both]">
-            <button className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-base px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.3)] hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(5,16,148,0.4)] transition-all">
+            <button
+              onClick={handleStartSelling}
+              className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-base px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.3)] hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(5,16,148,0.4)] transition-all"
+            >
               <MaterialIcon name="storefront" size={18} />
               Start Selling
             </button>
-            <button className="bg-transparent text-[#051094] border border-[rgba(10,10,15,0.1)] cursor-pointer font-medium text-base px-7 py-3.5 rounded-lg flex items-center gap-2 hover:border-[#0a0a0f] hover:bg-[#ede9e0] transition-all">
+            <button
+              onClick={handleExploreMarketplace}
+              className="bg-transparent text-[#051094] border border-[rgba(10,10,15,0.1)] cursor-pointer font-medium text-base px-7 py-3.5 rounded-lg flex items-center gap-2 hover:border-[#0a0a0f] hover:bg-[#ede9e0] transition-all"
+            >
               <MaterialIcon name="shopping_bag" size={18} />
               Explore Marketplace
             </button>
@@ -151,7 +193,10 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-default reveal">
+            <Link
+              to="/register?role=seller"
+              className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-pointer no-underline block reveal"
+            >
               <div className="w-11 h-11 rounded-lg bg-[rgba(5,16,148,0.1)] text-[#051094] grid place-items-center text-xl mb-5">
                 <MaterialIcon name="dashboard" />
               </div>
@@ -162,19 +207,22 @@ export default function HomePage() {
                 Manage orders, customer inquiries, and payout history in one
                 place.
               </p>
-            </div>
+            </Link>
 
-            <div className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-default reveal">
+            <Link
+              to="/register?role=seller"
+              className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-pointer no-underline block reveal"
+            >
               <div className="w-11 h-11 rounded-lg bg-[rgba(5,16,148,0.1)] text-[#051094] grid place-items-center text-xl mb-5">
-                <MaterialIcon name="inventory_2" />
+                <MaterialIcon name="analytics" />
               </div>
               <div className="font-bold text-lg text-[#0a0a0f] tracking-[-0.5px] mb-2.5">
-                Inventory Tracking
+                Sales Analytics
               </div>
               <p className="text-sm text-[#6b6860] leading-relaxed">
-                Real-time stock alerts so you never oversell your popular items.
+                Track your revenue, popular products, and customer insights.
               </p>
-            </div>
+            </Link>
           </div>
         </section>
 
@@ -189,48 +237,6 @@ export default function HomePage() {
               Delivered to your dorm in minutes
             </h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl overflow-hidden relative h-60 cursor-default hover:scale-[1.02] transition-transform reveal">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#1e293b] via-[#334155] to-[#475569]">
-                <span className="absolute text-[80px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/5 opacity-30 grayscale">
-                  👕
-                </span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.85)] via-[rgba(10,10,15,0.2)] to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur grid place-items-center text-base text-white mb-2.5">
-                  <MaterialIcon name="checkroom" size={16} />
-                </div>
-                <div className="font-bold text-lg text-white tracking-[-0.5px]">
-                  Custom Apparel
-                </div>
-                <div className="text-xs text-white/70 mt-1">
-                  Unique campus gear
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl overflow-hidden relative h-60 cursor-default hover:scale-[1.02] transition-transform reveal">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#92400e] via-[#b45309] to-[#d97706]">
-                <span className="absolute text-[80px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/5 opacity-40">
-                  🍪
-                </span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.85)] via-[rgba(10,10,15,0.2)] to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur grid place-items-center text-base text-white mb-2.5">
-                  <MaterialIcon name="cookie" size={16} />
-                </div>
-                <div className="font-bold text-lg text-white tracking-[-0.5px]">
-                  Local Snacks
-                </div>
-                <div className="text-xs text-white/70 mt-1">
-                  Late-night cravings
-                </div>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* CTA */}
@@ -241,11 +247,17 @@ export default function HomePage() {
             <span className="text-[#051094]">campus hustle?</span>
           </h2>
           <div className="flex gap-3 mt-10 justify-center flex-wrap">
-            <button className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.25)] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(5,16,148,0.35)] transition-all">
+            <button
+              onClick={handleCreateAccount}
+              className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.25)] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(5,16,148,0.35)] transition-all"
+            >
               <MaterialIcon name="person_add" size={18} />
               Create Account
             </button>
-            <button className="bg-[#0a0a0f] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 hover:-translate-y-[2px] transition-all">
+            <button
+              onClick={handleBrowseMarketplace}
+              className="bg-[#0a0a0f] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 hover:-translate-y-[2px] transition-all"
+            >
               <MaterialIcon name="shopping_cart" size={18} />
               Browse Marketplace
             </button>
