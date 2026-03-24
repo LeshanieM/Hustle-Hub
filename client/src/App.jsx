@@ -27,6 +27,8 @@ import Analytics from './pages/admin/Analytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import OrderHistory from './pages/OrderHistory';
 
+import ChatBot from './components/ChatBot';
+import RoomBuilder from './components/RoomBuilder';
 
 // Owner Pages
 import OwnerProductsDashboard from './pages/owner/OwnerProductsDashboard';
@@ -49,7 +51,12 @@ import AdminHeader from './components/AdminHeader';
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">Loading...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">
+        Loading...
+      </div>
+    );
 
   // Not logged in → redirect to login
   if (!user) return <Navigate to="/login" />;
@@ -57,7 +64,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // Role check — case-insensitive comparison
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = (user.role || '').toUpperCase();
-    const allowed = allowedRoles.map(r => r.toUpperCase());
+    const allowed = allowedRoles.map((r) => r.toUpperCase());
     if (!allowed.includes(userRole)) {
       return <NotFoundPage />;
     }
@@ -80,44 +87,165 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* ===== SHARED (any authenticated user) ===== */}
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/landing" element={<ProtectedRoute><Landing /></ProtectedRoute>} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/landing"
+          element={
+            <ProtectedRoute>
+              <Landing />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== CUSTOMER / BROWSING (all roles) ===== */}
-        <Route path="/customer-dashboard" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><CustomerDashboard /></ProtectedRoute>} />
-        <Route path="/stores" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><BrowseStores /></ProtectedRoute>} />
-        <Route path="/store/:storeName" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><StorefrontView /></ProtectedRoute>} />
-        <Route path="/customer/products" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><CustomerProductsPage /></ProtectedRoute>} />
-        <Route path="/customer/products/:id" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}><ProductDetailsPage /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+        <Route
+          path="/customer-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stores"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <BrowseStores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/store/:storeName"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <StorefrontView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/products"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <CustomerProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/products/:id"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <ProductDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrderHistory />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== OWNER ONLY ===== */}
-        <Route path="/owner-dashboard" element={<ProtectedRoute allowedRoles={['OWNER']}><OwnerDashboard /></ProtectedRoute>} />
-        <Route path="/store-editor" element={<ProtectedRoute allowedRoles={['OWNER']}><StoreEditor /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute allowedRoles={['OWNER']}><Analytics /></ProtectedRoute>} />
-        <Route path="/owner/products" element={<ProtectedRoute allowedRoles={['OWNER']}><OwnerProductsDashboard /></ProtectedRoute>} />
-        <Route path="/owner/products/add" element={<ProtectedRoute allowedRoles={['OWNER']}><AddProductPage /></ProtectedRoute>} />
-        <Route path="/owner/products/edit/:id" element={<ProtectedRoute allowedRoles={['OWNER']}><EditProductPage /></ProtectedRoute>} />
-       <Route path="/owner/orders" element={<ProtectedRoute><OwnerOrders /></ProtectedRoute>} />
+        <Route
+          path="/owner-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <OwnerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/store-editor"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <StoreEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/products"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <OwnerProductsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/products/add"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <AddProductPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/products/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <EditProductPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/orders"
+          element={
+            <ProtectedRoute>
+              <OwnerOrders />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== ADMIN ONLY ===== */}
-        <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/admin/reviews" element={
-          <ProtectedRoute allowedRoles={['ADMIN']}>
-            <AdminHeader />
-            <ReviewsDashboard />
-          </ProtectedRoute>
-        } />
-        
-         <Route path="/admin/orders" element={
-          <ProtectedRoute>
-            <AdminHeader />
-            <AdminOrders />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reviews"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminHeader />
+              <ReviewsDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/orders"
+          element={
+            <ProtectedRoute>
+              <AdminHeader />
+              <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/room-builder" element={<RoomBuilder />} />
+
         {/* ===== CATCH-ALL ===== */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+       <ChatBot />
     </Router>
   );
 }
