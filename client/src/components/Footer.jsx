@@ -6,7 +6,7 @@ const Footer = () => {
   const footerLinks = [
     { name: "Terms", path: "/terms" },
     { name: "Privacy", path: "/privacy" },
-    { name: "Support", path: "/support" },
+    { name: "Home", path: "/" },
     { name: "Stores", path: "/stores" }
   ];
 

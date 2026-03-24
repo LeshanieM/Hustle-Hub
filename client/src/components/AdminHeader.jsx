@@ -90,13 +90,11 @@ const AdminHeader = () => {
       {/* Left section - Logo and Profile */}
       <div className="flex items-center gap-6">
         <Link
-          to="/admin"
+          to="/profile"
           className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
         >
-          <span className="w-[32px] h-[32px] bg-[#0000ff] rounded-lg grid place-items-center text-white text-base font-bold shadow-lg">
-            A
-          </span>
-          <span className="text-[#0a0a0f] hidden sm:inline">Admin Panel</span>
+          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[64px] h-[64px] object-contain rounded-lg shadow-sm" />
+          <span className="hidden sm:inline font-bold"><span className="text-[#051094]">Hustle</span>-<span className="text-[#33cdff]">Hub</span></span>
         </Link>
       </div>
 
@@ -190,9 +188,8 @@ const AdminHeader = () => {
             </div>
             <ChevronDown
               size={18}
-              className={`text-[#6b6860] transition-transform duration-200 ${
-                isProfileMenuOpen ? 'rotate-180' : ''
-              }`}
+              className={`text-[#6b6860] transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''
+                }`}
             />
           </button>
 
