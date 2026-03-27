@@ -22,9 +22,14 @@ import OwnerOrders from './pages/owner/OwnerOrders';
 import Landing from './pages/Landing';
 import OwnerDashboard from './pages/owner/OwnerDashboard';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
+import SavedItems from './pages/customer/SavedItems';
 import StoreEditor from './pages/owner/StoreEditor';
 import Analytics from './pages/admin/Analytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import BusinessDirectory from './pages/admin/BusinessDirectory';
+import UserDirectory from './pages/admin/UserDirectory';
+import SystemHealth from './pages/admin/SystemHealth';
+import AuditLogs from './pages/admin/AuditLogs';
 import OrderHistory from './pages/OrderHistory';
 
 import ChatBot from './components/ChatBot';
@@ -153,6 +158,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/saved-items"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
+              <SavedItems />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== OWNER ONLY ===== */}
         <Route
@@ -218,6 +231,38 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/admin/businesses"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <BusinessDirectory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UserDirectory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/system-health"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <SystemHealth />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-logs"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AuditLogs />
             </ProtectedRoute>
           }
         />

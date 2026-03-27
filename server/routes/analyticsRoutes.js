@@ -6,6 +6,8 @@ const { protect, isOwner, isAdmin } = require('../middleware/authMiddleware');
 // Owner Analytics
 router.get('/owner/kpis', protect, isOwner, analyticsController.getOwnerKPIs);
 router.get('/owner/sales', protect, isOwner, analyticsController.getOwnerSales);
+router.get('/owner/inventory-alerts', protect, isOwner, analyticsController.getInventoryAlerts);
+router.put('/owner/inventory-alerts/:id', protect, isOwner, analyticsController.updateInventoryAlert);
 
 // Owner Targets
 router.get('/targets', protect, isOwner, analyticsController.getTargets);

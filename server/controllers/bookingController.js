@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Product = require('../models/Product');
+const Store = require('../models/Store');
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -67,10 +68,19 @@ const createBooking = async (req, res) => {
 
     // Populate for response
     const populated = await Booking.findById(booking._id)
-      .populate('product_id', 'name price type imageUrl storefront_id')
+      .populate('product_id', 'name price type imageUrl ownerId')
       .populate('customer_id', 'firstName lastName username studentEmail');
 
-    res.status(201).json(populated);
+    // Convert to object to attach storefront_id
+    const populatedObj = populated.toObject();
+    if (populatedObj.product_id && populatedObj.product_id.ownerId) {
+      const store = await Store.findOne({ ownerId: populatedObj.product_id.ownerId }).select('storeName');
+      if (store) {
+        populatedObj.product_id.storefront_id = { _id: store._id, storefront_name: store.storeName };
+      }
+    }
+
+    res.status(201).json(populatedObj);
   } catch (error) {
     console.error('[createBooking]', error);
     res.status(500).json({ message: error.message });
@@ -85,10 +95,29 @@ const createBooking = async (req, res) => {
 const getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ customer_id: req.user._id })
-      .populate('product_id', 'name price type imageUrl')
+      .populate({
+        path: 'product_id',
+        select: 'name price type imageUrl ownerId'
+      })
       .sort({ createdAt: -1 });
 
-    res.status(200).json(bookings);
+    const ownerIds = [...new Set(bookings.map(b => b.product_id?.ownerId).filter(Boolean))];
+    const stores = await Store.find({ ownerId: { $in: ownerIds } }).select('ownerId storeName');
+    
+    const storeMap = {};
+    stores.forEach(s => {
+      storeMap[s.ownerId.toString()] = { _id: s._id, storefront_name: s.storeName };
+    });
+
+    const result = bookings.map(b => {
+      const bObj = b.toObject();
+      if (bObj.product_id && bObj.product_id.ownerId) {
+         bObj.product_id.storefront_id = storeMap[bObj.product_id.ownerId.toString()] || null;
+      }
+      return bObj;
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     console.error('[getMyBookings]', error);
     res.status(500).json({ message: error.message });

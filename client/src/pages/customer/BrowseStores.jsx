@@ -8,6 +8,9 @@ const BrowseStores = () => {
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+     const [activeTab, setActiveTab] = useState('All');
+
+    const tabs = ['All', 'Apparel', 'Food & Drink', 'Services', 'Tech', 'Creatives'];
 
     useEffect(() => {
         const fetchStores = async () => {
@@ -34,9 +37,26 @@ const BrowseStores = () => {
 
             {/* pt-24 pushes content below the fixed header */}
             <main className="flex-1 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-16 w-full">
-                <div className="mb-10">
-                    <h1 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">University Storefronts</h1>
-                    <p className="text-slate-500 font-medium text-lg">Support student entrepreneurs and discover unique products across campus.</p>
+                <div className="mb-10 text-center">
+                    <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">University Storefronts</h1>
+                    <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto mb-10">Support student entrepreneurs and discover unique products across campus.</p>
+                    
+                    {/* Category Filter Tabs */}
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                                    activeTab === tab 
+                                    ? 'bg-[#1111d4] text-white shadow-lg shadow-[#1111d4]/30 scale-105'
+                                    : 'bg-white text-slate-500 border border-slate-200 hover:border-[#1111d4]/50 hover:text-[#1111d4]'
+                                }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {loading ? (
@@ -58,11 +78,15 @@ const BrowseStores = () => {
                                 {/* Banner */}
                                 <div className="h-40 bg-slate-100 relative overflow-hidden flex-shrink-0">
                                     {store.bannerUrl ? (
+                                         <div className="w-full h-full relative group-hover:scale-110 transition-transform duration-700">
                                         <img
                                             src={store.bannerUrl}
                                             alt={store.storeName}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            
                                         />
+                                        {/* Decorative overlay for better contrast */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                                        </div>
                                     ) : (
                                         <div
                                             className="absolute inset-0"
@@ -70,7 +94,23 @@ const BrowseStores = () => {
                                         />
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                    {/* Visual Badges (Mocked mapping for display) */}
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                        {store.storeName.length % 2 === 0 && (
+                                            <span className="bg-amber-400 text-amber-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[12px]">star</span>
+                                                Top Rated
+                                            </span>
+                                        )}
+                                        {store.storeName.length % 3 === 0 && (
+                                            <span className="bg-emerald-400 text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[12px]">local_fire_department</span>
+                                                Featured
+                                            </span>
+                                        )}
+                                    </div>
 
+ 
                                     {/* Logo floating badge */}
                                     <div className="absolute -bottom-7 left-6">
                                         {store.logoUrl ? (

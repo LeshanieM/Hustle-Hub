@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CustomerHeader from '../components/CustomerHeader';
 import Footer from '../components/Footer';
 import BookingModal from '../components/BookingModal';
+import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { getMyBookings, cancelBooking, deleteBooking } from '../services/bookingService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -276,11 +277,22 @@ const OrderHistory = () => {
     { label: 'Total Spent',  value: `$${totalSpent.toLocaleString()}`, icon: '💰' },
   ];
 
+  const sidebarItems = [
+    { label: 'Dashboard', icon: 'dashboard', path: '/customer-dashboard' },
+    { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
+    { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
+    { label: 'Settings', icon: 'settings', path: '/profile' },
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <CustomerHeader />
-      <div className="flex-grow pt-24 pb-12">
-        <div className="container mx-auto px-4 max-w-3xl">
+    <DashboardLayout 
+      role="Customer" 
+      headerTitle="My Orders"
+      sidebarItems={sidebarItems}
+      TopHeader={CustomerHeader}
+    >
+      <div className="flex-grow pb-12">
+        <div className="container mx-auto max-w-3xl">
 
           {/* Heading */}
           <div className="mb-8">
@@ -363,7 +375,7 @@ const OrderHistory = () => {
           onSuccess={(newBooking) => { setBookings(bs => [newBooking, ...bs]); setReorderBooking(null); }}
         />
       )}
-    </div>
+    </DashboardLayout>
   );
 };
 
