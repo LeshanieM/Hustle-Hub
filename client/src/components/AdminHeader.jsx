@@ -15,6 +15,7 @@ import {
   BarChart3,
   LogOut,
   X,
+  ShoppingBag,
 } from 'lucide-react';
 
 const AdminHeader = () => {
@@ -131,6 +132,14 @@ const AdminHeader = () => {
         >
           <span>Customer Dashboard</span>
         </Link> */}
+
+        <Link
+          to="/admin/products"
+          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
+        >
+          <ShoppingBag size={18} />
+          <span>Products</span>
+        </Link>
 
         <Link
           to="/admin/orders"
