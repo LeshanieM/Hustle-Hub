@@ -93,8 +93,15 @@ const AdminHeader = () => {
           to={user ? '/landing' : '/'}
           className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
         >
-          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[40px] h-[40px] object-contain rounded-lg shadow-sm" />
-          <span className="hidden sm:inline font-bold"><span className="text-[#051094]">Hustle</span>-<span className="text-[#33cdff]">Hub</span></span>
+          <img
+            src="/assets/logo.png"
+            alt="Hustle-Hub Logo"
+            className="w-[40px] h-[40px] object-contain rounded-lg shadow-sm"
+          />
+          <span className="hidden sm:inline font-bold">
+            <span className="text-[#051094]">Hustle</span>-
+            <span className="text-[#33cdff]">Hub</span>
+          </span>
         </Link>
       </div>
 
@@ -109,7 +116,7 @@ const AdminHeader = () => {
         >
           <Search size={20} className="text-[#6b6860] hover:text-[#0000ff]" />
         </button>
-      
+
         {/* Quick Actions */}
         <Link
           to="/admin-dashboard"
@@ -118,12 +125,12 @@ const AdminHeader = () => {
           <span>Admin Dashboard</span>
         </Link>
 
-        <Link
+        {/*  <Link
           to="/customer-dashboard"
           className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
         >
           <span>Customer Dashboard</span>
-        </Link>
+        </Link> */}
 
         <Link
           to="/admin/orders"
@@ -140,7 +147,6 @@ const AdminHeader = () => {
           <MessageCircle size={18} />
           <span>Reviews</span>
         </Link>
-
 
         {/* Notifications */}
         <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
@@ -163,7 +169,9 @@ const AdminHeader = () => {
             aria-haspopup="true"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0000ff] to-[#6600ff] flex items-center justify-center text-white font-bold text-sm">
-              {getInitials(user ? `${user.firstName} ${user.lastName}` : 'Admin User')}
+              {getInitials(
+                user ? `${user.firstName} ${user.lastName}` : 'Admin User',
+              )}
             </div>
             <div className="hidden md:block text-left">
               <div className="text-sm font-bold text-[#0a0a0f]">
@@ -175,8 +183,9 @@ const AdminHeader = () => {
             </div>
             <ChevronDown
               size={18}
-              className={`text-[#6b6860] transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''
-                }`}
+              className={`text-[#6b6860] transition-transform duration-200 ${
+                isProfileMenuOpen ? 'rotate-180' : ''
+              }`}
             />
           </button>
 
@@ -188,7 +197,7 @@ const AdminHeader = () => {
                   {user ? `${user.firstName} ${user.lastName}` : 'Admin User'}
                 </div>
                 <div className="text-xs text-[#6b6860]">
-                   {user?.studentEmail || 'admin@hustlehub.com'}
+                  {user?.studentEmail || 'admin@hustlehub.com'}
                 </div>
               </div>
 
@@ -199,24 +208,6 @@ const AdminHeader = () => {
                     label: 'My Profile',
                     path: '/profile',
                     badge: null,
-                  },
-                  {
-                    icon: Settings,
-                    label: 'Settings',
-                    path: '/admin/settings',
-                    badge: null,
-                  },
-                  {
-                    icon: Shield,
-                    label: 'Security',
-                    path: '/admin/security',
-                    badge: '2FA',
-                  },
-                  {
-                    icon: BarChart3,
-                    label: 'Analytics',
-                    path: '/admin/analytics',
-                    badge: 'New',
                   },
                 ].map((item) => (
                   <Link
@@ -254,7 +245,7 @@ const AdminHeader = () => {
 
       {/* Universal Search Modal */}
       {isSearchOpen && (
-         <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-lg border-b border-gray-100 animate-slideDown flex justify-center py-4 px-4 sm:px-8">
+        <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-lg border-b border-gray-100 animate-slideDown flex justify-center py-4 px-4 sm:px-8">
           <div className="w-full max-w-3xl">
             <form onSubmit={handleSearch} className="relative">
               <input
@@ -273,7 +264,7 @@ const AdminHeader = () => {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(false)}
-                 className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
               >
                 <X size={20} />
               </button>

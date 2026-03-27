@@ -16,7 +16,7 @@ const Header = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-4 sm:px-10 py-[16px] bg-white/80 backdrop-blur-md border-b border-[rgba(10,10,15,0.1)]">
       <Link
-        to={user ? '/landing' : '/'}
+        to={user ? '/hero' : '/'}
         className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f]"
       >
         <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[40px] h-[40px] object-contain rounded-lg shadow-sm" />
@@ -33,7 +33,7 @@ const Header = () => {
 
             <Link to="/landing">
               <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
-                Marketplace
+                Landing
               </button>
             </Link>
 
