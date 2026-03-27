@@ -15,14 +15,14 @@ const DashboardLayout = ({
       {/* Optional Global Top Header */}
       {TopHeader && <TopHeader />}
 
-      <div className={`flex flex-1 overflow-hidden ${TopHeader ? 'pt-[70px]' : ''}`}>
+      <div className={`flex flex-1 overflow-hidden ${TopHeader ? 'pt-[72px]' : ''}`}>
         {/* Sidebar */}
         <DashboardSidebar menuItems={sidebarItems} role={role} />
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           {/* Dashboard-Specific Header (Search/Profile) */}
-          <DashboardHeader title={headerTitle} showSearch={showSearch} />
+          <DashboardHeader title={headerTitle} showSearch={showSearch} hideProfile={!!TopHeader} />
 
           {/* Scrollable Content */}
           <main className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">

@@ -24,7 +24,7 @@ export default function Login() {
       const response = await api.post('/auth/login', formData);
       login(response.data);
       toast.success('Welcome back!', { icon: '✅', style: { color: 'green'} });
-      navigate('/hero');
+      navigate('/landing');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed', { icon: '❌', style: { color: 'red'} });
     } finally {

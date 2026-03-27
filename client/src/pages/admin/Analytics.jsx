@@ -7,35 +7,47 @@ import {
     LineChart, Line
 } from 'recharts';
 import regression from 'regression';
-import OwnerHeader from '../../components/OwnerHeader';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
+import TopProductsTable from '../../components/dashboard/TopProductsTable';
+import AlertPanel from '../../components/dashboard/AlertPanel';
 
 /* ─── Empty-state illustration ─── */
 const EmptyState = ({ icon, title, subtitle }) => (
-    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-        <span className="material-symbols-outlined text-5xl mb-3 opacity-40">{icon}</span>
+    <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+        <span className="material-symbols-outlined text-5xl mb-3 opacity-30">{icon}</span>
         <p className="text-sm font-bold text-slate-500">{title}</p>
-        {subtitle && <p className="text-xs mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs mt-1 text-slate-500">{subtitle}</p>}
     </div>
 );
 
-/* ─── KPI Card ─── */
-const KpiCard = ({ icon, iconBg, iconColor, label, value, prefix = '', change }) => (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-between mb-4">
-            <div className={`p-2.5 rounded-lg ${iconBg}`}>
-                <span className={`material-symbols-outlined ${iconColor}`}>{icon}</span>
+/* ─── KPI Card (Bento Style) ─── */
+const KpiCard = ({ icon, iconColor, label, value, prefix = '', change, isLarge = false }) => {
+    return (
+    <div className={`bg-white backdrop-blur-3xl border border-slate-200 p-7 rounded-[2rem] shadow-2xl hover:bg-slate-50 transition-all relative overflow-hidden group ${isLarge ? 'md:col-span-2' : ''}`}>
+        {/* Ambient Glow */}
+        <div className={`absolute -inset-4 bg-gradient-to-tr ${iconColor.replace('text-', 'from-').replace('400', '500/20')} to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-700 pointer-events-none rounded-[3rem]`}></div>
+        
+        <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start mb-8">
+                <div className="p-3.5 rounded-2xl bg-slate-50 shadow-inner border border-slate-100">
+                    <span className={`material-symbols-outlined text-[28px] ${iconColor}`}>{icon}</span>
+                </div>
+                {change !== undefined && (
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm backdrop-blur-md ${change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                        {change > 0 ? '+' : ''}{change}%
+                        <span className="material-symbols-outlined text-[14px]">{change >= 0 ? 'trending_up' : 'trending_down'}</span>
+                    </span>
+                )}
             </div>
-            {change !== undefined && (
-                <span className={`text-xs font-bold flex items-center gap-0.5 ${change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {change > 0 ? '+' : ''}{change}%
-                    <span className="material-symbols-outlined text-sm">{change >= 0 ? 'trending_up' : 'trending_down'}</span>
-                </span>
-            )}
+            <div>
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1.5">{label}</p>
+                <h3 className={`${isLarge ? 'text-5xl' : 'text-3xl'} font-black text-slate-900 tracking-tight`}>
+                    {prefix}{typeof value === 'number' ? value.toLocaleString(undefined, { minimumFractionDigits: prefix === '$' ? 2 : 0 }) : value}
+                </h3>
+            </div>
         </div>
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{label}</p>
-        <h3 className="text-2xl font-black text-slate-900 mt-1">{prefix}{typeof value === 'number' ? value.toLocaleString(undefined, { minimumFractionDigits: prefix === '$' ? 2 : 0 }) : value}</h3>
     </div>
-);
+)};
 
 /* ─── Progress ring for targets ─── */
 const ProgressRing = ({ label, current, target, color }) => {
@@ -55,13 +67,13 @@ const ProgressRing = ({ label, current, target, color }) => {
                 </div>
             </div>
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
-            <span className="text-[11px] text-slate-400">${current.toLocaleString()} / ${target.toLocaleString()}</span>
+            <span className="text-[11px] text-slate-500">${current.toLocaleString()} / ${target.toLocaleString()}</span>
         </div>
     );
 };
 
 const Analytics = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -100,9 +112,12 @@ const Analytics = () => {
             };
 
             const kpis = kpiRes.data;
+            const totalRev = mapKpi(kpis.totalRevenue).value;
+            const totalOrd = mapKpi(kpis.totalOrders).value;
+            const avgOrderValue = totalOrd > 0 ? parseFloat((totalRev / totalOrd).toFixed(2)) : 0;
             const formattedData = {
                 totalRevenue: mapKpi(kpis.totalRevenue),
-                totalOrders: mapKpi(kpis.totalOrders),
+                avgOrderValue: { value: avgOrderValue, change: 0 },
                 customerCount: mapKpi(kpis.activeCustomers),
                 netProfit: mapKpi(kpis.netProfit),
                 salesData: normalizeSales(salesRes.data),
@@ -166,15 +181,6 @@ const Analytics = () => {
         }
     };
 
-    const handleLogout = () => {
-        if (logout) logout();
-        else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-        }
-        navigate('/login');
-    };
-
     /* ─── Derived values ─── */
     const todayStr = new Date().toISOString().split('T')[0];
     const todaySales = data?.salesData?.find(d => d.name === todayStr)?.sales || 0;
@@ -185,252 +191,159 @@ const Analytics = () => {
     /* ─── Loading state ─── */
     if (loading) {
         return (
-            <div className="bg-[#f6f6f8] text-slate-900 font-sans min-h-screen">
-                <OwnerHeader />
+            <OwnerLayout activeTab="analytics">
                 <div className="flex items-center justify-center min-h-[70vh]">
                     <div className="flex flex-col items-center">
                         <div className="h-10 w-10 border-4 border-[#1111d4] border-t-transparent rounded-full animate-spin mb-4" />
                         <p className="text-sm text-slate-500 font-medium">Loading analytics…</p>
                     </div>
                 </div>
-            </div>
+            </OwnerLayout>
         );
     }
 
     /* ─── Error state ─── */
     if (error && !data) {
         return (
-            <div className="bg-[#f6f6f8] text-slate-900 font-sans min-h-screen">
-                <OwnerHeader />
+            <OwnerLayout activeTab="analytics">
                 <div className="flex flex-col items-center justify-center min-h-[70vh]">
                     <span className="material-symbols-outlined text-5xl text-rose-400 mb-3">error</span>
                     <p className="text-sm text-slate-600 font-medium">{error}</p>
-                    <button onClick={() => { setLoading(true); fetchAnalytics(); }} className="mt-4 px-5 py-2 bg-[#1111d4] text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer border-none">
+                    <button onClick={() => { setLoading(true); fetchAnalytics(); }} className="mt-4 px-5 py-2 bg-[#1111d4] text-slate-900 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer border-none">
                         Retry
                     </button>
                 </div>
-            </div>
+            </OwnerLayout>
         );
     }
 
     return (
-        <div className="bg-[#f6f6f8] text-slate-900 font-sans min-h-screen">
-            <OwnerHeader />
-            <div className="flex h-screen overflow-hidden pt-[66px]">
+        <OwnerLayout activeTab="analytics" theme="white">
+            {/* Bento Header */}
+            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 tracking-tight leading-tight mb-2">Insights Matrix</h2>
+                    <p className="text-slate-500 text-sm font-medium">Real-time pulse of your performance metrics.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600 flex items-center gap-2 backdrop-blur-xl shadow-lg">
+                        <span className="material-symbols-outlined text-[16px] text-indigo-400">calendar_today</span>
+                        Live Dashboard
+                    </div>
+                </div>
+            </div>
 
-                {/* ═══════════ Sidebar — same as OwnerDashboard ═══════════ */}
-                <aside className="w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200">
-                    <div className="pt-6"></div>
-                    <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-                        <Link className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" to="/owner-dashboard">
-                            <span className="material-icons-filled">dashboard</span>
-                            <span>Dashboard</span>
-                        </Link>
-                        <a className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-                            <span className="material-symbols-outlined">inventory_2</span>
-                            <span>Products</span>
-                        </a>
-                        <a className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-                            <span className="material-symbols-outlined">shopping_cart</span>
-                            <span>Orders</span>
-                        </a>
-                        <a className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-                            <span className="material-symbols-outlined">bar_chart</span>
-                            <span>Reports</span>
-                        </a>
-                        <Link className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#1111d4]/10 text-[#1111d4] font-bold" to="/analytics">
-                            <span className="material-symbols-outlined">analytics</span>
-                            <span>Analytics</span>
-                        </Link>
-                    </nav>
-                    <div className="p-4 border-t border-slate-200 space-y-3">
-                        <button onClick={() => navigate('/owner/products/add')} className="w-full flex items-center justify-center gap-2 bg-[#1111d4] text-white py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity cursor-pointer border-none">
-                            <span className="material-symbols-outlined text-sm">add</span>
-                            <span>Add Product</span>
-                        </button>
-                        <div className="pt-4 space-y-1">
-                            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 text-sm transition-colors" to="/store-editor">
-                                <span className="material-symbols-outlined text-base">brush</span>
-                                <span>Store Editor</span>
-                            </Link>
-                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 text-sm cursor-pointer border-none bg-transparent">
-                                <span className="material-symbols-outlined text-base">logout</span>
-                                <span>Logout</span>
-                            </button>
+            {/* ═══════════ KPI Grid (Bento) ═══════════ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <KpiCard isLarge={true} icon="payments" iconColor="text-emerald-400" label="Total Revenue" prefix="$" value={data.totalRevenue.value} change={data.totalRevenue.change} />
+                <KpiCard icon="receipt_long" iconColor="text-blue-400" label="Avg Order Value" prefix="$" value={data.avgOrderValue.value} change={data.avgOrderValue.change} />
+                <KpiCard icon="group" iconColor="text-amber-400" label="Customers" value={data.customerCount.value} change={data.customerCount.change} />
+                <KpiCard icon="savings" iconColor="text-violet-400" label="Net Profit" prefix="$" value={data.netProfit.value} change={data.netProfit.change} />
+            </div>
+
+            {/* ═══════════ Charts Row (Glass) ═══════════ */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Sales Trend (Span 2) */}
+                <div className="lg:col-span-2 bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
+                                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                                    <span className="material-symbols-outlined text-[20px] block">show_chart</span>
+                                </div>
+                                Sales Velocity
+                            </h3>
                         </div>
                     </div>
-                </aside>
-
-                {/* ═══════════ Main Content ═══════════ */}
-                <main className="flex-1 flex flex-col overflow-hidden">
-                    {/* Top bar */}
-                    <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200">
-                        <div className="flex-1 max-w-xl">
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1111d4] transition-colors">search</span>
-                                <input className="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-[#1111d4] transition-all text-sm outline-none" placeholder="Search analytics..." type="text" />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3 pl-2">
-                                <div className="text-right hidden md:block">
-                                    <p className="text-sm font-semibold">{user?.firstName ? `${user.firstName} ${user.lastName}` : "Owner"}</p>
-                                    <p className="text-xs text-slate-500">Shop Owner</p>
-                                </div>
-                                <div className="h-10 w-10 rounded-full bg-slate-200 border border-[#1111d4]/20 overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || 'Owner'}&backgroundColor=b6e3f4')` }}></div>
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* Scrollable content */}
-                    <div className="flex-1 overflow-y-auto bg-[#f6f6f8]">
-                        <div className="p-8 animate-fade-in-up">
-
-                            {/* Page title */}
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold">Analytics & Growth</h2>
-                                <p className="text-slate-500 text-sm">Track your store performance and set revenue goals.</p>
-                            </div>
-
-                            {/* ═══════════ KPI Cards ═══════════ */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                                <KpiCard icon="payments" iconBg="bg-emerald-100" iconColor="text-emerald-600" label="Total Revenue" prefix="$" value={data.totalRevenue.value} change={data.totalRevenue.change} />
-                                <KpiCard icon="shopping_cart" iconBg="bg-blue-100" iconColor="text-blue-600" label="Total Orders" value={data.totalOrders.value} change={data.totalOrders.change} />
-                                <KpiCard icon="group" iconBg="bg-amber-100" iconColor="text-amber-600" label="Customers" value={data.customerCount.value} change={data.customerCount.change} />
-                                <KpiCard icon="savings" iconBg="bg-violet-100" iconColor="text-violet-600" label="Net Profit" prefix="$" value={data.netProfit.value} change={data.netProfit.change} />
-                            </div>
-
-                            {/* ═══════════ Charts Row ═══════════ */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                                {/* Sales Trend */}
-                                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[#1111d4]">show_chart</span>
-                                            Sales Trend
-                                        </h3>
-                                    </div>
                                     {hasSalesData ? (
                                         <ResponsiveContainer width="100%" height={280}>
                                             <AreaChart data={data.salesData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                                 <defs>
                                                     <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#1111d4" stopOpacity={0.15} />
-                                                        <stop offset="95%" stopColor="#1111d4" stopOpacity={0} />
+                                                        <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
+                                                        <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
                                                     </linearGradient>
                                                 </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} />
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
                                                 <Tooltip
-                                                    contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontSize: '13px' }}
-                                                    itemStyle={{ color: '#1111d4', fontWeight: 700 }}
+                                                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
+                                                    itemStyle={{ color: '#818cf8', fontWeight: 700 }}
                                                     formatter={(val) => [`$${val.toLocaleString()}`, 'Revenue']}
                                                 />
-                                                <Area type="monotone" dataKey="sales" stroke="#1111d4" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" dot={false} activeDot={{ r: 5, fill: '#1111d4', stroke: '#fff', strokeWidth: 2 }} />
+                                                <Area type="monotone" dataKey="sales" stroke="#818cf8" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" dot={false} activeDot={{ r: 5, fill: '#818cf8', stroke: '#fff', strokeWidth: 2 }} />
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <EmptyState icon="bar_chart" title="No sales data yet" subtitle="Sales will appear here once you start receiving orders" />
-                                    )}
-                                </div>
+                                    <EmptyState icon="blur_on" title="Gathering velocity data" subtitle="Sales trends will appear as orders arrive" />
+                                )}
+                </div>
 
-                                {/* Growth Forecast */}
-                                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-violet-600">trending_up</span>
-                                            Growth Forecast
-                                        </h3>
-                                        {hasPrediction && (
-                                            <span className="px-3 py-1 bg-violet-50 border border-violet-200 rounded-full text-[11px] font-bold text-violet-600 tracking-wide">
-                                                Linear Regression
-                                            </span>
-                                        )}
-                                    </div>
+                {/* Growth Forecast (Span 1) */}
+                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
+                            <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                                <span className="material-symbols-outlined text-[20px] block">auto_graph</span>
+                            </div>
+                            Trajectory
+                        </h3>
+                        {hasPrediction && (
+                            <span className="px-3 py-1 bg-slate-50 shadow-inner border border-slate-200 rounded-full text-[10px] font-bold text-purple-300 tracking-wider mix-blend-screen">
+                                ML FORECAST
+                            </span>
+                        )}
+                    </div>
                                     {hasPrediction ? (
                                         <>
-                                            <p className="text-xs text-slate-400 mb-4 font-medium">
+                                            <p className="text-xs text-slate-500 mb-4 font-medium">
                                                 Trend: <span className="text-slate-600 font-bold">{prediction.equation}</span>
                                             </p>
                                             <ResponsiveContainer width="100%" height={240}>
                                                 <LineChart data={prediction.nextWeek} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} />
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
                                                     <Tooltip
-                                                        contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontSize: '13px' }}
+                                                        contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
                                                         formatter={(val) => [`$${val.toLocaleString()}`, 'Predicted']}
                                                     />
-                                                    <Line type="monotone" dataKey="predictedSales" stroke="#7c3aed" strokeWidth={2.5} dot={{ r: 4, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }} name="Predicted Sales ($)" />
+                                                    <Line type="monotone" dataKey="predictedSales" stroke="#c084fc" strokeWidth={2.5} dot={{ r: 4, fill: '#c084fc', stroke: '#1e293b', strokeWidth: 2 }} name="Predicted Sales ($)" />
                                                 </LineChart>
                                             </ResponsiveContainer>
                                         </>
                                     ) : (
-                                        <EmptyState icon="insights" title="Not enough data for predictions" subtitle="Add more sales data so we can forecast growth trends" />
+                                        <EmptyState icon="all_inclusive" title="Waiting on data" subtitle="We need more historical data to predict trajectories" />
                                     )}
-                                </div>
-                            </div>
+                </div>
+            </div>
 
                             {/* ═══════════ Bottom Row ═══════════ */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Top Selling Products */}
-                                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
-                                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-amber-500">emoji_events</span>
-                                            Top Selling Products
-                                        </h3>
-                                        {hasTopItems && (
-                                            <span className="text-xs font-bold text-slate-400 uppercase">{data.topItems.length} Products</span>
-                                        )}
-                                    </div>
-                                    {hasTopItems ? (
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-left">
-                                                <thead className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider">
-                                                    <tr>
-                                                        <th className="px-6 py-3.5 font-bold">#</th>
-                                                        <th className="px-6 py-3.5 font-bold">Product</th>
-                                                        <th className="px-6 py-3.5 font-bold text-center">Units Sold</th>
-                                                        <th className="px-6 py-3.5 font-bold text-right">Revenue</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-100">
-                                                    {data.topItems.map((item, idx) => (
-                                                        <tr key={item._id || idx} className="hover:bg-slate-50/50 transition-colors">
-                                                            <td className="px-6 py-4">
-                                                                <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black
-                                                                    ${idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                                    {idx + 1}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-6 py-4 font-bold text-slate-900 text-sm">{item.title || item.name || 'Unnamed'}</td>
-                                                            <td className="px-6 py-4 text-center text-sm font-medium text-slate-600">{(item.totalSold ?? item.quantity ?? 0).toLocaleString()}</td>
-                                                            <td className="px-6 py-4 text-right text-sm font-bold text-slate-900">${(item.revenue ?? 0).toLocaleString()}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ) : (
-                                        <EmptyState icon="inventory_2" title="No product data yet" subtitle="Product rankings will show up once orders come in" />
-                                    )}
+                                <div className="lg:col-span-2">
+                                    <TopProductsTable topItems={data.topItems} />
                                 </div>
 
                                 {/* Target Settings */}
-                                <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[#1111d4]">flag</span>
+                                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl flex flex-col relative overflow-hidden group">
+                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
+                                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                                <span className="material-symbols-outlined text-[20px] block">flag</span>
+                                            </div>
                                             Revenue Goals
                                         </h3>
                                         {!editingTargets ? (
-                                            <button onClick={() => setEditingTargets(true)} className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer bg-transparent">
+                                            <button onClick={() => setEditingTargets(true)} className="px-4 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white shadow-inner">
                                                 Edit
                                             </button>
                                         ) : (
-                                            <button onClick={handleTargetSave} disabled={savingTargets} className="px-3 py-1.5 bg-[#1111d4] text-white rounded-lg text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer border-none disabled:opacity-50">
+                                            <button onClick={handleTargetSave} disabled={savingTargets} className="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-500/30 transition-colors cursor-pointer disabled:opacity-50">
                                                 {savingTargets ? 'Saving…' : 'Save'}
                                             </button>
                                         )}
@@ -438,28 +351,28 @@ const Analytics = () => {
 
                                     {/* Progress rings */}
                                     <div className="flex justify-around py-4 mb-6">
-                                        <ProgressRing label="Daily" current={todaySales} target={targets.daily} color="#1111d4" />
-                                        <ProgressRing label="Monthly" current={data.totalRevenue.value} target={targets.monthly} color="#7c3aed" />
-                                        <ProgressRing label="Yearly" current={data.totalRevenue.value} target={targets.yearly} color="#059669" />
+                                        <ProgressRing label="Daily" current={todaySales} target={targets.daily} color="#38bdf8" />
+                                        <ProgressRing label="Monthly" current={data.totalRevenue.value} target={targets.monthly} color="#a855f7" />
+                                        <ProgressRing label="Yearly" current={data.totalRevenue.value} target={targets.yearly} color="#34d399" />
                                     </div>
 
                                     {/* Input fields */}
-                                    <div className="space-y-3 flex-1">
+                                    <div className="space-y-4 flex-1">
                                         {[
                                             { key: 'daily', label: 'Daily Target', icon: 'today' },
                                             { key: 'monthly', label: 'Monthly Target', icon: 'calendar_month' },
                                             { key: 'yearly', label: 'Yearly Target', icon: 'date_range' },
                                         ].map(({ key, label, icon }) => (
-                                            <div key={key} className="relative">
-                                                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{label}</label>
+                                            <div key={key} className="relative group/input">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 pl-1">{label}</label>
                                                 <div className="relative">
-                                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">{icon}</span>
+                                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500/70 text-lg group-focus-within/input:text-emerald-400 transition-colors">{icon}</span>
                                                     <input
                                                         type="number"
                                                         disabled={!editingTargets}
                                                         value={targets[key]}
                                                         onChange={(e) => setTargets({ ...targets, [key]: Number(e.target.value) })}
-                                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-900 outline-none focus:ring-1 focus:ring-[#1111d4] focus:bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                                        className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-emerald-500/50 focus:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder-slate-400"
                                                     />
                                                 </div>
                                             </div>
@@ -467,11 +380,20 @@ const Analytics = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
-        </div>
+                            
+                            {/* Inventory Alerts Deep Analysis Row */}
+                            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 h-auto lg:h-[420px]">
+                                <AlertPanel />
+                                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 shadow-2xl relative overflow-hidden group flex flex-col justify-center items-center text-slate-500 h-full p-8 min-h-[300px]">
+                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"></div>
+                                    <div className="w-20 h-20 rounded-3xl bg-white border border-slate-200 shadow-inner flex items-center justify-center mb-6 text-cyan-500/50">
+                                        <span className="material-symbols-outlined text-4xl block">bolt</span>
+                                    </div>
+                                    <p className="text-lg font-bold text-slate-900 mb-2 tracking-tight">Peak Ordering Analysis</p>
+                                    <p className="text-sm text-slate-500 max-w-sm text-center leading-relaxed">System requires at least 14 days of booking history to generate deep timing analyses and heatmaps.</p>
+                                </div>
+                            </div>
+        </OwnerLayout>
     );
 };
 

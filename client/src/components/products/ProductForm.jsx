@@ -15,6 +15,9 @@ const ProductForm = ({ initialData, onSubmit, isLoading, isEdit = false }) => {
     type: initialData?.type || 'General',
     imageUrl: initialData?.imageUrl || '',
     modelUrl: initialData?.modelUrl || '',
+    stock: initialData?.stock || 0,
+    trackStock: initialData?.trackStock || false,
+    alertThreshold: initialData?.alertThreshold || 5,
   });
 
   const validateForm = () => {
@@ -89,11 +92,16 @@ const ProductForm = ({ initialData, onSubmit, isLoading, isEdit = false }) => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'price' ? (value ? Number(value) : '') : value,
-    }));
+    const { name, value, type, checked } = e.target;
+    
+    setFormData((prev) => {
+      let newValue = value;
+      if (type === 'checkbox') newValue = checked;
+      else if (type === 'number' && name !== 'price') newValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
+      else if (name === 'price') newValue = value ? Number(value) : '';
+
+      return { ...prev, [name]: newValue };
+    });
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -133,6 +141,10 @@ const ProductForm = ({ initialData, onSubmit, isLoading, isEdit = false }) => {
     submitData.append('price', formData.price);
     submitData.append('description', formData.description.trim());
     submitData.append('type', formData.type);
+    submitData.append('stock', formData.stock);
+    submitData.append('trackStock', formData.trackStock);
+    submitData.append('alertThreshold', formData.alertThreshold);
+
 
     if (imageFile) {
       submitData.append('image', imageFile);
@@ -234,6 +246,63 @@ const ProductForm = ({ initialData, onSubmit, isLoading, isEdit = false }) => {
             <p className="error-message text-red-500 text-xs mt-1">
               {errors.type}
             </p>
+          )}
+        </div>
+
+                {/* Inventory Tracking Setup */}
+        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">Inventory Tracking</h3>
+              <p className="text-xs text-gray-500">Monitor stock levels and receive low-stock alerts</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                name="trackStock" 
+                checked={formData.trackStock} 
+                onChange={handleChange} 
+                className="sr-only peer" 
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#051094]/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#051094]"></div>
+            </label>
+          </div>
+
+          {formData.trackStock && (
+            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200 animate-fade-in-up">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Current Stock Level
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-sm">inventory_2</span>
+                  <input
+                    type="number"
+                    name="stock"
+                    min="0"
+                    value={formData.stock}
+                    onChange={handleChange}
+                    className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051094] focus:border-[#051094]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Low Stock Alert Threshold
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-sm">warning</span>
+                  <input
+                    type="number"
+                    name="alertThreshold"
+                    min="0"
+                    value={formData.alertThreshold}
+                    onChange={handleChange}
+                    className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051094] focus:border-[#051094]"
+                  />
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

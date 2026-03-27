@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const DashboardHeader = ({ title, showSearch = true }) => {
+const DashboardHeader = ({ title, showSearch = true, hideProfile = false }) => {
   const { user } = useAuth();
   
   return (
@@ -22,6 +22,8 @@ const DashboardHeader = ({ title, showSearch = true }) => {
       </div>
 
       <div className="flex items-center gap-4">
+        {!hideProfile && (
+          <>
         {/* Notifications */}
         <button className="h-9 w-9 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-[#1111d4] transition-all relative cursor-pointer ring-0 outline-none">
           <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -35,13 +37,15 @@ const DashboardHeader = ({ title, showSearch = true }) => {
               {user?.firstName} {user?.lastName}
             </p>
             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1.5">
-              {user?.studentId || 'STUDENT'}
+              {user?.role === 'ADMIN' ? 'ADMIN' : user?.role === 'OWNER' ? 'OWNER' : user?.studentId || 'STUDENT'}
             </p>
           </div>
           <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-[#1111d4] to-[#051094] flex items-center justify-center text-white font-black text-sm shadow-sm">
             {user?.firstName?.charAt(0) || 'U'}
           </div>
         </div>
+         </>
+        )}
       </div>
     </header>
   );

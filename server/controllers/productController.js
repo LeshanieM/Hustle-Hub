@@ -50,7 +50,7 @@ exports.createProduct = async (req, res) => {
     console.log('Create Product Request Body:', req.body);
     console.log('Files received:', req.files);
 
-    const { name, price, description, type, ownerId } = req.body;
+    const { name, price, description, type, ownerId, stock, alertThreshold, trackStock } = req.body;
     
     let finalImageUrl = req.body.imageUrl || null;
     let finalModelUrl = req.body.modelUrl || null;
@@ -71,6 +71,9 @@ exports.createProduct = async (req, res) => {
       type,
       imageUrl: finalImageUrl,
       modelUrl: finalModelUrl,
+      stock: stock !== undefined ? Number(stock) : 0,
+      alertThreshold: alertThreshold !== undefined ? Number(alertThreshold) : 5,
+      trackStock: trackStock !== undefined ? String(trackStock) === 'true' : true,
       // Default to "owner1" if no owner is provided, matching frontend mock
       ownerId: ownerId || 'owner1'
     });
@@ -95,6 +98,19 @@ exports.updateProduct = async (req, res) => {
   try {
     let updateFields = { ...req.body };
     console.log('Update Files received:', req.files);
+
+    console.log('Update Body received:', req.body);
+
+    // Properly cast FormData strings back to types
+    if (updateFields.trackStock !== undefined) {
+      updateFields.trackStock = String(updateFields.trackStock) === 'true';
+    }
+    if (updateFields.stock !== undefined) {
+      updateFields.stock = Number(updateFields.stock);
+    }
+    if (updateFields.alertThreshold !== undefined) {
+      updateFields.alertThreshold = Number(updateFields.alertThreshold);
+    }
 
     if (req.files) {
       if (req.files.image && req.files.image[0]) {

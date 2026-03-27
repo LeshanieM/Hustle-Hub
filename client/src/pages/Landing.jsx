@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import CustomerHeader from '../components/CustomerHeader';
+import OwnerHeader from '../components/OwnerHeader';
+import AdminHeader from '../components/AdminHeader';
 import Footer from '../components/Footer';
 
 // SVG-based Icon component for maximum reliability
@@ -302,8 +305,24 @@ const MaterialIcon = ({ name, size = 24, className = '' }) => {
 };
 
 export default function Landing() {
+  const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
+
+  const renderHeader = () => {
+    if (!user) return <CustomerHeader />;
+
+    switch (user.role) {
+      case 'OWNER':
+        return <OwnerHeader />;
+      case 'ADMIN':
+        return <AdminHeader />;
+      case 'CUSTOMER':
+      default:
+        return <CustomerHeader />;
+    }
+  };
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -331,8 +350,8 @@ export default function Landing() {
 
   return (
     <div className="bg-[#f6f6f8] text-slate-900 antialiased font-display min-h-screen">
-      {/* Customer Header Component */}
-      <CustomerHeader />
+      {/* Dynamic Header Component */}
+      {renderHeader()}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Search Section */}
@@ -370,12 +389,6 @@ export default function Landing() {
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
               Featured Categories
             </h2>
-            <Link
-              className="text-[#1111d4] font-bold text-sm hover:underline no-underline"
-              to="#"
-            >
-              View All
-            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -590,23 +603,25 @@ export default function Landing() {
               textbooks, skills, or treats on campus.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-10 py-4 bg-white text-[#1111d4] font-bold rounded-xl text-lg hover:shadow-2xl hover:scale-105 transition-all active:scale-95 border-none cursor-pointer">
-                Start Selling Today
+              <button
+                onClick={() => navigate('/stores')}
+                className="px-10 py-4 bg-white text-[#1111d4] font-bold rounded-xl text-lg hover:shadow-2xl hover:scale-105 transition-all active:scale-95 border-none cursor-pointer"
+              >
+                Buy Products
               </button>
-              <button className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/40 text-white font-bold rounded-xl text-lg hover:bg-white/20 hover:scale-105 transition-all active:scale-95 border-none cursor-pointer">
-                Learn How It Works
+
+              <button
+                onClick={() => navigate('/contact')}
+                className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/40 text-white font-bold rounded-xl text-lg hover:bg-white/20 hover:scale-105 transition-all active:scale-95 border-none cursor-pointer"
+              >
+                Contact Us
               </button>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Floating Help Button */}
-      <button className="fixed bottom-6 right-6 w-14 h-14 bg-[#1111d4] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 border-none cursor-pointer p-0">
-        <MaterialIcon name="help_center" size={28} />
-      </button>
       <Footer />
     </div>
-    
   );
 }

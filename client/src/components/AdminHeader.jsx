@@ -86,54 +86,52 @@ const AdminHeader = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-3 bg-white text-[#0a0a0f] border-b border-[rgba(10,10,15,0.1)] shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-4 sm:px-8 py-[16px] bg-white text-[#0a0a0f] border-b border-[rgba(10,10,15,0.1)] shadow-sm">
       {/* Left section - Logo and Profile */}
       <div className="flex items-center gap-6">
         <Link
-          to="/profile"
+          to={user ? '/landing' : '/'}
           className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
         >
-          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[64px] h-[64px] object-contain rounded-lg shadow-sm" />
-          <span className="hidden sm:inline font-bold"><span className="text-[#051094]">Hustle</span>-<span className="text-[#33cdff]">Hub</span></span>
+          <img
+            src="/assets/logo.png"
+            alt="Hustle-Hub Logo"
+            className="w-[40px] h-[40px] object-contain rounded-lg shadow-sm"
+          />
+          <span className="hidden sm:inline font-bold">
+            <span className="text-[#051094]">Hustle</span>-
+            <span className="text-[#33cdff]">Hub</span>
+          </span>
         </Link>
       </div>
 
-      {/*  Search Bar - Desktop */}
-      <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
-        <form onSubmit={handleSearch} className="relative w-full">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users, orders, products..."
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 pl-10 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#0000ff] focus:ring-1 focus:ring-[#0000ff] transition-all"
-          />
-          <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </form>
-      </div>
-
-      {/* Mobile Search Toggle */}
-      <div className="lg:hidden">
-        <button
-          onClick={() => setIsSearchOpen(!isSearchOpen)}
-          className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <Search size={20} className="text-[#6b6860]" />
-        </button>
-      </div>
+      <div className="flex-1"></div>
 
       {/* Right section - Admin actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 sm:gap-3">
+        {/* Universal Search Toggle */}
+        <button
+          onClick={() => setIsSearchOpen(!isSearchOpen)}
+          className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer border-none bg-transparent flex items-center justify-center"
+        >
+          <Search size={20} className="text-[#6b6860] hover:text-[#0000ff]" />
+        </button>
+
         {/* Quick Actions */}
+        <Link
+          to="/admin-dashboard"
+          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
+        >
+          <span>Admin Dashboard</span>
+        </Link>
+
+        {/*  <Link
+          to="/customer-dashboard"
+          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
+        >
+          <span>Customer Dashboard</span>
+        </Link> */}
+
         <Link
           to="/admin/orders"
           className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
@@ -149,11 +147,13 @@ const AdminHeader = () => {
           <MessageCircle size={18} />
           <span>Reviews</span>
         </Link>
-
-        <button className="hidden sm:flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm text-[#6b6860] hover:text-[#0a0a0f] transition-all border border-gray-200">
-          <Plus size={18} />
-          <span>Quick Add</span>
-        </button>
+        <Link
+          to="/admin/contact"
+          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors mr-2"
+        >
+          <Shield size={18} />
+          <span>Support</span>
+        </Link>
 
         {/* Notifications */}
         <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
@@ -176,11 +176,13 @@ const AdminHeader = () => {
             aria-haspopup="true"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0000ff] to-[#6600ff] flex items-center justify-center text-white font-bold text-sm">
-              {getInitials(user?.name || 'Admin User')}
+              {getInitials(
+                user ? `${user.firstName} ${user.lastName}` : 'Admin User',
+              )}
             </div>
             <div className="hidden md:block text-left">
               <div className="text-sm font-bold text-[#0a0a0f]">
-                {user?.name || 'Admin User'}
+                {user ? `${user.firstName} ${user.lastName}` : 'Admin User'}
               </div>
               <div className="text-xs text-[#6b6860]">
                 {user?.role || 'Super Admin'}
@@ -188,8 +190,9 @@ const AdminHeader = () => {
             </div>
             <ChevronDown
               size={18}
-              className={`text-[#6b6860] transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''
-                }`}
+              className={`text-[#6b6860] transition-transform duration-200 ${
+                isProfileMenuOpen ? 'rotate-180' : ''
+              }`}
             />
           </button>
 
@@ -198,10 +201,10 @@ const AdminHeader = () => {
             <div className="absolute right-0 mt-2 w-64 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-2 animate-fadeIn">
               <div className="p-3 border-b border-gray-100 mb-2">
                 <div className="text-sm font-bold text-[#0a0a0f]">
-                  {user?.name || 'Admin User'}
+                  {user ? `${user.firstName} ${user.lastName}` : 'Admin User'}
                 </div>
                 <div className="text-xs text-[#6b6860]">
-                  {user?.email || 'admin@hustlehub.com'}
+                  {user?.studentEmail || 'admin@hustlehub.com'}
                 </div>
               </div>
 
@@ -212,24 +215,6 @@ const AdminHeader = () => {
                     label: 'My Profile',
                     path: '/profile',
                     badge: null,
-                  },
-                  {
-                    icon: Settings,
-                    label: 'Settings',
-                    path: '/admin/settings',
-                    badge: null,
-                  },
-                  {
-                    icon: Shield,
-                    label: 'Security',
-                    path: '/admin/security',
-                    badge: '2FA',
-                  },
-                  {
-                    icon: BarChart3,
-                    label: 'Analytics',
-                    path: '/admin/analytics',
-                    badge: 'New',
                   },
                 ].map((item) => (
                   <Link
@@ -265,10 +250,10 @@ const AdminHeader = () => {
         </div>
       </div>
 
-      {/* Mobile Search Modal */}
+      {/* Universal Search Modal */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-white lg:hidden animate-slideDown">
-          <div className="p-4">
+        <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-lg border-b border-gray-100 animate-slideDown flex justify-center py-4 px-4 sm:px-8">
+          <div className="w-full max-w-3xl">
             <form onSubmit={handleSearch} className="relative">
               <input
                 ref={searchInputRef}
@@ -286,7 +271,7 @@ const AdminHeader = () => {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(false)}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
               >
                 <X size={20} />
               </button>

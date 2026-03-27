@@ -60,7 +60,7 @@ export default function HomePage() {
   };
 
   const handleExploreMarketplace = () => {
-    navigate('/customer/products');
+    navigate('/landing');
   };
 
   const handleCreateAccount = () => {

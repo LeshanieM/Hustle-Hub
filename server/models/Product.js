@@ -28,6 +28,20 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  stock: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  alertThreshold: {
+    type: Number,
+    default: 5,
+    min: 0
+  },
+  trackStock: {
+    type: Boolean,
+    default: true
+  },
   ownerId: {
     type: String,
     required: true

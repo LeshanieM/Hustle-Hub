@@ -7,7 +7,7 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
       <div className="relative h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
         {product.imageUrl ? (
           <>
-            <img src={product.imageUrl} alt={product.name} className="object-cover w-full h-full" />
+            <img src={product.imageUrl} alt={product.name} className={`object-cover w-full h-full ${product.stock === 0 ? 'opacity-80 grayscale' : ''}`} />
             {product.modelUrl && (
               <div className="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-xs font-semibold flex items-center">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,13 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
              <span className="text-sm font-medium">No Image</span>
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-[#051094] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
+        {product.stock === 0 && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1.5 bg-rose-600/95 text-white rounded-lg text-xs font-black shadow-lg uppercase tracking-wider z-20 flex items-center gap-1.5 backdrop-blur-sm border border-rose-400">
+            <span className="material-symbols-outlined text-[14px]">error</span>
+            Out of Stock
+          </div>
+        )}
+        <div className="absolute top-2 right-2 bg-[#051094] text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full shadow-sm z-10">
           {product.type || 'Standard'}
         </div>
       </div>
