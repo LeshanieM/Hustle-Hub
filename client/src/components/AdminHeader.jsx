@@ -147,6 +147,13 @@ const AdminHeader = () => {
           <MessageCircle size={18} />
           <span>Reviews</span>
         </Link>
+        <Link
+          to="/admin/contact"
+          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors mr-2"
+        >
+          <Shield size={18} />
+          <span>Support</span>
+        </Link>
 
         {/* Notifications */}
         <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
