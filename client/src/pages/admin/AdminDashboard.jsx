@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,40 +16,115 @@ const AdminDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview'); // Added for section control
     
-    // Data State
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalBusinesses: 0,
         activeBusinesses: 0,
-        blockedBusinesses: 0
+        blockedBusinesses: 0,
+        totalAdmins: 0
     });
 
-    const [growthData] = useState([
-        { month: 'Jan', students: 4000, businesses: 24 },
-        { month: 'Feb', students: 5500, businesses: 36 },
-        { month: 'Mar', students: 8000, businesses: 58 },
-        { month: 'Apr', students: 9500, businesses: 82 },
-        { month: 'May', students: 11000, businesses: 115 },
-        { month: 'Jun', students: 12450, businesses: 148 },
-    ]);
 
-    const [categoryData] = useState([
-        { name: 'Food', value: 45, color: '#4f46e5' },
-        { name: 'Services', value: 30, color: '#10b981' },
-        { name: 'Apparel', value: 15, color: '#f59e0b' },
-        { name: 'Electronics', value: 10, color: '#ec4899' },
-    ]);
 
     const [businesses, setBusinesses] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Real user data
 
-    const [auditLogs] = useState([
-        { id: 1, action: 'Blocked Business', target: 'Campus Gear', admin: 'Chief Admin', time: '2 hours ago' },
-        { id: 2, action: 'Approved Store', target: 'The Coffee Lab', admin: 'Alex Rivera', time: '5 hours ago' },
-        { id: 3, action: 'System Update', target: 'Analytics Engine', admin: 'System', time: 'Yesterday' },
-    ]);
+    const growthData = useMemo(() => {
+        const months = [];
+        const now = new Date();
+        const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+        
+        for(let i=5; i>=0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({ 
+                month: d.toLocaleString('default', { month: 'short' }),
+                monthNum: d.getMonth(),
+                year: d.getFullYear(),
+                students: 0,
+                businesses: 0
+            });
+        }
+
+        let baseStudents = 0;
+        let baseBusinesses = 0;
+
+        allUsers.forEach(u => {
+            if(u.role !== 'CUSTOMER' && u.role !== 'OWNER') return;
+            const d = new Date(u.createdAt);
+            if(d < sixMonthsAgo) {
+                baseStudents++;
+            } else {
+                const match = months.find(m => m.monthNum === d.getMonth() && m.year === d.getFullYear());
+                if(match) match.students++;
+            }
+        });
+
+        businesses.forEach(b => {
+            const d = new Date(b.createdAt);
+            if(d < sixMonthsAgo) {
+                baseBusinesses++;
+            } else {
+                const match = months.find(m => m.monthNum === d.getMonth() && m.year === d.getFullYear());
+                if(match) match.businesses++;
+            }
+        });
+
+        let cum_s = baseStudents;
+        let cum_b = baseBusinesses;
+        return months.map(m => {
+            cum_s += m.students;
+            cum_b += m.businesses;
+            return { month: m.month, students: cum_s, businesses: cum_b };
+        });
+    }, [allUsers, businesses]);
+
+    const categoryData = useMemo(() => {
+        let active = 0, suspended = 0, pending = 0;
+        businesses.forEach(b => {
+            if (b.status === 'ACTIVE') active++;
+            else if (b.status === 'SUSPENDED') suspended++;
+            else pending++;
+        });
+        const arr = [
+            { name: 'Active', value: active, color: '#10b981' }, 
+            { name: 'Suspended', value: suspended, color: '#ef4444' },
+            { name: 'Pending', value: pending, color: '#f59e0b' }
+        ].filter(item => item.value > 0);
+        return arr.length ? arr : [{ name: 'No Stores', value: 1, color: '#e2e8f0' }];
+    }, [businesses]);
+
+    const auditLogs = useMemo(() => {
+        const logs = [];
+        allUsers.forEach(u => {
+            logs.push({
+                id: u._id,
+                action: `${u.role || 'USER'} Reg.`,
+                target: u.username,
+                admin: 'System',
+                time: new Date(u.createdAt),
+                rawTime: new Date(u.createdAt).getTime()
+            });
+        });
+        businesses.forEach(b => {
+            logs.push({
+                id: b._id,
+                action: `Store ${b.status}`,
+                target: b.storeName,
+                admin: 'System',
+                time: new Date(b.createdAt),
+                rawTime: new Date(b.createdAt).getTime()
+            });
+        });
+        
+        return logs.sort((a,b) => b.rawTime - a.rawTime).slice(0, 5).map(l => ({
+            ...l,
+            time: l.time.toLocaleDateString() + ' ' + l.time.toLocaleTimeString()
+        }));
+    }, [allUsers, businesses]);
+
+
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -64,20 +139,25 @@ const AdminDashboard = () => {
                     axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] }))
                 ]);
 
+                const computedStudents = usersRes.data ? usersRes.data.filter(u => u.role === 'CUSTOMER' || u.role === 'OWNER').length : 0;
+                const computedAdmins = usersRes.data ? usersRes.data.filter(u => u.role === 'ADMIN').length : 0;
+
                 if (statsRes.data) {
                     setStats({
-                        totalStudents: statsRes.data.registeredStudents || 0,
+                        totalStudents: computedStudents || statsRes.data.registeredStudents || 0,
                         totalBusinesses: (statsRes.data.activeStores || 0) + (statsRes.data.blockedBatch || 0),
                         activeBusinesses: statsRes.data.activeStores || 0,
-                        blockedBusinesses: statsRes.data.blockedBatch || 0
+                        blockedBusinesses: statsRes.data.blockedBatch || 0,
+                        totalAdmins: computedAdmins
                     });
                 } else if (usersRes.data && storesRes.data) {
                     // Derive stats if specific analytics fail
                     setStats({
-                        totalStudents: usersRes.data.length,
+                        totalStudents: computedStudents,
                         totalBusinesses: storesRes.data.length,
                         activeBusinesses: storesRes.data.filter(s => s.status === 'ACTIVE').length,
-                        blockedBusinesses: storesRes.data.filter(s => s.status === 'SUSPENDED').length
+                        blockedBusinesses: storesRes.data.filter(s => s.status === 'SUSPENDED').length,
+                        totalAdmins: computedAdmins
                     });
                 }
 
@@ -120,11 +200,11 @@ const AdminDashboard = () => {
     };
 
     const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', onClick: () => setActiveTab('overview'), active: activeTab === 'overview' },
-        { label: 'Business Directory', icon: 'storefront', onClick: () => setActiveTab('businesses'), active: activeTab === 'businesses' },
-        { label: 'User Directory', icon: 'group', onClick: () => setActiveTab('users'), active: activeTab === 'users' },
-        { label: 'System Health', icon: 'monitor_heart', onClick: () => setActiveTab('overview'), active: false }, // Placeholder
-        { label: 'Audit Logs', icon: 'history', onClick: () => setActiveTab('overview'), active: false }, // Placeholder
+        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
+        { label: 'User Directory', icon: 'group', path: '/admin/users' },
+        { label: 'System Health', icon: 'monitor_heart', path: '/admin/system-health' }, 
+        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
     ];
 
     if (loading) return (
@@ -144,22 +224,20 @@ const AdminDashboard = () => {
             TopHeader={AdminHeader}
         >
             <div className="space-y-10">
-                {activeTab === 'overview' && (
-                  <>
+                
                     {/* KPI Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                         <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon="school" trend="up" trendValue="+12%" color="blue" />
+                        <StatCard title="Platform Admins" value={stats.totalAdmins.toLocaleString()} icon="admin_panel_settings" trend="up" trendValue="Live" color="amber" />
                         <StatCard title="Total Businesses" value={stats.totalBusinesses} icon="store" trend="up" trendValue="+8%" color="purple" />
                         <StatCard title="Active Units" value={stats.activeBusinesses} icon="check_circle" color="emerald" />
                         <StatCard title="Blocked / Flagged" value={stats.blockedBusinesses} icon="block" color="rose" />
                     </div>
-                  </>
-                )}
-
+                 
                 {/* Growth Analytics Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2">
-                        <ChartCard title="Platform Growth" subtitle="Monthly registration of students vs businesses" height="h-[350px]">
+                        <ChartCard title="Platform Growth" subtitle="Cumulative registration across 6 months" height="h-[350px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={growthData}>
                                     <defs>
@@ -187,7 +265,7 @@ const AdminDashboard = () => {
                     </div>
                     
                     <div className="lg:col-span-1">
-                        <ChartCard title="Category Mix" subtitle="Distribution by business type" height="h-[350px]">
+                        <ChartCard title="Status Mix" subtitle="Distribution of operation status" height="h-[350px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -209,111 +287,20 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Business Management Table */}
-                {activeTab === 'overview' || activeTab === 'businesses' ? (
-                  <TableComponent 
-                      title="Business Management"
-                      headers={['Store Name', 'Owner', 'Status', 'Actions']}
-                      data={businesses}
-                      renderRow={(biz) => (
-                          <tr key={biz._id} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-6 py-4">
-                                  <span className="font-black text-slate-900 text-sm">{biz.storeName}</span>
-                              </td>
-                              <td className="px-6 py-4 text-slate-500 text-sm font-medium">
-                                {biz.ownerId?.firstName} {biz.ownerId?.lastName}
-                              </td>
-                              <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                      biz.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 
-                                      biz.status === 'PENDING_APPROVAL' ? 'bg-amber-50 text-amber-600' : 
-                                      'bg-rose-50 text-rose-600'
-                                  }`}>
-                                      {biz.status?.replace('_', ' ')}
-                                  </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                  <div className="flex items-center gap-2">
-                                      <button 
-                                          onClick={() => toggleBusinessStatus(biz._id, biz.status)}
-                                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                              biz.status === 'ACTIVE' ? 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                                          }`}
-                                      >
-                                          {biz.status === 'ACTIVE' ? 'Suspend' : 'Approve'}
-                                      </button>
-                                  </div>
-                              </td>
-                          </tr>
-                      )}
-                  />
-                ) : null}
-
-                {activeTab === 'users' && (
-                  <TableComponent 
-                    title="User Directory"
-                    headers={['Username', 'Full Name', 'Role', 'Verification', 'Joined']}
-                    data={allUsers}
-                    renderRow={(u) => (
-                      <tr key={u._id} className="hover:bg-slate-50 transition-colors text-sm">
-                        <td className="px-6 py-4 font-black">{u.username}</td>
-                        <td className="px-6 py-4 text-slate-500">{u.firstName} {u.lastName}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${
-                            u.role === 'ADMIN' ? 'bg-purple-100 text-purple-600' : 
-                            u.role === 'OWNER' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {u.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {u.isVerified ? 
-                            <span className="text-emerald-500 flex items-center gap-1 font-bold text-xs"><span className="material-symbols-outlined text-sm">verified</span> Verified</span> : 
-                            <span className="text-slate-300 font-bold text-xs">Unverified</span>
-                          }
-                        </td>
-                        <td className="px-6 py-4 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
-                      </tr>
-                    )}
-                  />
-                )}
+                
 
                 {/* Lower Grid - Insights & Logs */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 pb-20">
-                    {/* Alerts & Insights */}
-                    <section className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm overflow-hidden relative group">
-                        <div className="absolute -right-4 -top-4 w-40 h-40 bg-indigo-50 rounded-full blur-3xl opacity-50 group-hover:scale-150 transition-transform"></div>
-                        <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3 relative z-10">
-                            <span className="material-symbols-outlined text-rose-500">warning</span>
-                            Intelligence Alerts
-                        </h3>
-                        <div className="space-y-4 relative z-10">
-                            {[
-                                { id: 1, title: 'Unusual Revenue Spike', desc: 'The Coffee Lab reported 300% growth in 24h.', type: 'info' },
-                                { id: 2, title: 'Inactive Business', desc: 'Print Master has no sales activity for 14 days.', type: 'warning' },
-                                { id: 3, title: 'Multiple Password Failures', desc: 'Detected 15+ login attempts on user ID 8292.', type: 'danger' },
-                            ].map(alert => (
-                                <div key={alert.id} className={`p-5 rounded-3xl border ${
-                                    alert.type === 'danger' ? 'bg-rose-50 border-rose-100' : alert.type === 'warning' ? 'bg-amber-50 border-amber-100' : 'bg-indigo-50 border-indigo-100'
-                                }`}>
-                                    <h5 className="font-black text-slate-900 text-sm mb-1">{alert.title}</h5>
-                                    <p className="text-xs text-slate-500 font-bold">{alert.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Audit Logs */}
+                
                     <TableComponent 
-                        title="Audit Logs"
-                        headers={['Action', 'Target', 'Admin', 'Time']}
+                        title="Recent Activity"
+                        headers={['Action', 'Entity', 'By', 'Time']}
                         data={auditLogs}
                         renderRow={(log) => (
                             <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                                        <span className="font-black text-slate-900 text-xs">{log.action}</span>
+                                        <span className="font-black text-slate-900 text-[10px] uppercase tracking-widest">{log.action}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 font-bold text-slate-500 text-xs">{log.target}</td>
@@ -323,7 +310,7 @@ const AdminDashboard = () => {
                         )}
                     />
                 </div>
-            </div>
+            
         </DashboardLayout>
     );
 };

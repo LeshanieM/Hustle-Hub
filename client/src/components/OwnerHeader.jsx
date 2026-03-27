@@ -22,20 +22,26 @@ const OwnerHeader = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-3 bg-white text-[#0a0a0f] border-b border-[rgba(10,10,15,0.1)] shadow-sm">
-      {/* Left section - Logo and Profile */}
-      <div className="flex items-center gap-6">
-        <Link to="/profile" className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f]">
-          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[64px] h-[64px] object-contain rounded-lg" />
+    <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-4 sm:px-8 py-[16px] bg-white text-[#0a0a0f] border-b border-[rgba(10,10,15,0.1)] shadow-sm">
+      {/* Left section - Logo */}
+      <div className="flex items-center gap-6 shrink-0">
+        <Link
+          to={user ? '/landing' : '/'}
+          className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
+        >
+          <img src="/assets/logo.png" alt="Hustle-Hub Logo" className="w-[40px] h-[40px] object-contain rounded-lg shadow-sm" />
           <span className="font-bold"><span className="text-[#051094]">Hustle</span>-<span className="text-[#33cdff]">Hub</span></span>
         </Link>
+      </div>
 
-        <div className="hidden md:flex items-center gap-6 text-sm">
-          <Link to="/stores" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Customer View</Link>
-          <Link to="/store-editor" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link>
-          <Link to="/owner/products" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Products</Link>
-          <Link to="/owner/orders" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Orders</Link>
-        </div>
+      {/* Center Navigation Links */}
+      <div className="hidden xl:flex flex-1 items-center justify-center gap-6 text-sm px-8">
+        <Link to="/owner-dashboard" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Owner Dashboard</Link>
+        <Link to="/customer-dashboard" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Customer Dashboard</Link>
+        <Link to="/stores" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Customer View</Link>
+        <Link to="/store-editor" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">My Shop</Link>
+        <Link to="/owner/products" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Products</Link>
+        <Link to="/owner/orders" className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium">Orders</Link>
       </div>
 
       {/* Right section */}
