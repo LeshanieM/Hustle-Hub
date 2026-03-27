@@ -65,7 +65,7 @@ const ProductDetailsPage = () => {
       <div className="flex-grow pt-24 pb-12">
         <div className="container mx-auto px-4 max-w-6xl">
           <button 
-            onClick={() => navigate('/customer/products')}
+            onClick={() => navigate('/stores')}
             className="mb-8 text-gray-500 hover:text-[#051094] transition-colors flex items-center text-sm font-medium bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm w-fit"
           >
             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
