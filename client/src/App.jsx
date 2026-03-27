@@ -47,6 +47,11 @@ import OwnerProductsAlerts from "./pages/owner/OwnerProductsAlerts";
 import ReviewsDashboard from "./pages/admin/ReviewsDashboard";
 import AdminHeader from "./components/AdminHeader";
 
+// Contact Us Pages
+import CustomerContactUs from "./pages/customer/ContactUs";
+import OwnerContactUs from "./pages/owner/ContactUs";
+import AdminContactUs from "./pages/admin/ContactUs";
+
 /**
  * ProtectedRoute — guards routes by authentication and role.
  *
@@ -169,6 +174,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/customer/contact"
+          element={
+            <ProtectedRoute allowedRoles={["CUSTOMER", "OWNER", "ADMIN"]}>
+              <CustomerContactUs />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== OWNER ONLY ===== */}
         <Route
@@ -235,6 +248,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/owner/contact"
+          element={
+            <ProtectedRoute allowedRoles={["OWNER"]}>
+              <OwnerContactUs />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== ADMIN ONLY ===== */}
         <Route
@@ -293,6 +314,14 @@ function App() {
             <ProtectedRoute>
               <AdminHeader />
               <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contact"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminContactUs />
             </ProtectedRoute>
           }
         />
