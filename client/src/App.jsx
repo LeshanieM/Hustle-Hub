@@ -45,6 +45,7 @@ import OwnerProductsAlerts from "./pages/owner/OwnerProductsAlerts";
 
 // Admin Pages
 import ReviewsDashboard from "./pages/admin/ReviewsDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
 import AdminHeader from "./components/AdminHeader";
 
 // Contact Us Pages
@@ -314,6 +315,14 @@ function App() {
             <ProtectedRoute>
               <AdminHeader />
               <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProducts />
             </ProtectedRoute>
           }
         />
