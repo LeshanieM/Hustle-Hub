@@ -62,6 +62,12 @@ const OwnerHeader = () => {
         >
           Orders
         </Link>
+          <Link
+          to="/owner/alerts"
+          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
+        >
+          Alerts
+        </Link>
       </div>
 
       {/* Right section */}
