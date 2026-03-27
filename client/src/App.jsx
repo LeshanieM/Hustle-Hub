@@ -40,6 +40,7 @@ import OwnerProductsDashboard from './pages/owner/OwnerProductsDashboard';
 import AddProductPage from './pages/owner/AddProductPage';
 import EditProductPage from './pages/owner/EditProductPage';
 import AdminOrders from './pages/admin/AdminOrders';
+import OwnerProductsAlerts from './pages/owner/OwnerProductsAlerts';
 
 // Admin Pages
 import ReviewsDashboard from './pages/admin/ReviewsDashboard';
@@ -109,7 +110,7 @@ function App() {
           }
         />
 
-        {/* ===== CUSTOMER / BROWSING (all roles) ===== */}
+        {/* ===== CUSTOMER*/}
         <Route
           path="/customer-dashboard"
           element={
@@ -134,14 +135,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-       {/* <Route
-          path="/customer/products"
-          element={
-            <ProtectedRoute allowedRoles={['CUSTOMER', 'OWNER', 'ADMIN']}>
-              <CustomerProductsPage />
-            </ProtectedRoute>
-          }
-        /> */}
+
         <Route
           path="/customer/products/:id"
           element={
@@ -173,6 +167,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['OWNER']}>
               <OwnerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/alerts"
+          element={
+            <ProtectedRoute allowedRoles={['OWNER']}>
+              <OwnerProductsAlerts />
             </ProtectedRoute>
           }
         />
@@ -234,7 +236,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/admin/businesses"
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
