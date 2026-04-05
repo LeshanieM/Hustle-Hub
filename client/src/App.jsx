@@ -29,7 +29,7 @@ import Analytics from "./pages/admin/Analytics";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import BusinessDirectory from "./pages/admin/BusinessDirectory";
 import UserDirectory from "./pages/admin/UserDirectory";
-import SystemHealth from "./pages/admin/SystemHealth";
+import AdminAIInsights from "./pages/admin/AdminAIInsights";
 import AuditLogs from "./pages/admin/AuditLogs";
 import OrderHistory from "./pages/OrderHistory";
 
@@ -284,10 +284,10 @@ function App() {
           }
         />
         <Route
-          path="/admin/system-health"
+          path="/admin/ai-insights"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <SystemHealth />
+              <AdminAIInsights />
             </ProtectedRoute>
           }
         />
