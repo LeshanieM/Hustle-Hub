@@ -23,18 +23,25 @@ const AdminHeader = () => {
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const profileMenuRef = useRef(null);
   const searchInputRef = useRef(null);
+  const notificationsRef = useRef(null);
+  const messagesRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setIsProfileMenuOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+      if (messagesRef.current && !messagesRef.current.contains(event.target)) {
+        setIsMessagesOpen(false);
       }
     };
 
@@ -48,6 +55,8 @@ const AdminHeader = () => {
       if (event.key === 'Escape') {
         setIsProfileMenuOpen(false);
         setIsSearchOpen(false);
+        setIsNotificationsOpen(false);
+        setIsMessagesOpen(false);
       }
     };
 
@@ -165,16 +174,64 @@ const AdminHeader = () => {
         </Link>
 
         {/* Notifications */}
-        <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
-          <Bell size={20} className="text-[#6b6860]" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-[#ff4444] rounded-full"></span>
-        </button>
+        <div className="relative" ref={notificationsRef}>
+          <button 
+            onClick={() => {
+              setIsNotificationsOpen(!isNotificationsOpen);
+              setIsMessagesOpen(false);
+              setIsProfileMenuOpen(false);
+            }}
+            className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            <Bell size={20} className="text-[#6b6860]" />
+          </button>
+          
+          {isNotificationsOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">Notifications</h3>
+                <span className="text-xs text-[#0000ff] cursor-pointer hover:underline">Mark all read</span>
+              </div>
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                  <Bell size={20} className="text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-900 m-0">No new notifications</p>
+                <p className="text-xs text-gray-500 mt-1 m-0">You're all caught up!</p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Messages */}
-        <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
-          <MessageCircle size={20} className="text-[#6b6860]" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-[#ffaa00] rounded-full"></span>
-        </button>
+        <div className="relative" ref={messagesRef}>
+          <button 
+            onClick={() => {
+              setIsMessagesOpen(!isMessagesOpen);
+              setIsNotificationsOpen(false);
+              setIsProfileMenuOpen(false);
+            }}
+            className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            <MessageCircle size={20} className="text-[#6b6860]" />
+          </button>
+          
+          {isMessagesOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">Messages</h3>
+                <Link to="/admin/contact" className="text-xs text-[#0000ff] cursor-pointer hover:underline no-underline">View inbox</Link>
+              </div>
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                  <MessageCircle size={20} className="text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-900 m-0">No new messages</p>
+                <p className="text-xs text-gray-500 mt-1 m-0">Your inbox is empty.</p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Admin Profile */}
         <div className="relative" ref={profileMenuRef}>

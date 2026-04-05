@@ -203,7 +203,7 @@ const AdminDashboard = () => {
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'System Health', icon: 'monitor_heart', path: '/admin/system-health' }, 
+        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
     ];
 
@@ -227,9 +227,9 @@ const AdminDashboard = () => {
                 
                     {/* KPI Summary Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                        <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon="school" trend="up" trendValue="+12%" color="blue" />
-                        <StatCard title="Platform Admins" value={stats.totalAdmins.toLocaleString()} icon="admin_panel_settings" trend="up" trendValue="Live" color="amber" />
-                        <StatCard title="Total Businesses" value={stats.totalBusinesses} icon="store" trend="up" trendValue="+8%" color="purple" />
+                        <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon="school" color="blue" />
+                        <StatCard title="Platform Admins" value={stats.totalAdmins.toLocaleString()} icon="admin_panel_settings" color="amber" />
+                        <StatCard title="Total Businesses" value={stats.totalBusinesses} icon="store" color="purple" />
                         <StatCard title="Active Units" value={stats.activeBusinesses} icon="check_circle" color="emerald" />
                         <StatCard title="Blocked / Flagged" value={stats.blockedBusinesses} icon="block" color="rose" />
                     </div>
