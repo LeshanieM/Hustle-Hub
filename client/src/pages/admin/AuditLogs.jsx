@@ -16,7 +16,7 @@ const AuditLogs = () => {
                 const token = localStorage.getItem('token');
                 if (!token) throw new Error("No token");
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                
+
                 // Fetch users and stores to dynamically build logs
                 const [storesRes, usersRes] = await Promise.all([
                     axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
@@ -46,14 +46,14 @@ const AuditLogs = () => {
                         type: 'STORE',
                         target: b.storeName,
                         admin: 'System',
-                        time: new Date(b.createdAt),
-                        rawTime: new Date(b.createdAt).getTime(),
+                        time: new Date(b.updatedAt || b.createdAt),
+                        rawTime: new Date(b.updatedAt || b.createdAt).getTime(),
                         icon: 'storefront'
                     });
                 });
 
                 // Sort descending
-                setAuditLogs(logs.sort((a,b) => b.rawTime - a.rawTime));
+                setAuditLogs(logs.sort((a, b) => b.rawTime - a.rawTime));
             } catch (error) {
                 console.error('Failed to fetch audit records:', error);
             } finally {
@@ -67,8 +67,8 @@ const AuditLogs = () => {
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
+        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
     const filtered = auditLogs.filter(log => {
@@ -86,8 +86,8 @@ const AuditLogs = () => {
     );
 
     return (
-        <DashboardLayout 
-            role="Administrator" 
+        <DashboardLayout
+            role="Administrator"
             headerTitle="Security & Activity Logs"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
@@ -116,9 +116,9 @@ const AuditLogs = () => {
                 <div className="bg-white p-2 rounded-2xl border border-slate-200">
                     <div className="relative">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search logs by action or target..." 
+                        <input
+                            type="text"
+                            placeholder="Search logs by action or target..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-transparent rounded-xl py-3 pl-12 pr-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none"
@@ -141,14 +141,13 @@ const AuditLogs = () => {
                                             <span className="material-symbols-outlined text-sm">{log.icon}</span>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Log Content */}
                                     <div className="flex-1 bg-slate-50 group-hover:bg-indigo-50/30 rounded-2xl p-4 md:p-6 border border-slate-100 transition-colors">
                                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
                                             <div className="flex items-center gap-2">
-                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-widest font-black ${
-                                                    log.type === 'STORE' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-                                                }`}>{log.type}</span>
+                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-widest font-black ${log.type === 'STORE' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
+                                                    }`}>{log.type}</span>
                                                 <h4 className="font-black text-slate-900 text-sm">{log.action}</h4>
                                             </div>
                                             <time className="text-xs font-bold text-slate-400 flex items-center gap-1">

@@ -6,9 +6,9 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import ChartCard from '../../components/dashboard/ChartCard';
-import { 
-    LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, 
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
+import {
+    LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import AdminHeader from '../../components/AdminHeader';
 
@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    
+
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalBusinesses: 0,
@@ -34,10 +34,10 @@ const AdminDashboard = () => {
         const months = [];
         const now = new Date();
         const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-        
-        for(let i=5; i>=0; i--) {
+
+        for (let i = 5; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push({ 
+            months.push({
                 month: d.toLocaleString('default', { month: 'short' }),
                 monthNum: d.getMonth(),
                 year: d.getFullYear(),
@@ -50,23 +50,23 @@ const AdminDashboard = () => {
         let baseBusinesses = 0;
 
         allUsers.forEach(u => {
-            if(u.role !== 'CUSTOMER' && u.role !== 'OWNER') return;
+            if (u.role !== 'CUSTOMER' && u.role !== 'OWNER') return;
             const d = new Date(u.createdAt);
-            if(d < sixMonthsAgo) {
+            if (d < sixMonthsAgo) {
                 baseStudents++;
             } else {
                 const match = months.find(m => m.monthNum === d.getMonth() && m.year === d.getFullYear());
-                if(match) match.students++;
+                if (match) match.students++;
             }
         });
 
         businesses.forEach(b => {
             const d = new Date(b.createdAt);
-            if(d < sixMonthsAgo) {
+            if (d < sixMonthsAgo) {
                 baseBusinesses++;
             } else {
                 const match = months.find(m => m.monthNum === d.getMonth() && m.year === d.getFullYear());
-                if(match) match.businesses++;
+                if (match) match.businesses++;
             }
         });
 
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
             else pending++;
         });
         const arr = [
-            { name: 'Active', value: active, color: '#10b981' }, 
+            { name: 'Active', value: active, color: '#10b981' },
             { name: 'Suspended', value: suspended, color: '#ef4444' },
             { name: 'Pending', value: pending, color: '#f59e0b' }
         ].filter(item => item.value > 0);
@@ -112,12 +112,12 @@ const AdminDashboard = () => {
                 action: `Store ${b.status}`,
                 target: b.storeName,
                 admin: 'System',
-                time: new Date(b.createdAt),
-                rawTime: new Date(b.createdAt).getTime()
+                time: new Date(b.updatedAt || b.createdAt),
+                rawTime: new Date(b.updatedAt || b.createdAt).getTime()
             });
         });
-        
-        return logs.sort((a,b) => b.rawTime - a.rawTime).slice(0, 5).map(l => ({
+
+        return logs.sort((a, b) => b.rawTime - a.rawTime).slice(0, 5).map(l => ({
             ...l,
             time: l.time.toLocaleDateString() + ' ' + l.time.toLocaleTimeString()
         }));
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) throw new Error('No token');
-                
+
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 const [statsRes, storesRes, usersRes] = await Promise.all([
                     axios.get('http://localhost:5000/api/analytics/admin/platform', config).catch(() => ({ data: null })),
@@ -181,9 +181,9 @@ const AdminDashboard = () => {
             'PENDING_APPROVAL': 'ACTIVE'
         };
         const newStatus = newStatusMap[currentStatus] || 'ACTIVE';
-        
+
         if (!window.confirm(`Are you sure you want to change status to ${newStatus}?`)) return;
-        
+
         try {
             const token = localStorage.getItem('token');
             if (token) {
@@ -191,7 +191,7 @@ const AdminDashboard = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
-            setBusinesses(prev => prev.map(b => b._id === id ? { ...b, status: newStatus } : b));
+            setBusinesses(prev => prev.map(b => b._id === id ? { ...b, status: newStatus, updatedAt: new Date().toISOString() } : b));
             // Recalculate stats or just refresh
         } catch (error) {
             console.error('Error updating status:', error);
@@ -203,8 +203,8 @@ const AdminDashboard = () => {
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
+        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
     if (loading) return (
@@ -217,23 +217,23 @@ const AdminDashboard = () => {
     );
 
     return (
-        <DashboardLayout 
-            role="Administrator" 
+        <DashboardLayout
+            role="Administrator"
             headerTitle="Administrative Intelligence"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
         >
             <div className="space-y-10">
-                
-                    {/* KPI Summary Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                        <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon="school" color="blue" />
-                        <StatCard title="Platform Admins" value={stats.totalAdmins.toLocaleString()} icon="admin_panel_settings" color="amber" />
-                        <StatCard title="Total Businesses" value={stats.totalBusinesses} icon="store" color="purple" />
-                        <StatCard title="Active Units" value={stats.activeBusinesses} icon="check_circle" color="emerald" />
-                        <StatCard title="Blocked / Flagged" value={stats.blockedBusinesses} icon="block" color="rose" />
-                    </div>
-                 
+
+                {/* KPI Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon="school" color="blue" />
+                    <StatCard title="Platform Admins" value={stats.totalAdmins.toLocaleString()} icon="admin_panel_settings" color="amber" />
+                    <StatCard title="Total Businesses" value={stats.totalBusinesses} icon="store" color="purple" />
+                    <StatCard title="Active Units" value={stats.activeBusinesses} icon="check_circle" color="emerald" />
+                    <StatCard title="Blocked / Flagged" value={stats.blockedBusinesses} icon="block" color="rose" />
+                </div>
+
                 {/* Growth Analytics Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2">
@@ -242,28 +242,28 @@ const AdminDashboard = () => {
                                 <AreaChart data={growthData}>
                                     <defs>
                                         <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                                         </linearGradient>
                                         <linearGradient id="colorBusinesses" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, fill: '#94a3b8'}} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, fill: '#94a3b8'}} />
-                                    <Tooltip 
-                                      contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 700, fill: '#94a3b8' }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 700, fill: '#94a3b8' }} />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                     />
-                                    <Legend verticalAlign="top" height={36}/>
+                                    <Legend verticalAlign="top" height={36} />
                                     <Area type="monotone" dataKey="students" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorStudents)" />
                                     <Area type="monotone" dataKey="businesses" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorBusinesses)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </ChartCard>
                     </div>
-                    
+
                     <div className="lg:col-span-1">
                         <ChartCard title="Status Mix" subtitle="Distribution of operation status" height="h-[350px]">
                             <ResponsiveContainer width="100%" height="100%">
@@ -287,30 +287,30 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                
+
 
                 {/* Lower Grid - Insights & Logs */}
-                
-                    <TableComponent 
-                        title="Recent Activity"
-                        headers={['Action', 'Entity', 'By', 'Time']}
-                        data={auditLogs}
-                        renderRow={(log) => (
-                            <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                                        <span className="font-black text-slate-900 text-[10px] uppercase tracking-widest">{log.action}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 font-bold text-slate-500 text-xs">{log.target}</td>
-                                <td className="px-6 py-4 text-slate-900 text-xs font-black">{log.admin}</td>
-                                <td className="px-6 py-4 font-bold text-slate-400 text-[10px] tracking-widest">{log.time}</td>
-                            </tr>
-                        )}
-                    />
-                </div>
-            
+
+                <TableComponent
+                    title="Recent Activity"
+                    headers={['Action', 'Entity', 'By', 'Time']}
+                    data={auditLogs}
+                    renderRow={(log) => (
+                        <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                    <span className="font-black text-slate-900 text-[10px] uppercase tracking-widest">{log.action}</span>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 font-bold text-slate-500 text-xs">{log.target}</td>
+                            <td className="px-6 py-4 text-slate-900 text-xs font-black">{log.admin}</td>
+                            <td className="px-6 py-4 font-bold text-slate-400 text-[10px] tracking-widest">{log.time}</td>
+                        </tr>
+                    )}
+                />
+            </div>
+
         </DashboardLayout>
     );
 };

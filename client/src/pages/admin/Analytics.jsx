@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,8 @@ import regression from 'regression';
 import OwnerLayout from '../../components/dashboard/OwnerLayout';
 import TopProductsTable from '../../components/dashboard/TopProductsTable';
 import AlertPanel from '../../components/dashboard/AlertPanel';
+import { generateHybridReport } from '../../utils/reportGenerator';
+
 
 /* ─── Empty-state illustration ─── */
 const EmptyState = ({ icon, title, subtitle }) => (
@@ -188,6 +190,30 @@ const Analytics = () => {
     const hasTopItems = data?.topItems?.length > 0;
     const hasPrediction = prediction && prediction.nextWeek?.length > 0;
 
+    const handleDownloadReport = () => {
+        const title = 'Admin Analytics Report';
+        const subtitle = `Generated on: ${new Date().toLocaleDateString()}`;
+        
+        const summary = [
+            { label: "Total Revenue", value: `$${data?.totalRevenue?.value?.toLocaleString() || 0}` },
+            { label: "Avg Order Value", value: `$${data?.avgOrderValue?.value?.toLocaleString() || 0}` },
+            { label: "Total Customers", value: `${data?.customerCount?.value || 0}` },
+            { label: "Net Profit", value: `$${data?.netProfit?.value?.toLocaleString() || 0}` }
+        ];
+
+        const headers = ['Top Items', 'Sales'];
+        let reportData = (data?.topItems || []).map(item => [item._id || item.name || 'Unknown', `${item.totalQuantity || item.sales || 0}`]);
+        if (reportData.length === 0) reportData = [['No data', '0']];
+        
+        generateHybridReport({
+            title,
+            subtitle,
+            summary,
+            headers,
+            data: reportData
+        }, 'Admin_Analytics_Report.pdf');
+    };
+
     /* ─── Loading state ─── */
     if (loading) {
         return (
@@ -219,17 +245,12 @@ const Analytics = () => {
 
     return (
         <OwnerLayout activeTab="analytics" theme="white">
-            {/* Bento Header */}
+            <div className="px-2 pb-6 bg-white/50 rounded-3xl">
+                {/* Bento Header */}
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 tracking-tight leading-tight mb-2">Insights Matrix</h2>
                     <p className="text-slate-500 text-sm font-medium">Real-time pulse of your performance metrics.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600 flex items-center gap-2 backdrop-blur-xl shadow-lg">
-                        <span className="material-symbols-outlined text-[16px] text-indigo-400">calendar_today</span>
-                        Live Dashboard
-                    </div>
                 </div>
             </div>
 
@@ -241,93 +262,8 @@ const Analytics = () => {
                 <KpiCard icon="savings" iconColor="text-violet-400" label="Net Profit" prefix="$" value={data.netProfit.value} change={data.netProfit.change} />
             </div>
 
-            {/* ═══════════ Charts Row (Glass) ═══════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* Sales Trend (Span 2) */}
-                <div className="lg:col-span-2 bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-                                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                                    <span className="material-symbols-outlined text-[20px] block">show_chart</span>
-                                </div>
-                                Sales Velocity
-                            </h3>
-                        </div>
-                    </div>
-                                    {hasSalesData ? (
-                                        <ResponsiveContainer width="100%" height={280}>
-                                            <AreaChart data={data.salesData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                                <defs>
-                                                    <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
-                                                        <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
-                                                <Tooltip
-                                                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
-                                                    itemStyle={{ color: '#818cf8', fontWeight: 700 }}
-                                                    formatter={(val) => [`$${val.toLocaleString()}`, 'Revenue']}
-                                                />
-                                                <Area type="monotone" dataKey="sales" stroke="#818cf8" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" dot={false} activeDot={{ r: 5, fill: '#818cf8', stroke: '#fff', strokeWidth: 2 }} />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                    <EmptyState icon="blur_on" title="Gathering velocity data" subtitle="Sales trends will appear as orders arrive" />
-                                )}
-                </div>
-
-                {/* Growth Forecast (Span 1) */}
-                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-                            <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
-                                <span className="material-symbols-outlined text-[20px] block">auto_graph</span>
-                            </div>
-                            Trajectory
-                        </h3>
-                        {hasPrediction && (
-                            <span className="px-3 py-1 bg-slate-50 shadow-inner border border-slate-200 rounded-full text-[10px] font-bold text-purple-300 tracking-wider mix-blend-screen">
-                                ML FORECAST
-                            </span>
-                        )}
-                    </div>
-                                    {hasPrediction ? (
-                                        <>
-                                            <p className="text-xs text-slate-500 mb-4 font-medium">
-                                                Trend: <span className="text-slate-600 font-bold">{prediction.equation}</span>
-                                            </p>
-                                            <ResponsiveContainer width="100%" height={240}>
-                                                <LineChart data={prediction.nextWeek} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
-                                                    <Tooltip
-                                                        contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
-                                                        formatter={(val) => [`$${val.toLocaleString()}`, 'Predicted']}
-                                                    />
-                                                    <Line type="monotone" dataKey="predictedSales" stroke="#c084fc" strokeWidth={2.5} dot={{ r: 4, fill: '#c084fc', stroke: '#1e293b', strokeWidth: 2 }} name="Predicted Sales ($)" />
-                                                </LineChart>
-                                            </ResponsiveContainer>
-                                        </>
-                                    ) : (
-                                        <EmptyState icon="all_inclusive" title="Waiting on data" subtitle="We need more historical data to predict trajectories" />
-                                    )}
-                </div>
-            </div>
-
                             {/* ═══════════ Bottom Row ═══════════ */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                {/* Top Selling Products */}
-                                <div className="lg:col-span-2">
-                                    <TopProductsTable topItems={data.topItems} />
-                                </div>
-
+                            <div className="grid grid-cols-1 max-w-3xl mx-auto gap-8">
                                 {/* Target Settings */}
                                 <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl flex flex-col relative overflow-hidden group">
                                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
@@ -393,6 +329,18 @@ const Analytics = () => {
                                     <p className="text-sm text-slate-500 max-w-sm text-center leading-relaxed">System requires at least 14 days of booking history to generate deep timing analyses and heatmaps.</p>
                                 </div>
                             </div>
+            </div>
+
+            {/* ═══════════ Export Action ═══════════ */}
+            <div className="mt-6 flex justify-center pb-8 border-t border-slate-100 pt-8 relative z-20">
+                <button 
+                    onClick={handleDownloadReport}
+                    className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-2xl shadow-xl hover:shadow-indigo-500/25 transition-all transform hover:-translate-y-1 font-bold text-sm tracking-wide"
+                >
+                    <span className="material-symbols-outlined text-[20px]">download</span>
+                    Download Digital Report
+                </button>
+            </div>
         </OwnerLayout>
     );
 };
