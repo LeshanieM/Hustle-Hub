@@ -11,6 +11,113 @@
      <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.2.0/model-viewer.min.js"></script>
   </head>
   <body>
+    <style>
+      /* Hide the default Google Translate widget */
+      body { top: 0px !important; }
+      .goog-te-banner-frame { display: none !important; }
+      #google_translate_element { display: none !important; }
+      .skiptranslate { display: none !important; }
+      
+      /* Movable language buttons container */
+      #langSwitcherContainer {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+        display: flex;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px;
+        border-radius: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        cursor: grab;
+        border: 1px solid #e5e7eb;
+        backdrop-filter: blur(4px);
+      }
+      #langSwitcherContainer:active {
+        cursor: grabbing;
+      }
+      .lang-btn {
+        background: white;
+        color: #1e3a8a; /* deep blue */
+        border: 1px solid #1e3a8a;
+        padding: 6px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+      }
+      .lang-btn:hover {
+        background: #1e3a8a;
+        color: white;
+      }
+    </style>
+
+    <div id="langSwitcherContainer">
+      <button class="lang-btn" onclick="changeLanguage('si')">සිංහල</button>
+      <button class="lang-btn" onclick="changeLanguage('en')">English</button>
+    </div>
+
+    <!-- Hidden translate element -->
+    <div id="google_translate_element"></div>
+
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,si',
+          autoDisplay: false
+        }, 'google_translate_element');
+      }
+
+      function changeLanguage(langCode) {
+        var selectElement = document.querySelector('select.goog-te-combo');
+        if (selectElement) {
+          selectElement.value = langCode;
+          selectElement.dispatchEvent(new Event('change'));
+        }
+      }
+
+      // Make the language switcher draggable
+      const langSwitcher = document.getElementById('langSwitcherContainer');
+      let isDragging = false, startX, startY, initialX, initialY;
+
+      const dragStart = (e) => {
+        if (e.target.tagName.toLowerCase() === 'button') return; // Don't drag if clicking buttons
+        isDragging = true;
+        const _e = e.type.includes('mouse') ? e : e.touches[0];
+        startX = _e.clientX;
+        startY = _e.clientY;
+        const rect = langSwitcher.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+      };
+
+      const dragMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const _e = e.type.includes('mouse') ? e : e.touches[0];
+        const dx = _e.clientX - startX;
+        const dy = _e.clientY - startY;
+        langSwitcher.style.left = (initialX + dx) + 'px';
+        langSwitcher.style.top = (initialY + dy) + 'px';
+        langSwitcher.style.bottom = 'auto'; // Disable CSS bottom
+        langSwitcher.style.right = 'auto';
+      };
+
+      const dragEnd = () => { isDragging = false; };
+
+      langSwitcher.addEventListener('mousedown', dragStart);
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', dragEnd);
+      langSwitcher.addEventListener('touchstart', dragStart, {passive: false});
+      document.addEventListener('touchmove', dragMove, {passive: false});
+      document.addEventListener('touchend', dragEnd);
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
