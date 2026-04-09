@@ -1,26 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import OwnerHeader from '../../components/OwnerHeader';
 import { useAuth } from '../../context/AuthContext';
 import Footer from '../../components/Footer';
+import api from '../../api/axios';
 
 const ContactUs = () => {
     const { user } = useAuth();
-    const [inquiries, setInquiries] = useState([
-        { id: 1, customer: "Alex Johnson", email: "alex@student.edu", subject: "Custom Tech Accessory", date: "Oct 24, 2023", priority: "High", replied: false },
-        { id: 2, customer: "Sarah Miller", email: "sarah.m@student.edu", subject: "Bulk Order Discount", date: "Oct 23, 2023", priority: "Medium", replied: true, reply: "Yes Sarah! We offer 15% off for orders over 5 units." },
-        { id: 3, customer: "Mike Ross", email: "mike.ross@student.edu", subject: "Warranty Inquiry", date: "Oct 22, 2023", priority: "Low", replied: false }
-    ]);
+    const [inquiries, setInquiries] = useState([]);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
     const [replyText, setReplyText] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const handleReply = (e) => {
+    useEffect(() => {
+        const fetchInquiries = async () => {
+            try {
+                const { data } = await api.get('/support/store-tickets');
+                if (data.success) {
+                    setInquiries(data.tickets.map(t => ({
+                        id: t._id,
+                        customer: t.sender ? `${t.sender.firstName} ${t.sender.lastName}` : 'Unknown Customer',
+                        email: t.sender?.studentEmail || '',
+                        subject: t.subject,
+                        date: new Date(t.createdAt).toLocaleDateString(),
+                        priority: "Medium",
+                        replied: t.status === 'Resolved',
+                        reply: t.reply || ''
+                    })));
+                }
+            } catch (err) {
+                console.error("Error fetching store tickets:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInquiries();
+    }, []);
+
+    const handleReply = async (e) => {
         e.preventDefault();
-        setInquiries(inquiries.map(inq => 
-            inq.id === selectedInquiry.id ? { ...inq, replied: true, reply: replyText } : inq
-        ));
-        setSelectedInquiry(null);
-        setReplyText('');
+        try {
+            const { data } = await api.patch(`/support/${selectedInquiry.id}/reply`, { reply: replyText });
+            if (data.success) {
+                setInquiries(inquiries.map(inq => 
+                    inq.id === selectedInquiry.id ? { ...inq, replied: true, reply: replyText } : inq
+                ));
+                setSelectedInquiry(null);
+                setReplyText('');
+            }
+        } catch (err) {
+            console.error("Error replying to ticket:", err);
+            alert('Failed to send reply');
+        }
     };
 
     const sidebarItems = [
@@ -37,23 +68,14 @@ const ContactUs = () => {
             headerTitle="Seller Support"
             sidebarItems={sidebarItems}
             TopHeader={OwnerHeader}
+            showSearch={false}
         >
-            <div className="max-w-6xl mx-auto py-8 px-4 font-inter" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div className="max-w-6xl mx-auto py-8 px-4 font-inter flex flex-col min-h-[calc(100vh-100px)] w-full" style={{ fontFamily: "'Inter', sans-serif" }}>
                 {/* Minimal Header */}
                 <div className="mb-12 border-b border-slate-100 pb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-[#051094] mb-2 tracking-tight">Seller Support</h1>
                         <p className="text-slate-500 text-sm">Manage customer inquiries and direct support requests for your store.</p>
-                    </div>
-                    <div className="flex gap-4">
-                         <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                             <p className="text-[10px] font-black uppercase text-slate-400 mb-0.5">Response Rate</p>
-                             <p className="text-sm font-bold text-[#051094]">94%</p>
-                         </div>
-                         <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                             <p className="text-[10px] font-black uppercase text-slate-400 mb-0.5">Average Time</p>
-                             <p className="text-sm font-bold text-[#051094]">3.2 hrs</p>
-                         </div>
                     </div>
                 </div>
 
@@ -75,12 +97,7 @@ const ContactUs = () => {
                                 {inquiries.map(inq => (
                                     <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs text-[#051094]">
-                                                    {inq.customer.charAt(0)}
-                                                </div>
-                                                <div className="text-sm font-bold text-slate-900">{inq.customer}</div>
-                                            </div>
+                                            <div className="text-sm font-bold text-slate-900">{inq.customer}</div>
                                         </td>
                                         <td className="px-6 py-4 text-xs font-medium text-slate-600 truncate max-w-xs">{inq.subject}</td>
                                         <td className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-tighter">{inq.date}</td>
@@ -112,30 +129,6 @@ const ContactUs = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
-
-                {/* Information Callout */}
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm flex items-start gap-5">
-                          <div className="w-12 h-12 bg-slate-50 text-[#051094] rounded-xl flex items-center justify-center shrink-0 border border-slate-100">
-                             <span className="material-symbols-outlined text-2xl">admin_panel_settings</span>
-                          </div>
-                          <div>
-                              <h4 className="text-sm font-bold text-slate-900 mb-1">Platform Support</h4>
-                              <p className="text-xs text-slate-500 leading-relaxed mb-4">Request a manual review for bulk payouts or report technical issues in the Owner Portal.</p>
-                              <div className="text-[10px] font-black text-[#051094] uppercase tracking-widest cursor-pointer hover:underline underline-offset-4">Open System Ticket &rarr;</div>
-                          </div>
-                     </div>
-                     <div className="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm flex items-start gap-5">
-                          <div className="w-12 h-12 bg-slate-50 text-[#051094] rounded-xl flex items-center justify-center shrink-0 border border-slate-100">
-                             <span className="material-symbols-outlined text-2xl">help_center</span>
-                          </div>
-                          <div>
-                              <h4 className="text-sm font-bold text-slate-900 mb-1">Seller Guidelines</h4>
-                              <p className="text-xs text-slate-500 leading-relaxed mb-4">Review the student-partner handbook for tips on sales, storefront visibility, and shipping.</p>
-                              <div className="text-[10px] font-black text-[#051094] uppercase tracking-widest cursor-pointer hover:underline underline-offset-4">Read Playbook &rarr;</div>
-                          </div>
-                     </div>
                 </div>
 
                 {/* Minimal Reply Modal */}
@@ -177,7 +170,9 @@ const ContactUs = () => {
                         </div>
                     </div>
                 )}
-                <Footer />
+                <div className="mt-auto pt-16">
+                    <Footer />
+                </div>
             </div>
         </DashboardLayout>
     );
