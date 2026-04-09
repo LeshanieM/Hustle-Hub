@@ -42,6 +42,7 @@ import AddProductPage from "./pages/owner/AddProductPage";
 import EditProductPage from "./pages/owner/EditProductPage";
 import AdminOrders from "./pages/admin/AdminOrders";
 import OwnerProductsAlerts from "./pages/owner/OwnerProductsAlerts";
+import OwnerReports from "./pages/owner/OwnerReports";
 
 // Admin Pages
 import ReviewsDashboard from "./pages/admin/ReviewsDashboard";
@@ -152,6 +153,14 @@ function App() {
         />
 
         <Route
+          path="/customer/products"
+          element={
+            <ProtectedRoute allowedRoles={["CUSTOMER", "OWNER", "ADMIN"]}>
+              <CustomerProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/customer/products/:id"
           element={
             <ProtectedRoute allowedRoles={["CUSTOMER", "OWNER", "ADMIN"]}>
@@ -254,6 +263,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["OWNER"]}>
               <OwnerContactUs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/reports"
+          element={
+            <ProtectedRoute allowedRoles={["OWNER"]}>
+              <OwnerReports />
             </ProtectedRoute>
           }
         />
