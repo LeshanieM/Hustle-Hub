@@ -55,7 +55,7 @@ const BusinessDirectory = () => {
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'System Health', icon: 'monitor_heart', path: '/admin/system-health' }, 
+        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
     ];
 

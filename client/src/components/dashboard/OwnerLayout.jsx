@@ -29,7 +29,7 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                             to="/owner-dashboard"
                         >
                             <span className="material-icons-filled">dashboard</span>
-                            <span>Dashboard</span>
+                            <span>Overview</span>
                         </Link>
                         <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'products' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
                             <span className="material-symbols-outlined">inventory_2</span>
@@ -39,10 +39,10 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                             <span className="material-symbols-outlined">shopping_cart</span>
                             <span>Orders</span>
                         </a>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'reports' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        <Link className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'reports' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} to="/owner/reports">
                             <span className="material-symbols-outlined">bar_chart</span>
                             <span>Reports</span>
-                        </a>
+                        </Link>
                         <Link 
                             className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'analytics' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
                             to="/analytics"

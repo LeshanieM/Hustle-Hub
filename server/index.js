@@ -24,6 +24,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", productRoutes);
 app.use("/api/user", userRoutes);
 
+app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/stores", storeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);

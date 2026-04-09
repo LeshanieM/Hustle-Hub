@@ -29,7 +29,7 @@ import Analytics from "./pages/admin/Analytics";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import BusinessDirectory from "./pages/admin/BusinessDirectory";
 import UserDirectory from "./pages/admin/UserDirectory";
-import SystemHealth from "./pages/admin/SystemHealth";
+import AdminAIInsights from "./pages/admin/AdminAIInsights";
 import AuditLogs from "./pages/admin/AuditLogs";
 import OrderHistory from "./pages/OrderHistory";
 
@@ -42,9 +42,11 @@ import AddProductPage from "./pages/owner/AddProductPage";
 import EditProductPage from "./pages/owner/EditProductPage";
 import AdminOrders from "./pages/admin/AdminOrders";
 import OwnerProductsAlerts from "./pages/owner/OwnerProductsAlerts";
+import OwnerReports from "./pages/owner/OwnerReports";
 
 // Admin Pages
 import ReviewsDashboard from "./pages/admin/ReviewsDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
 import AdminHeader from "./components/AdminHeader";
 
 // Contact Us Pages
@@ -151,6 +153,14 @@ function App() {
         />
 
         <Route
+          path="/customer/products"
+          element={
+            <ProtectedRoute allowedRoles={["CUSTOMER", "OWNER", "ADMIN"]}>
+              <CustomerProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/customer/products/:id"
           element={
             <ProtectedRoute allowedRoles={["CUSTOMER", "OWNER", "ADMIN"]}>
@@ -256,6 +266,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/owner/reports"
+          element={
+            <ProtectedRoute allowedRoles={["OWNER"]}>
+              <OwnerReports />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ===== ADMIN ONLY ===== */}
         <Route
@@ -283,10 +301,10 @@ function App() {
           }
         />
         <Route
-          path="/admin/system-health"
+          path="/admin/ai-insights"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <SystemHealth />
+              <AdminAIInsights />
             </ProtectedRoute>
           }
         />
@@ -314,6 +332,14 @@ function App() {
             <ProtectedRoute>
               <AdminHeader />
               <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProducts />
             </ProtectedRoute>
           }
         />
