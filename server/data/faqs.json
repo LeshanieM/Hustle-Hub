@@ -1,0 +1,40 @@
+[
+  {
+    "question": "What are your opening hours?",
+    "keywords": [
+      "hours",
+      "opening hours",
+      "time"
+    ],
+    "answer": "We are open Monday to Friday, 9 AM – 6 PM."
+  },
+  {
+    "question": "How can I contact support?",
+    "keywords": [
+      "contact us",
+      "support",
+      "contact"
+    ],
+    "answer": "You can email us at support@hustle-hub.com or use the Contact Us page."
+  },
+  {
+    "question": "What pricing plans do you offer?",
+    "keywords": [
+      "pricing",
+      "cost",
+      "plans",
+      "price"
+    ],
+    "answer": "Our pricing depends on the services you choose. See the Services page for details."
+  },
+  {
+    "question": "How does the Room Builder work?",
+    "keywords": [
+      "try simulator",
+      "simulator",
+      "room builder",
+      "build"
+    ],
+    "answer": "The Room Builder lets you drag, resize, and rotate products in a virtual spaces."
+  }
+]
