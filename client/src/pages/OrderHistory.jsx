@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerHeader from '../components/CustomerHeader';
 import Footer from '../components/Footer';
 import BookingModal from '../components/BookingModal';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { getMyBookings, cancelBooking, deleteBooking } from '../services/bookingService';
+import { generateHybridReport } from '../utils/reportGenerator';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -249,6 +250,26 @@ const OrderHistory = () => {
   const [reorderBooking, setReorderBooking] = useState(null);
   const navigate = useNavigate();
 
+  const handleDownloadReport = () => {
+    const data = visible.map(b => [
+        b._id ? b._id.slice(-8).toUpperCase() : '--------',
+        new Date(b.createdAt).toLocaleDateString('en-US'),
+        LOCATION_MAP[b.delivery_place]?.name || b.delivery_place,
+        b.product_id?.name || 'Unknown',
+        STATUS_CFG[b.status]?.label || b.status,
+        `$${(b.total_price || 0).toLocaleString()}`
+    ]);
+
+    generateHybridReport({
+        title: 'Order History Report',
+        subtitle: filter !== 'All' ? `Filtered by status: ${filter}` : 'All Orders',
+        headers: ['Order ID', 'Date', 'Location', 'Product', 'Status', 'Total ($)'],
+        data: data,
+        summary: stats
+    }, 'Order_History_Report.pdf');
+  };
+
+
   useEffect(() => {
     (async () => {
       try { setBookings(await getMyBookings()); }
@@ -292,12 +313,21 @@ const OrderHistory = () => {
       TopHeader={CustomerHeader}
     >
       <div className="flex-grow pb-12">
-        <div className="container mx-auto max-w-3xl">
+        <div className="container mx-auto max-w-3xl bg-slate-50/50 p-6 rounded-3xl">
 
           {/* Heading */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Orders</h1>
-            <p className="text-gray-500 mt-1">Track and manage your bookings</p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Orders</h1>
+              <p className="text-gray-500 mt-1">Track and manage your bookings</p>
+            </div>
+            <button 
+                onClick={handleDownloadReport}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#051094] hover:bg-[#051094]/90 text-white rounded-xl shadow-md transition-colors font-bold text-sm tracking-wide"
+            >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                Download Report
+            </button>
           </div>
 
           {/* Stats */}

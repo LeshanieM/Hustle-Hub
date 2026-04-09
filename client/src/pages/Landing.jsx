@@ -308,7 +308,17 @@ export default function Landing() {
   const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate('/customer/products', { state: { search: searchQuery.trim() } });
+    } else {
+      navigate('/customer/products');
+    }
+  };
 
   const renderHeader = () => {
     if (!user) return <CustomerHeader />;
@@ -362,7 +372,7 @@ export default function Landing() {
           <p className="text-lg text-slate-500 mb-10">
             Discover local student-run businesses and essentials on campus.
           </p>
-          <div className="relative group max-w-2xl mx-auto">
+          <form onSubmit={handleSearch} className="relative group max-w-2xl mx-auto">
             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
               <MaterialIcon
                 name="search"
@@ -374,13 +384,15 @@ export default function Landing() {
               className="block w-full pl-14 pr-32 py-5 bg-white border-none rounded-2xl shadow-lg shadow-[#1111d4]/5 focus:ring-1 focus:ring-[#1111d4] text-base placeholder-slate-300 outline-none"
               placeholder="Search textbooks, tech, food, and more..."
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <div className="absolute inset-y-2 right-2">
-              <button className="h-full px-8 bg-[#1111d4] text-white font-bold rounded-xl hover:bg-[#0d0db0] transition-all active:scale-95 border-none cursor-pointer">
+              <button type="submit" className="h-full px-8 bg-[#1111d4] text-white font-bold rounded-xl hover:bg-[#0d0db0] transition-all active:scale-95 border-none cursor-pointer">
                 Search
               </button>
             </div>
-          </div>
+          </form>
         </section>
 
         {/* Featured Categories */}

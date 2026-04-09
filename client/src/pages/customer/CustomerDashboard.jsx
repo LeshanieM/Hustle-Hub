@@ -5,8 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
-import ChartCard from '../../components/dashboard/ChartCard';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 import Footer from '../../components/Footer';
 import CustomerHeader from '../../components/CustomerHeader';
 import OwnerHeader from '../../components/OwnerHeader';
@@ -41,20 +40,7 @@ const CustomerDashboard = () => {
     const [savedItems, setSavedItems] = useState([]);
     const [favoriteShops, setFavoriteShops] = useState([]);
 
-    const [insightsData] = useState([
-        { name: 'Mon', count: 1 },
-        { name: 'Tue', count: 2 },
-        { name: 'Wed', count: 0 },
-        { name: 'Thu', count: 3 },
-        { name: 'Fri', count: 5 },
-        { name: 'Sat', count: 2 },
-        { name: 'Sun', count: 1 },
-    ]);
 
-    const [notifications] = useState([
-        { id: 1, text: "Your order from The Coffee Lab is on the way!", time: "2 mins ago", type: "order" },
-        { id: 2, text: "New promotion: 20% off at Print Master", time: "1 hour ago", type: "promo" }
-    ]);
 
     const spendingData = {
         totalSpent: orderHistory.reduce((sum, order) => sum + (order.total_price || 0), 0)
@@ -149,7 +135,8 @@ const CustomerDashboard = () => {
             role="Customer" 
             headerTitle="Customer Overview"
             sidebarItems={sidebarItems}
-             TopHeader={getTopHeader()}
+            TopHeader={getTopHeader()}
+            showSearch={false}
         >
             <div className="space-y-10">
                  {/* Welcome Message */}
@@ -159,7 +146,7 @@ const CustomerDashboard = () => {
                 </div>
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard title="Total Orders" value={stats.totalOrders} icon="receipt_long" trend="up" trendValue="+2" color="blue" />
+                    <StatCard title="Total Orders" value={stats.totalOrders} icon="receipt_long" color="blue" />
                     <StatCard title="Active Orders" value={activeOrders.length} icon="local_shipping" color="amber" />
                     <StatCard title="Saved Products" value={stats.savedProducts} icon="favorite" color="rose" />
                     <StatCard title="Favorite Shops" value={stats.favoriteShops} icon="storefront" color="emerald" />
@@ -169,38 +156,7 @@ const CustomerDashboard = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
                     {/* Left Column - Orders & Activity */}
                     <div className="xl:col-span-2 space-y-10">
-                                                {/* Smart Recommendations Banner */}
-                        <div className="bg-gradient-to-r from-[#1111d4] to-indigo-500 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-[#1111d4]/20">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div>
-                                    <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">Personalized for you</span>
-                                    <h3 className="text-2xl font-black mb-2 leading-tight">Based on your recent purchases</h3>
-                                    <p className="text-sm text-indigo-100 max-w-md">We noticed you love high-quality products. Check out these top-rated items curated specifically for your taste.</p>
-                                </div>
-                                <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                                    {/* Mock Recommendations */}
-                                    <div className="bg-white/10 border border-white/20 rounded-xl p-3 min-w-[140px] flex gap-3 items-center hover:bg-white/20 transition-colors cursor-pointer group">
-                                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                            <span className="material-symbols-outlined text-white">diamond</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold truncate w-20">Premium Kit</p>
-                                            <p className="text-[10px] text-indigo-200">5.0 ★ Rating</p>
-                                        </div>
-                                    </div>
-                                    <div className="bg-white/10 border border-white/20 rounded-xl p-3 min-w-[140px] flex gap-3 items-center hover:bg-white/20 transition-colors cursor-pointer group">
-                                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                            <span className="material-symbols-outlined text-white">verified</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold truncate w-20">Pro Bundle</p>
-                                            <p className="text-[10px] text-indigo-200">Bestseller</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Orders List (Takes up 2 columns) */}
@@ -241,42 +197,6 @@ const CustomerDashboard = () => {
                                         <p className="text-3xl font-black text-slate-900">${spendingData.totalSpent.toFixed(2)}</p>
                                     </div>
                                     
-                                    <div className="space-y-4 relative z-10">
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1.5">
-                                                <span className="text-slate-600">Physical Goods</span>
-                                                <span className="text-emerald-600">${(spendingData.totalSpent * 0.7).toFixed(2)}</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5">
-                                                <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '70%' }}></div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-1.5">
-                                                <span className="text-slate-600">Digital Courses</span>
-                                                <span className="text-blue-600">${(spendingData.totalSpent * 0.3).toFixed(2)}</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5">
-                                                <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '30%' }}></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="bg-[#1111d4]/5 rounded-2xl border border-[#1111d4]/20 p-6">
-                                    <h3 className="text-base font-bold text-[#1111d4] mb-3 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-lg">workspace_premium</span>
-                                        Loyalty Program
-                                    </h3>
-                                    <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-                                        You are <strong>$45.00</strong> away from reaching the Platinum Tier and unlocking free priority shipping!
-                                    </p>
-                                    <div className="w-full bg-[#1111d4]/10 rounded-full h-2 mb-4">
-                                        <div className="bg-[#1111d4] h-2 rounded-full" style={{ width: '82%' }}></div>
-                                    </div>
-                                    <Link to="/stores" className="block text-center w-full py-2 bg-white border border-[#1111d4]/20 rounded-lg text-xs font-bold text-[#1111d4] hover:bg-[#1111d4]/5 transition-colors">
-                                        Shop now
-                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -388,58 +308,7 @@ const CustomerDashboard = () => {
 
                     {/* Right Column - Insights & Notifications */}
                     <div className="space-y-10">
-                        {/* Notifications */}
-                        <section className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-                            <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center justify-between">
-                                Notifications
-                                <span className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[10px] font-black rounded-full">{notifications.length} New</span>
-                            </h3>
-                            <div className="space-y-4">
-                                {notifications.map(note => (
-                                    <div key={note.id} className="flex gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group">
-                                        <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${
-                                            note.type === 'order' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'
-                                        }`}>
-                                            <span className="material-symbols-outlined text-lg">
-                                                {note.type === 'order' ? 'local_shipping' : 'campaign'}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">{note.text}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-1">{note.time}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <button className="w-full mt-6 py-3 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-400 hover:border-indigo-600 hover:text-indigo-600 transition-all uppercase tracking-widest">View All Activity</button>
-                        </section>
 
-                        {/* Insights Panel */}
-                        <ChartCard title="Ordering Patterns" subtitle="Your activity over the last 7 days" height="h-[200px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={insightsData}>
-                                    <defs>
-                                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis 
-                                        dataKey="name" 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
-                                    />
-                                    <YAxis hide />
-                                    <Tooltip 
-                                        contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
-                                        itemStyle={{fontSize: '12px', fontWeight: 900, color: '#4f46e5'}}
-                                    />
-                                    <Area type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </ChartCard>
 
                         {/* Favorite Shops Quick View */}
                         <section className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">

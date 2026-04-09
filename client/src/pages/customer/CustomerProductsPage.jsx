@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import ProductCard from '../../components/products/ProductCard';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
@@ -8,7 +9,8 @@ import Footer from '../../components/Footer';
 const CustomerProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState(location.state?.search || '');
   const [selectedType, setSelectedType] = useState('All');
 
   useEffect(() => {
