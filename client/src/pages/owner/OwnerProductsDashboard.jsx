@@ -44,7 +44,7 @@ const OwnerProductsDashboard = () => {
   };
 
   return (
-    <OwnerLayout activeTab="products" theme="light">
+    <OwnerLayout activeTab="products" headerTitle="Inventory Management">
       <div className="pb-12">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">

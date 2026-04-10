@@ -247,7 +247,7 @@ const Analytics = () => {
     }
 
     return (
-        <OwnerLayout activeTab="analytics" theme="white">
+        <OwnerLayout activeTab="analytics" headerTitle="Insight Matrix">
             <div className="px-2 pb-6 bg-white/50 rounded-3xl">
                 {/* Bento Header */}
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
