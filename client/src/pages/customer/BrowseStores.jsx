@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import CustomerHeader from '../../components/CustomerHeader';
-import Footer from '../../components/Footer';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 
 const BrowseStores = () => {
     const [stores, setStores] = useState([]);
@@ -34,11 +33,8 @@ const BrowseStores = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
-            <CustomerHeader />
-
-            {/* pt-24 pushes content below the fixed header */}
-            <main className="flex-1 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-16 w-full">
+        <CustomerLayout activeTab="stores" headerTitle="Browse Stores">
+            <div className="max-w-7xl mx-auto">
                 <div className="mb-10 text-center">
                     <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">University Storefronts</h1>
                     <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto mb-6">Support student entrepreneurs and discover unique products across campus.</p>
@@ -173,10 +169,8 @@ const BrowseStores = () => {
                         <p className="text-slate-500 font-medium max-w-md">There are currently no active storefronts. Be the first to start your hustle!</p>
                     </div>
                 )}
-            </main>
-
-            <Footer />
-        </div>
+            </div>
+        </CustomerLayout>
     );
 };
 

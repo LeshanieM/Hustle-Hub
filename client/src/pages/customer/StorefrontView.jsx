@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import CustomerHeader from '../../components/CustomerHeader';
-import Footer from '../../components/Footer';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 
 const StorefrontView = () => {
   const { storeName } = useParams();
@@ -69,10 +68,9 @@ const StorefrontView = () => {
   const primaryColor = themeColors.primaryColor || '#051094';
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <CustomerHeader />
+    <CustomerLayout activeTab="stores" headerTitle={store.storeName}>
 
-      <div className="flex-grow pt-24 pb-12">
+      <div className="pb-12">
         {/* Banner Section */}
         <div className="relative h-[250px] md:h-[450px] bg-slate-900 overflow-hidden flex items-center justify-center text-center">
           {store.bannerUrl && (
@@ -203,9 +201,7 @@ const StorefrontView = () => {
           )}
         </div>
       </div>
-
-      <Footer />
-    </div>
+    </CustomerLayout>
   );
 };
 

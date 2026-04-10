@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import CustomerHeader from '../../components/CustomerHeader';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import { useAuth } from '../../context/AuthContext';
-import Footer from '../../components/Footer';
 import api from '../../api/axios';
 
 const ContactUs = () => {
@@ -96,21 +94,8 @@ const ContactUs = () => {
         }
     };
 
-    const sidebarItems = [
-        { label: 'Dashboard', icon: 'dashboard', path: '/customer-dashboard' },
-        { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
-        { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
-        { label: 'Settings', icon: 'settings', path: '/profile' },
-    ];
-
     return (
-        <DashboardLayout 
-            role="Customer" 
-            headerTitle="Support Center"
-            sidebarItems={sidebarItems}
-            TopHeader={CustomerHeader}
-            showSearch={false}
-        >
+        <CustomerLayout activeTab="contact" headerTitle="Support Center">
             <div className="max-w-6xl mx-auto py-8 px-4 font-inter" style={{ fontFamily: "'Inter', sans-serif" }}>
                 <div className="mb-12 border-b border-slate-100 pb-8">
                     <h1 className="text-3xl font-bold text-[#051094] mb-2">Contact Us</h1>
@@ -315,9 +300,8 @@ const ContactUs = () => {
                     </div>
                 )}
 
-                <Footer />
             </div>
-        </DashboardLayout>
+        </CustomerLayout>
     );
 };
 

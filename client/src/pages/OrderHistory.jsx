@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CustomerHeader from '../components/CustomerHeader';
-import Footer from '../components/Footer';
 import BookingModal from '../components/BookingModal';
-import DashboardLayout from '../components/dashboard/DashboardLayout';
+import CustomerLayout from '../components/dashboard/CustomerLayout';
 import { getMyBookings, cancelBooking, deleteBooking } from '../services/bookingService';
 import { generateHybridReport } from '../utils/reportGenerator';
 
@@ -298,20 +296,8 @@ const OrderHistory = () => {
     { label: 'Total Spent',  value: `$${totalSpent.toLocaleString()}`, icon: '💰' },
   ];
 
-  const sidebarItems = [
-    { label: 'Overview', icon: 'dashboard', path: '/customer-dashboard' },
-    { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
-    { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
-    { label: 'Settings', icon: 'settings', path: '/profile' },
-  ];
-
   return (
-    <DashboardLayout 
-      role="Customer" 
-      headerTitle="My Orders"
-      sidebarItems={sidebarItems}
-      TopHeader={CustomerHeader}
-    >
+    <CustomerLayout activeTab="orders" headerTitle="My Orders">
       <div className="flex-grow pb-12">
         <div className="container mx-auto max-w-3xl bg-slate-50/50 p-6 rounded-3xl">
 
@@ -394,18 +380,25 @@ const OrderHistory = () => {
           ))}
         </div>
       </div>
-      <Footer />
 
       {/* Re-order modal */}
       {reorderBooking && reorderBooking.product_id && (
         <BookingModal
           product={reorderBooking.product_id}
-          prefill={{ quantity: reorderBooking.quantity, delivery_place: reorderBooking.delivery_place, delivery_time: reorderBooking.delivery_time, delivery_date: reorderBooking.delivery_date || '' }}
+          prefill={{ 
+            quantity: reorderBooking.quantity, 
+            delivery_place: reorderBooking.delivery_place, 
+            delivery_time: reorderBooking.delivery_time, 
+            delivery_date: reorderBooking.delivery_date || '' 
+          }}
           onClose={() => setReorderBooking(null)}
-          onSuccess={(newBooking) => { setBookings(bs => [newBooking, ...bs]); setReorderBooking(null); }}
+          onSuccess={(newBooking) => { 
+            setBookings(bs => [newBooking, ...bs]); 
+            setReorderBooking(null); 
+          }}
         />
       )}
-    </DashboardLayout>
+    </CustomerLayout>
   );
 };
 

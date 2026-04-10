@@ -2,27 +2,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
-
 import Footer from '../../components/Footer';
-import CustomerHeader from '../../components/CustomerHeader';
-import OwnerHeader from '../../components/OwnerHeader';
-import AdminHeader from '../../components/AdminHeader';
 
 const CustomerDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-
-    const getTopHeader = () => {
-        if (!user) return CustomerHeader;
-        switch(user.role) {
-            case 'ADMIN': return AdminHeader;
-            case 'OWNER': return OwnerHeader;
-            default: return CustomerHeader;
-        }
-    };
 
     const [loading, setLoading] = useState(true);
     
@@ -93,31 +80,17 @@ const CustomerDashboard = () => {
     }, [user]);
 
 
-
-    const sidebarItems = [
-        { label: 'Overview', icon: 'dashboard', path: '/customer-dashboard' },
-       { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
-        { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
-        { label: 'Settings', icon: 'settings', path: '/profile' },
-    ];
-
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#051094] border-t-transparent rounded-full animate-spin"></div>
                 <p className="font-bold text-slate-400">Loading your hustle...</p>
             </div>
         </div>
     );
 
     return (
-        <DashboardLayout 
-            role="Customer" 
-            headerTitle="Customer Overview"
-            sidebarItems={sidebarItems}
-            TopHeader={getTopHeader()}
-            showSearch={false}
-        >
+        <CustomerLayout activeTab="dashboard" headerTitle="Customer Overview">
             <div className="space-y-10">
                  {/* Welcome Message */}
                 <div className="flex flex-col gap-1">
@@ -260,7 +233,7 @@ const CustomerDashboard = () => {
 
                 <Footer />
             </div>
-        </DashboardLayout>
+        </CustomerLayout>
     );
 };
 
