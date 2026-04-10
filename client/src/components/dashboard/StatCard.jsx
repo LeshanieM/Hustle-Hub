@@ -13,13 +13,13 @@ const StatCard = ({ title, value, icon, trend, trendValue, color = 'blue' }) => 
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${colorClasses[color] || colorClasses.blue} transition-colors group-hover:scale-110 duration-300`}>
-          <span className="material-symbols-outlined block text-2xl">{icon}</span>
+          <span className="material-symbols-outlined notranslate block text-2xl">{icon}</span>
         </div>
         {trend && (
           <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${
             trend === 'up' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
           }`}>
-            <span className="material-symbols-outlined text-[14px]">
+            <span className="material-symbols-outlined notranslate text-[14px]">
               {trend === 'up' ? 'trending_up' : 'trending_down'}
             </span>
             {trendValue}

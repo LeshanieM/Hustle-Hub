@@ -37,7 +37,7 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/support", supportRoutes);
 app.use("/api/ai", require("./routes/aiRoutes"));
-
+app.use('/api/faqs', require("./routes/faqRoutes"));
 // Basic API Route
 app.get("/api/health", (req, res) => {
   res.json({ message: "API is working!" });

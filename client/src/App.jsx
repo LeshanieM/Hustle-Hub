@@ -36,6 +36,7 @@ import OrderHistory from "./pages/OrderHistory";
 
 import ChatBot from "./components/ChatBot";
 import RoomBuilder from "./components/RoomBuilder";
+import ManageFaqs from "./pages/admin/ManageFaqs";
 
 // Owner Pages
 import OwnerProductsDashboard from "./pages/owner/OwnerProductsDashboard";
@@ -322,6 +323,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminReports />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/admin/faqs"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ManageFaqs />
             </ProtectedRoute>
           }
         />
