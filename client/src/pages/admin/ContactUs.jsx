@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 import Footer from '../../components/Footer';
 import api from '../../api/axios';
@@ -47,25 +46,11 @@ const ContactUs = () => {
         t.targetStore && t.targetStore.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <AdminLayout
             headerTitle="Administrative Console"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
-            showSearch={false}
+            loading={false}
         >
             <div className="max-w-6xl mx-auto py-8 px-4 font-inter flex flex-col min-h-[calc(100vh-100px)] w-full" style={{ fontFamily: "'Inter', sans-serif" }}>
                 {/* Minimal Header */}
@@ -214,7 +199,7 @@ const ContactUs = () => {
                     <Footer />
                 </div>
             </div>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

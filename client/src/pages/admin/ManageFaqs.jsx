@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const ManageFaqs = () => {
     const [faqs, setFaqs] = useState([]);
@@ -103,24 +102,10 @@ const ManageFaqs = () => {
         });
     };
 
-    const sidebarItems = [
-     { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-     { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-     { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-     { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-     { label: 'User Directory', icon: 'group', path: '/admin/users' },
-     { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-     { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-     { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-     { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <AdminLayout
             headerTitle="FAQ Management"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
             loading={loading && faqs.length === 0}
         >
             <div className="space-y-6">
@@ -291,7 +276,7 @@ const ManageFaqs = () => {
                     </div>
                 </div>
             )}
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 
