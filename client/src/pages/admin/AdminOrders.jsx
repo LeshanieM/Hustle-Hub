@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import AdminHeader from '../../components/AdminHeader';
 
 const AdminOrders = () => {
   const [bookings, setBookings] = useState([]);
@@ -30,6 +32,15 @@ const AdminOrders = () => {
   
   // Popover state
   const [activePopover, setActivePopover] = useState(null);
+
+    const sidebarItems = [
+      { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+      { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+      { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
+      { label: 'User Directory', icon: 'group', path: '/admin/users' },
+      { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
+      { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+    ];
 
   const fetchBookingsData = async () => {
     setLoading(true);
@@ -180,7 +191,13 @@ const AdminOrders = () => {
   const timeslots = ['08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','01:00 PM','01:30 PM','02:00 PM','02:30 PM','03:00 PM','03:30 PM','04:00 PM','04:30 PM','05:00 PM'];
 
   return (
-    <div className="w-full min-h-[calc(100vh-64px)] mt-16 bg-[#f8f9fa] pt-8 pb-12 px-4 sm:px-8 font-sans">
+    <DashboardLayout 
+      role="Administrator" 
+      headerTitle="Order Management"
+      sidebarItems={sidebarItems}
+      TopHeader={AdminHeader}
+      loading={loading}
+    >
       <div className="max-w-[1600px] mx-auto">
         
         {/* HEADER */}
@@ -513,8 +530,7 @@ const AdminOrders = () => {
       {activePopover && (
         <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)}></div>
       )}
-      
-    </div>
+    </DashboardLayout>
   );
 };
 

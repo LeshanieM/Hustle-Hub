@@ -53,6 +53,7 @@ const BusinessDirectory = () => {
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
@@ -66,21 +67,13 @@ const BusinessDirectory = () => {
         return matchesSearch && matchesStatus;
     });
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#1111d4] border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400 tracking-wider uppercase text-xs">Loading Directory...</p>
-            </div>
-        </div>
-    );
-
     return (
         <DashboardLayout 
             role="Administrator" 
             headerTitle="Business Directory"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
+            loading={loading}
         >
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Header section with elegant glassmorphism */}

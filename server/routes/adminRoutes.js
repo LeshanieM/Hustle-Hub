@@ -20,4 +20,7 @@ router.get('/bookings/stats', adminController.getBookingStats);
 router.get('/bookings/export', adminController.exportBookingsCSV);
 router.patch('/bookings/:id/status', adminController.overrideBookingStatus);
 
+// ==================== SYSTEM ROUTES ====================
+router.get('/audit-logs', adminController.getAuditLogs);
+
 module.exports = router;
