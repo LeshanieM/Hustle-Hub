@@ -90,8 +90,12 @@ const OwnerHeader = () => {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#051094] to-[#0a0a0f] flex items-center justify-center text-white font-bold text-sm border border-gray-200">
-              {user?.firstName?.charAt(0) || 'O'}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#051094] to-[#0a0a0f] flex items-center justify-center text-white font-bold text-sm border border-gray-200 overflow-hidden">
+              {user?.profilePicture ? (
+                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user?.firstName?.charAt(0) || 'O'
+              )}
             </div>
             <ChevronDown size={18} className="text-[#6b6860]" />
           </button>

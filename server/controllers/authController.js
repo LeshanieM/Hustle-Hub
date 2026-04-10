@@ -204,6 +204,7 @@ const loginUser = async (req, res) => {
         lastName: user.lastName,
         studentEmail: user.studentEmail,
         role: user.role,
+        profilePicture: user.profilePicture,
         createdAt: user.createdAt,
         token: generateToken(user._id),
       });

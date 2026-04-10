@@ -241,9 +241,13 @@ const AdminHeader = () => {
             aria-expanded={isProfileMenuOpen}
             aria-haspopup="true"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0000ff] to-[#6600ff] flex items-center justify-center text-white font-bold text-sm">
-              {getInitials(
-                user ? `${user.firstName} ${user.lastName}` : 'Admin User',
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0000ff] to-[#6600ff] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
+              {user?.profilePicture ? (
+                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                getInitials(
+                  user ? `${user.firstName} ${user.lastName}` : 'Admin User',
+                )
               )}
             </div>
             <div className="hidden md:block text-left">

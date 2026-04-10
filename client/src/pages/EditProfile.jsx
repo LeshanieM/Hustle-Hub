@@ -35,7 +35,7 @@ export default function EditProfile() {
       });
       if (user.profilePicture) {
         setPreviewSrc(
-          `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`,
+          user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`,
         );
       }
     }
