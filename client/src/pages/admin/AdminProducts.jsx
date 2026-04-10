@@ -5,6 +5,7 @@ import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, Flag, Eye } from 'lucide-react';
 import { adminService } from '../../services/adminService';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -47,11 +48,6 @@ const AdminProducts = () => {
         }
     };
 
-    const getImageUrl = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http')) return url;
-        return `http://localhost:5000/${url.replace(/\\/g, '/')}`;
-    };
 
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
@@ -156,7 +152,7 @@ const AdminProducts = () => {
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                     {product.imageUrl ? (
-                                        <div className="w-10 h-10 rounded-lg shrink-0 border border-slate-200 shadow-sm bg-cover bg-center" style={{ backgroundImage: `url(${getImageUrl(product.imageUrl)})` }} />
+                                        <div className="w-10 h-10 rounded-lg shrink-0 border border-slate-200 shadow-sm bg-cover bg-center" style={{ backgroundImage: `url(${resolveImageUrl(product.imageUrl)})` }} />
                                     ) : (
                                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white shadow-sm shrink-0 ${product.isFake ? 'bg-rose-500' : 'bg-slate-800'}`}>
                                             {product.name.charAt(0)}
