@@ -1,81 +1,54 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, Flag } from 'lucide-react';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
+    const [products, setProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Mock Data
-    const [products, setProducts] = useState([
-        {
-            _id: '1',
-            name: 'iPhone 15 Pro Max',
-            category: 'Electronics',
-            price: 1200,
-            seller: 'TechStore',
-            status: 'Verified',
-            isFake: false,
-            createdAt: '2024-03-15'
-        },
-        {
-            _id: '2',
-            name: 'Vintage Wood Chair',
-            category: 'Furniture',
-            price: 150,
-            seller: 'OldIsGold',
-            status: 'Verified',
-            isFake: false,
-            createdAt: '2024-03-14'
-        },
-        {
-            _id: '3',
-            name: 'Gucci Handbag (Replica)',
-            category: 'Fashion',
-            price: 50,
-            seller: 'FastFashion',
-            status: 'Pending',
-            isFake: true,
-            createdAt: '2024-03-13'
-        },
-        {
-            _id: '4',
-            name: 'Nike Air Jordan 1',
-            category: 'Shoes',
-            price: 200,
-            seller: 'SneakerHead',
-            status: 'Verified',
-            isFake: false,
-            createdAt: '2024-03-12'
-        },
-        {
-            _id: '5',
-            name: 'Sony WH-1000XM5',
-            category: 'Electronics',
-            price: 350,
-            seller: 'AudioPhile',
-            status: 'Verified',
-            isFake: false,
-            createdAt: '2024-03-11'
-        },
-        {
-            _id: '6',
-            name: 'Rolex Submariner (AA Copy)',
-            category: 'Watches',
-            price: 100,
-            seller: 'LuxDups',
-            status: 'Flagged',
-            isFake: true,
-            createdAt: '2024-03-10'
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const data = await adminService.getAllProducts();
+            setProducts(data);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching products:', err);
+            setError('Failed to load products');
+            toast.error('Could not fetch product list');
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
 
-    const handleFlagFake = (id) => {
-        setProducts(prev => prev.map(p =>
-            p._id === id ? { ...p, isFake: !p.isFake, status: !p.isFake ? 'Flagged' : 'Verified' } : p
-        ));
+    const handleFlagFake = async (id) => {
+        try {
+            const updatedProduct = await adminService.toggleProductFlag(id);
+            setProducts(prev => prev.map(p => 
+                p._id === id ? { ...p, isFake: updatedProduct.isFake, status: updatedProduct.status } : p
+            ));
+            toast.success(updatedProduct.isFake ? 'Product flagged as fake' : 'Product unflagged');
+        } catch (err) {
+            console.error('Error flagging product:', err);
+            toast.error('Failed to update product status');
+        }
+    };
+
+    const getImageUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `http://localhost:5000/${url.replace(/\\/g, '/')}`;
     };
 
     const filteredProducts = useMemo(() => {
@@ -131,11 +104,29 @@ const AdminProducts = () => {
                 </div>
 
                 {/* Main Table Section */}
-                <TableComponent
-                    title="Global Product Listing"
-                    headers={['Product Details', 'Category', 'Seller', 'Price', 'Status', 'Actions']}
-                    data={filteredProducts}
-                    actions={
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center h-96 bg-white rounded-3xl border border-slate-100 shadow-sm animate-pulse">
+                        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Synchronizing Product Database...</p>
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center h-96 bg-rose-50 rounded-3xl border border-rose-100 shadow-sm">
+                        <AlertTriangle className="text-rose-500 mb-4" size={48} />
+                        <h3 className="text-lg font-black text-rose-900 uppercase">Connection Failed</h3>
+                        <p className="text-rose-600/70 text-sm mb-6">{error}</p>
+                        <button 
+                            onClick={fetchProducts}
+                            className="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-rose-700 transition-all shadow-lg shadow-rose-200"
+                        >
+                            Retry Connection
+                        </button>
+                    </div>
+                ) : (
+                    <TableComponent
+                        title="Global Product Listing"
+                        headers={['Product Details', 'Category', 'Seller', 'Price', 'Status', 'Actions']}
+                        data={filteredProducts}
+                        actions={
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -159,75 +150,63 @@ const AdminProducts = () => {
                         </div>
                     }
                     renderRow={(product) => (
-                        <tr key={product._id} className="hover:bg-slate-50/80 transition-all border-b border-slate-50 last:border-0 group">
-                            <td className="px-6 py-5">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white shadow-sm ${product.isFake ? 'bg-gradient-to-br from-rose-500 to-orange-500' : 'bg-gradient-to-br from-indigo-500 to-blue-500'
-                                        }`}>
-                                        {product.name.charAt(0)}
-                                    </div>
+                        <tr key={product._id} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    {product.imageUrl ? (
+                                        <div className="w-10 h-10 rounded-lg shrink-0 border border-slate-200 shadow-sm bg-cover bg-center" style={{ backgroundImage: `url(${getImageUrl(product.imageUrl)})` }} />
+                                    ) : (
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white shadow-sm shrink-0 ${product.isFake ? 'bg-rose-500' : 'bg-slate-800'}`}>
+                                            {product.name.charAt(0)}
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <div className="font-black text-slate-900 text-sm group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{product.name}</div>
-                                        <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-0.5">ID: {product._id}</div>
+                                        <div className="font-bold text-slate-900 text-sm whitespace-nowrap">{product.name}</div>
+                                        <div className="text-[10px] text-slate-400 font-medium tracking-wide">ID: {product._id.slice(-8)}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-5">
-                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-wider">
+                            <td className="px-6 py-4">
+                                <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200">
                                     {product.category}
                                 </span>
                             </td>
-                            <td className="px-6 py-5">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">
-                                        {product.seller.charAt(0)}
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-700">{product.seller}</span>
-                                </div>
+                            <td className="px-6 py-4">
+                                <span className="text-xs font-semibold text-slate-600 italic">@{product.seller}</span>
                             </td>
-                            <td className="px-6 py-5 font-black text-slate-900 text-sm tracking-tight text-right">
-                                ${product.price.toLocaleString()}
+                            <td className="px-6 py-4 font-bold text-slate-900 text-sm tracking-tight text-right">
+                                ${product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </td>
-                            <td className="px-6 py-5">
-                                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm ${product.isFake
-                                    ? 'bg-rose-50 text-rose-600 border border-rose-100'
-                                    : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                            <td className="px-6 py-4">
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${product.isFake
+                                    ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                     }`}>
-                                    {product.isFake ? <AlertTriangle size={12} /> : <CheckCircle size={12} />}
-                                    {product.isFake ? 'Fake / Imitation' : 'Verified Genuine'}
+                                    {product.isFake ? <AlertTriangle size={12} strokeWidth={3} /> : <CheckCircle size={12} strokeWidth={3} />}
+                                    {product.isFake ? 'Fake' : 'Genuine'}
                                 </div>
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-6 py-4">
                                 <div className="flex items-center gap-2 justify-end">
                                     <button
                                         onClick={() => handleFlagFake(product._id)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 ${product.isFake
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${product.isFake
                                             ? 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'
-                                            : 'bg-rose-600 text-white hover:bg-rose-700 hover:shadow-lg hover:shadow-rose-200'
+                                            : 'bg-slate-900 text-white hover:bg-slate-800 shadow-sm'
                                             }`}
                                     >
-                                        <Flag size={14} className={product.isFake ? 'fill-slate-400' : 'fill-white'} />
-                                        {product.isFake ? 'Unflag Product' : 'Flag as Fake'}
-                                    </button>
-                                    <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
-                                        <MoreVertical size={18} />
+                                        <Flag size={12} className={product.isFake ? 'fill-slate-400' : 'fill-white'} />
+                                        {product.isFake ? 'Unflag' : 'Flag Fake'}
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     )}
                 />
+            )}
             </div>
 
-            <style jsx>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .space-y-8 {
-                    animation: fadeIn 0.5s ease-out forwards;
-                }
-            `}</style>
         </AdminLayout>
     );
 };

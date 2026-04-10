@@ -320,6 +320,77 @@ const getAuditLogs = async (req, res) => {
     }
 };
 
+// ==================== PRODUCT MANAGEMENT ====================
+// @desc    Get all products with seller info (Admin only)
+// @route   GET /api/admin/products
+// @access  Private (ADMIN)
+const getAllProductsForAdmin = async (req, res) => {
+    try {
+        const products = await Product.find().sort({ createdAt: -1 }).lean();
+        
+        // Manual population for owner/seller info
+        const ownerIds = [...new Set(products.map(p => p.ownerId))];
+        const owners = await User.find({ _id: { $in: ownerIds } }, 'firstName lastName').lean();
+        const stores = await Store.find({ ownerId: { $in: ownerIds } }, 'ownerId storeName').lean();
+
+        const ownerMap = {};
+        owners.forEach(o => {
+            ownerMap[o._id.toString()] = { name: `${o.firstName} ${o.lastName}` };
+        });
+
+        const storeMap = {};
+        stores.forEach(s => {
+            storeMap[s.ownerId.toString()] = s.storeName;
+        });
+
+        const formattedProducts = products.map(p => {
+            const owner = ownerMap[p.ownerId] || { name: 'Unknown Seller' };
+            const storeName = storeMap[p.ownerId] || owner.name;
+            
+            return {
+                ...p,
+                seller: storeName,
+                category: p.type,
+                status: p.status || 'Verified'
+            };
+        });
+
+        res.status(200).json(formattedProducts);
+    } catch (error) {
+        console.error('Error in getAllProductsForAdmin:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle product fake flag (Admin only)
+// @route   PATCH /api/admin/products/:id/flag
+// @access  Private (ADMIN)
+const toggleProductFlag = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        product.isFake = !product.isFake;
+        product.status = product.isFake ? 'Flagged' : 'Verified';
+        
+        await product.save();
+
+        await logAction({
+            action: `Product ${product.isFake ? 'Flagged as Fake' : 'Unflagged'}`,
+            type: 'PRODUCT',
+            target: product.name,
+            icon: product.isFake ? 'report' : 'verified'
+        });
+
+        res.status(200).json(product);
+    } catch (error) {
+        console.error('Error in toggleProductFlag:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     // User management
     getAllUsers,
@@ -335,5 +406,9 @@ module.exports = {
     exportBookingsCSV,
 
     // System management
-    getAuditLogs
-};
+    getAuditLogs,
+
+    // Product management
+    getAllProductsForAdmin,
+    toggleProductFlag
+};

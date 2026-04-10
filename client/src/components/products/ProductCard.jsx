@@ -35,8 +35,16 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
             Out of Stock
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-[#051094] text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full shadow-sm z-10">
-          {product.type || 'Standard'}
+        <div className="absolute top-2 right-2 flex flex-col gap-1 items-end z-10">
+          <div className="bg-[#051094] text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full shadow-sm">
+            {product.type || 'Standard'}
+          </div>
+          {product.isFake && (
+            <div className="bg-rose-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-full shadow-lg border border-rose-400 flex items-center gap-1 animate-pulse">
+              <span className="material-symbols-outlined text-[12px]">warning</span>
+              Fake Product
+            </div>
+          )}
         </div>
       </div>
       

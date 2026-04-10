@@ -42,6 +42,12 @@ const OwnerProductsAlerts = () => {
     }
   };
 
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:5000/${url.replace(/\\/g, '/')}`;
+  };
+
   return (
     <OwnerLayout activeTab="alerts" headerTitle="System Alerts">
       <div className="pb-12 bg-slate-50/50">
@@ -83,7 +89,7 @@ const OwnerProductsAlerts = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                             {product.imageUrl ? (
-                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(http://localhost:5000/${product.imageUrl.replace('\\', '/')})` }} />
+                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(${getImageUrl(product.imageUrl)})` }} />
                             ) : (
                               <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
                                 <span className="material-symbols-outlined text-slate-400">inventory_2</span>

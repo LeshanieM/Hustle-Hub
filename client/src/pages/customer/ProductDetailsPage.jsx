@@ -104,6 +104,20 @@ const ProductDetailsPage = () => {
                 {product.type || 'General'}
               </div>
               
+              {product.isFake && (
+                <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 shadow-md shadow-rose-100 animate-in fade-in slide-in-from-top-4 duration-700">
+                  <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-200">
+                    <span className="material-symbols-outlined text-[20px]">warning</span>
+                  </div>
+                  <div>
+                    <h4 className="text-rose-900 font-black uppercase text-xs tracking-wider">Product Integrity Alert</h4>
+                    <p className="text-rose-700/80 text-xs font-semibold leading-relaxed mt-0.5">
+                      This item has been flagged by administrators as a potential imitation or counterfeit. Proceed with caution.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4">{product.name}</h1>
               
               <div className="text-3xl font-bold text-emerald-600 mb-6">
