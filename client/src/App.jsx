@@ -31,6 +31,7 @@ import BusinessDirectory from "./pages/admin/BusinessDirectory";
 import UserDirectory from "./pages/admin/UserDirectory";
 import AdminAIInsights from "./pages/admin/AdminAIInsights";
 import AuditLogs from "./pages/admin/AuditLogs";
+import AdminReports from "./pages/admin/AdminReports";
 import OrderHistory from "./pages/OrderHistory";
 
 import ChatBot from "./components/ChatBot";
@@ -317,10 +318,17 @@ function App() {
           }
         />
         <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/reviews"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminHeader />
               <ReviewsDashboard />
             </ProtectedRoute>
           }
@@ -330,7 +338,6 @@ function App() {
           path="/admin/orders"
           element={
             <ProtectedRoute>
-              <AdminHeader />
               <AdminOrders />
             </ProtectedRoute>
           }

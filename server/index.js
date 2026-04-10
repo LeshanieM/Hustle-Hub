@@ -36,6 +36,7 @@ app.use("/api/admin/reviews", require("./routes/adminReviewRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/support", supportRoutes);
+app.use("/api/ai", require("./routes/aiRoutes"));
 
 // Basic API Route
 app.get("/api/health", (req, res) => {

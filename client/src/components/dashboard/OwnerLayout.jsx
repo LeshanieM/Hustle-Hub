@@ -78,13 +78,7 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden">
                     {/* Top Navigation */}
-                    <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 shrink-0">
-                        <div className="flex-1 max-w-xl">
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1111d4] transition-colors">search</span>
-                                <input className="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-[#1111d4] transition-all text-sm outline-none" placeholder="Search products, orders, or analytics..." type="text" />
-                            </div>
-                        </div>
+                    <header className="h-16 flex items-center justify-end px-8 bg-white border-b border-slate-200 shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3 pl-2">
                                 <div className="text-right hidden md:block">

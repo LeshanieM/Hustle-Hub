@@ -29,18 +29,20 @@ const AdminOrders = () => {
   const [overrideModal, setOverrideModal] = useState({ isOpen: false, bookingId: null });
   const [overrideStatus, setOverrideStatus] = useState('pending');
   const [overrideReason, setOverrideReason] = useState('');
-  
+
   // Popover state
   const [activePopover, setActivePopover] = useState(null);
 
-    const sidebarItems = [
-      { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-      { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-      { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-      { label: 'User Directory', icon: 'group', path: '/admin/users' },
-      { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
-      { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
-    ];
+  const sidebarItems = [
+    { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+    { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+    { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
+    { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
+    { label: 'User Directory', icon: 'group', path: '/admin/users' },
+    { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
+    { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
+    { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
+  ];
 
   const fetchBookingsData = async () => {
     setLoading(true);
@@ -89,11 +91,11 @@ const AdminOrders = () => {
         status: overrideStatus,
         reason: overrideReason
       });
-      
+
       // Optimistic update
       setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: res.data.status } : b));
       toast.success('Status overridden by admin');
-      
+
       setOverrideModal({ isOpen: false, bookingId: null });
       setOverrideReason('');
       setOverrideStatus('pending');
@@ -115,7 +117,7 @@ const AdminOrders = () => {
 
   const toggleRow = (id, e) => {
     if (e.target.closest('.action-btn') || e.target.closest('.popover-menu')) return;
-    
+
     setExpandedRows(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) newSet.delete(id);
@@ -155,14 +157,14 @@ const AdminOrders = () => {
       if (locationFilter && b.delivery_place !== locationFilter) return false;
       if (timeFilter && b.delivery_time !== timeFilter) return false;
       if (dateFilter && b.delivery_date !== dateFilter) return false;
-      
+
       if (searchTerm) {
         const s = searchTerm.toLowerCase();
         const cName = `${b.student_id?.first_name || ''} ${b.student_id?.last_name || ''}`.toLowerCase();
         const pName = (b.product_id?.name || '').toLowerCase();
         const sName = (b.product_id?.storefront_id?.storefront_name || '').toLowerCase();
         const orderId = b._id.slice(-8).toLowerCase();
-        
+
         if (!cName.includes(s) && !pName.includes(s) && !sName.includes(s) && !orderId.includes(s)) {
           return false;
         }
@@ -188,18 +190,18 @@ const AdminOrders = () => {
   };
 
   const campuses = ['anohana', 'main_canteen', 'sliit_dupath', 'new_canteen', 'bird_nest', 'sliit_ground'];
-  const timeslots = ['08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','01:00 PM','01:30 PM','02:00 PM','02:30 PM','03:00 PM','03:30 PM','04:00 PM','04:30 PM','05:00 PM'];
+  const timeslots = ['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM'];
 
   return (
-    <DashboardLayout 
-      role="Administrator" 
+    <DashboardLayout
+      role="Administrator"
       headerTitle="Order Management"
       sidebarItems={sidebarItems}
       TopHeader={AdminHeader}
       loading={loading}
     >
       <div className="max-w-[1600px] mx-auto">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div className="text-left">
@@ -208,16 +210,16 @@ const AdminOrders = () => {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Search orders..." 
+              <input
+                type="text"
+                placeholder="Search orders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full md:w-64 bg-white border border-gray-200 rounded-lg py-2 px-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#0000ff] focus:ring-1 focus:ring-[#0000ff] shadow-sm"
               />
             </div>
-            <button 
-              onClick={handleExportCSV} 
+            <button
+              onClick={handleExportCSV}
               className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity shadow-sm bg-[#051094] hover:bg-blue-800"
             >
               Export CSV
@@ -247,12 +249,12 @@ const AdminOrders = () => {
 
         {/* MAIN CONTENT AREA */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-          
+
           {/* FILTER BAR  */}
           <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-3 flex-wrap bg-gray-50">
             <div className="flex bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
               {['All', 'Pending', 'Confirmed', 'Delivered', 'Cancelled'].map(status => (
-                <button 
+                <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
                   className={`px-4 py-1.5 text-sm transition-colors ${statusFilter === status ? 'bg-[#051094] text-white font-medium' : 'hover:bg-gray-50 text-gray-600'}`}
@@ -262,29 +264,29 @@ const AdminOrders = () => {
               ))}
             </div>
 
-            <select 
+            <select
               value={storefrontFilter} onChange={(e) => setStorefrontFilter(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#0000ff] shadow-sm">
               <option value="">All Storefronts</option>
               {uniqueStorefronts.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
 
-            <select 
+            <select
               value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#0000ff] shadow-sm">
               <option value="">All Locations</option>
               {campuses.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
             </select>
 
-            <select 
+            <select
               value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#0000ff] shadow-sm">
               <option value="">All Times</option>
               {timeslots.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
 
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-[#0000ff] shadow-sm"
             />
@@ -330,7 +332,7 @@ const AdminOrders = () => {
                 <tbody className="divide-y divide-gray-100">
                   {currentBookings.map(b => (
                     <React.Fragment key={b._id}>
-                      <tr 
+                      <tr
                         onClick={(e) => toggleRow(b._id, e)}
                         className={`cursor-pointer transition-colors hover:bg-blue-50/50 ${expandedRows.has(b._id) ? 'bg-blue-50/30' : ''}`}
                       >
@@ -353,8 +355,8 @@ const AdminOrders = () => {
                           <div className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 inline-block px-1.5 py-[2px] bg-gray-100 rounded">{b.product_id?.category || 'General'}</div>
                         </td>
                         <td className="px-5 py-4 text-gray-600">
-                           <span className="mr-1.5 opacity-70">🏛️</span>
-                           {b.delivery_place?.replace('_', ' ')}
+                          <span className="mr-1.5 opacity-70">🏛️</span>
+                          {b.delivery_place?.replace('_', ' ')}
                         </td>
                         <td className="px-5 py-4 text-gray-600 font-medium">{b.delivery_time}</td>
                         <td className="px-5 py-4 font-bold text-gray-900 text-right">${(b.total_price || 0).toLocaleString()}</td>
@@ -364,77 +366,77 @@ const AdminOrders = () => {
                           </span>
                         </td>
                         <td className="px-5 py-4 text-gray-500 text-xs font-medium">
-                           {new Date(b.createdAt).toLocaleDateString()}
+                          {new Date(b.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-5 py-4 text-center relative">
-                           <button 
-                             onClick={(e) => { e.stopPropagation(); setActivePopover(activePopover === b._id ? null : b._id); }}
-                             className="action-btn p-2 text-gray-400 hover:text-[#0000ff] hover:bg-blue-50 rounded-full transition-colors"
-                           >
-                             •••
-                           </button>
-                           {activePopover === b._id && (
-                             <div className="popover-menu absolute right-8 top-8 z-50 w-48 rounded-xl shadow-xl border border-gray-100 bg-white overflow-hidden py-1">
-                               <button 
-                                 onClick={(e) => { e.stopPropagation(); setActivePopover(null); setOverrideModal({ isOpen: true, bookingId: b._id }); }}
-                                 className="w-full text-left px-4 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 disabled:opacity-50 transition-colors"
-                               >
-                                 Override Status
-                               </button>
-                             </div>
-                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActivePopover(activePopover === b._id ? null : b._id); }}
+                            className="action-btn p-2 text-gray-400 hover:text-[#0000ff] hover:bg-blue-50 rounded-full transition-colors"
+                          >
+                            •••
+                          </button>
+                          {activePopover === b._id && (
+                            <div className="popover-menu absolute right-8 top-8 z-50 w-48 rounded-xl shadow-xl border border-gray-100 bg-white overflow-hidden py-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setActivePopover(null); setOverrideModal({ isOpen: true, bookingId: b._id }); }}
+                                className="w-full text-left px-4 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 disabled:opacity-50 transition-colors"
+                              >
+                                Override Status
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
-                      
+
                       {/* EXPANDED ROW */}
                       {expandedRows.has(b._id) && (
                         <tr className="bg-gray-50 border-b border-gray-200">
-                           <td colSpan="11" className="p-0">
-                              <div className="px-8 py-6 grid grid-cols-1 md:grid-cols-3 gap-8 shadow-inner">
-                                
-                                <div className="space-y-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Customer Info</p>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">Email: <span className="text-gray-500 font-normal">{b.student_id?.email || 'N/A'}</span></p>
-                                    <p className="text-sm font-medium text-gray-900">Student ID: <span className="text-gray-500 font-mono font-normal">{b.student_id?.studentIdStr || 'N/A'}</span></p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Storefront Info</p>
-                                    <p className="text-sm text-gray-900 font-medium">{b.product_id?.storefront_id?.storefront_name || 'N/A'}</p>
-                                  </div>
-                                </div>
+                          <td colSpan="11" className="p-0">
+                            <div className="px-8 py-6 grid grid-cols-1 md:grid-cols-3 gap-8 shadow-inner">
 
-                                <div className="space-y-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Product Details</p>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">Category: <span className="text-gray-500 font-normal">{b.product_id?.category || 'General'}</span></p>
-                                    <p className="text-sm font-medium text-gray-900">Quantity: <span className="text-gray-500 font-normal">{b.quantity || 1}</span></p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Timing</p>
-                                    <p className="text-sm text-gray-900 font-medium mb-1">
-                                      {b.delivery_date ? new Date(b.delivery_date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : 'Unknown'} · {b.delivery_time}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      Placed on: {new Date(b.createdAt).toLocaleString()}
-                                    </p>
-                                  </div>
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Customer Info</p>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">Email: <span className="text-gray-500 font-normal">{b.student_id?.email || 'N/A'}</span></p>
+                                  <p className="text-sm font-medium text-gray-900">Student ID: <span className="text-gray-500 font-mono font-normal">{b.student_id?.studentIdStr || 'N/A'}</span></p>
                                 </div>
-
-                                <div className="space-y-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Notes & History</p>
-                                    <div className="bg-white p-3.5 rounded-lg border border-gray-200 h-28 overflow-y-auto shadow-sm">
-                                      {b.note && <p className="text-sm mb-2"><span className="text-gray-500 font-medium">Customer Note:</span> <span className="text-gray-700">{b.note}</span></p>}
-                                      {b.rejection_reason && <p className="text-sm text-red-600 mb-2 font-medium"><span className="opacity-80">Rejection:</span> {b.rejection_reason}</p>}
-                                      {b.owner_note && <p className="text-sm text-indigo-600 font-medium"><span className="opacity-80">Internal Note:</span> {b.owner_note}</p>}
-                                      {!b.note && !b.rejection_reason && !b.owner_note && <p className="text-sm text-gray-400 italic">No notes attached.</p>}
-                                    </div>
-                                  </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Storefront Info</p>
+                                  <p className="text-sm text-gray-900 font-medium">{b.product_id?.storefront_id?.storefront_name || 'N/A'}</p>
                                 </div>
-
                               </div>
-                           </td>
+
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Product Details</p>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">Category: <span className="text-gray-500 font-normal">{b.product_id?.category || 'General'}</span></p>
+                                  <p className="text-sm font-medium text-gray-900">Quantity: <span className="text-gray-500 font-normal">{b.quantity || 1}</span></p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Timing</p>
+                                  <p className="text-sm text-gray-900 font-medium mb-1">
+                                    {b.delivery_date ? new Date(b.delivery_date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : 'Unknown'} · {b.delivery_time}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Placed on: {new Date(b.createdAt).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1.5">Notes & History</p>
+                                  <div className="bg-white p-3.5 rounded-lg border border-gray-200 h-28 overflow-y-auto shadow-sm">
+                                    {b.note && <p className="text-sm mb-2"><span className="text-gray-500 font-medium">Customer Note:</span> <span className="text-gray-700">{b.note}</span></p>}
+                                    {b.rejection_reason && <p className="text-sm text-red-600 mb-2 font-medium"><span className="opacity-80">Rejection:</span> {b.rejection_reason}</p>}
+                                    {b.owner_note && <p className="text-sm text-indigo-600 font-medium"><span className="opacity-80">Internal Note:</span> {b.owner_note}</p>}
+                                    {!b.note && !b.rejection_reason && !b.owner_note && <p className="text-sm text-gray-400 italic">No notes attached.</p>}
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+                          </td>
                         </tr>
                       )}
                     </React.Fragment>
@@ -451,14 +453,14 @@ const AdminOrders = () => {
                 Showing {Math.min(filteredBookings.length, (currentPage - 1) * itemsPerPage + 1)} – {Math.min(filteredBookings.length, currentPage * itemsPerPage)} of {filteredBookings.length} orders
               </div>
               <div className="flex gap-2">
-                <button 
+                <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   className="px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700 font-medium shadow-sm"
                 >
                   Previous
                 </button>
-                <button 
+                <button
                   disabled={currentPage === totalPages || totalPages === 0}
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   className="px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700 font-medium shadow-sm"
@@ -478,11 +480,11 @@ const AdminOrders = () => {
           <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-gray-100">
             <h2 className="text-xl font-black mb-1 text-red-600">Emergency Status Override</h2>
             <p className="text-sm text-gray-500 mb-6 border-l-2 pl-3 border-red-500 font-medium">Only use this for disputed or stuck orders. This bypasses the normal system workflow.</p>
-            
+
             <form onSubmit={handleOverrideSubmit}>
               <div className="mb-4">
                 <label className="block text-sm font-bold text-gray-700 mb-2">New Status</label>
-                <select 
+                <select
                   required
                   value={overrideStatus}
                   onChange={(e) => setOverrideStatus(e.target.value)}
@@ -496,30 +498,30 @@ const AdminOrders = () => {
               </div>
 
               <div className="mb-6">
-                 <label className="block text-sm font-bold text-gray-700 mb-2">Reason (Required)</label>
-                 <textarea 
-                   required
-                   value={overrideReason}
-                   onChange={(e) => setOverrideReason(e.target.value)}
-                   className="w-full p-3 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-[#0000ff] focus:ring-1 focus:ring-[#0000ff] bg-gray-50 border border-gray-200 min-h-[100px]"
-                   placeholder="e.g. User reported scam, forcefully cancelling..."
-                 ></textarea>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Reason (Required)</label>
+                <textarea
+                  required
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  className="w-full p-3 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-[#0000ff] focus:ring-1 focus:ring-[#0000ff] bg-gray-50 border border-gray-200 min-h-[100px]"
+                  placeholder="e.g. User reported scam, forcefully cancelling..."
+                ></textarea>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                 <button 
-                   type="button" 
-                   onClick={() => { setOverrideModal({ isOpen: false, bookingId: null }); setOverrideReason(''); setOverrideStatus('pending'); }}
-                   className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
-                 >
-                   Cancel
-                 </button>
-                 <button 
-                   type="submit" 
-                   className="px-5 py-2 text-sm bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-sm transition-colors"
-                 >
-                   Confirm Override
-                 </button>
+                <button
+                  type="button"
+                  onClick={() => { setOverrideModal({ isOpen: false, bookingId: null }); setOverrideReason(''); setOverrideStatus('pending'); }}
+                  className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-sm bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-sm transition-colors"
+                >
+                  Confirm Override
+                </button>
               </div>
             </form>
           </div>

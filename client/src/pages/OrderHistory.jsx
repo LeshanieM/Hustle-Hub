@@ -299,7 +299,7 @@ const OrderHistory = () => {
   ];
 
   const sidebarItems = [
-    { label: 'Dashboard', icon: 'dashboard', path: '/customer-dashboard' },
+    { label: 'Overview', icon: 'dashboard', path: '/customer-dashboard' },
     { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
     { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
     { label: 'Settings', icon: 'settings', path: '/profile' },

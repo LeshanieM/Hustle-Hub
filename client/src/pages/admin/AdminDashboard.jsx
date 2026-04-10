@@ -11,6 +11,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import AdminHeader from '../../components/AdminHeader';
+import AdminAIAssistant from '../../components/admin/AdminAIAssistant';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
@@ -139,7 +140,7 @@ const AdminDashboard = () => {
                 setBusinesses(storesRes.data || []);
                 setAllUsers(usersRes.data || []);
 
-                 const logs = (auditRes.data || []).slice(0, 5).map(l => {
+                const logs = (auditRes.data || []).slice(0, 5).map(l => {
                     const lDate = new Date(l.time);
                     return {
                         ...l,
@@ -186,22 +187,24 @@ const AdminDashboard = () => {
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
+        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
-   
+
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <DashboardLayout role="Administrator"
             headerTitle="Administrative Intelligence"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
             loading={loading}
-        >
+
+            showSearch={false}>
             <div className="space-y-10">
 
                 {/* KPI Summary Cards */}
@@ -266,7 +269,17 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-
+                {/* AI-Powered Command Center */}
+                {!loading && (
+                    <AdminAIAssistant 
+                        dashboardData={{
+                            stats,
+                            businesses: businesses.map(b => ({ name: b.name, status: b.status, category: b.category })),
+                            auditLogs: auditLogs.map(l => ({ action: l.action, target: l.target, time: l.time })),
+                            userGrowth: growthData
+                        }}
+                    />
+                )}
 
                 {/* Lower Grid - Insights & Logs */}
 

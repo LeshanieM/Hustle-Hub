@@ -18,10 +18,12 @@ const ReviewsDashboard = () => {
   const sidebarItems = [
     { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
     { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+    { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
     { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
     { label: 'User Directory', icon: 'group', path: '/admin/users' },
-    { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
-    { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+    { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
+    { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
+    { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
   ];
 
   const fetchDashboardData = async () => {
@@ -34,7 +36,7 @@ const ReviewsDashboard = () => {
 
       setReviews(revRes.data);
       setStats(statsRes.data);
-      
+
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       toast.error('Failed to load dashboard data');
@@ -63,8 +65,8 @@ const ReviewsDashboard = () => {
   };
 
   return (
-    <DashboardLayout 
-      role="Administrator" 
+    <DashboardLayout
+      role="Administrator"
       headerTitle="Review Management"
       sidebarItems={sidebarItems}
       TopHeader={AdminHeader}
@@ -81,16 +83,16 @@ const ReviewsDashboard = () => {
 
         <div className="flex flex-col xl:flex-row gap-6 mt-6">
           <div className="w-full xl:w-2/3 flex flex-col">
-            <ReviewTable 
+            <ReviewTable
               reviews={reviews}
               loading={loading}
               onApprove={(id) => executeAction(`/${id}/approve`, 'PATCH')}
               onFlag={(id) => executeAction(`/${id}/flag`, 'PATCH')}
               onDelete={(id) => {
-                if(window.confirm('Delete this review permanently?')) executeAction(`/${id}`, 'DELETE');
+                if (window.confirm('Delete this review permanently?')) executeAction(`/${id}`, 'DELETE');
               }}
               onBulkDelete={(ids) => {
-                if(window.confirm(`Delete ${ids.length} reviews permanently?`)) executeAction('/bulk', 'DELETE', { ids });
+                if (window.confirm(`Delete ${ids.length} reviews permanently?`)) executeAction('/bulk', 'DELETE', { ids });
               }}
               onBulkFlag={(ids) => executeAction('/bulk/flag', 'PATCH', { ids })}
             />
