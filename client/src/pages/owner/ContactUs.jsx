@@ -22,8 +22,8 @@ const ContactUs = () => {
                         customer: t.sender ? `${t.sender.firstName} ${t.sender.lastName}` : 'Unknown Customer',
                         email: t.sender?.studentEmail || '',
                         subject: t.subject,
+                        message: t.message || '',
                         date: new Date(t.createdAt).toLocaleDateString(),
-                        priority: "Medium",
                         replied: t.status === 'Resolved',
                         reply: t.reply || ''
                     })));
@@ -89,7 +89,6 @@ const ContactUs = () => {
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Customer</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Subject</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Date</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Priority</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -101,14 +100,6 @@ const ContactUs = () => {
                                         </td>
                                         <td className="px-6 py-4 text-xs font-medium text-slate-600 truncate max-w-xs">{inq.subject}</td>
                                         <td className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-tighter">{inq.date}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${
-                                                inq.priority === 'High' ? 'bg-orange-50 text-orange-600' :
-                                                inq.priority === 'Medium' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'
-                                            }`}>
-                                                {inq.priority}
-                                            </span>
-                                        </td>
                                         <td className="px-6 py-4 text-center">
                                             {inq.replied ? (
                                                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center justify-center gap-1">
@@ -146,8 +137,13 @@ const ContactUs = () => {
                                 <span className="material-symbols-outlined text-[20px]">reply</span>
                                 Reply to {selectedInquiry.customer}
                             </h3>
-                            <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Inquiry #{selectedInquiry.id} • {selectedInquiry.priority} Priority</p>
+                            <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Inquiry #{selectedInquiry.id}</p>
                             
+                            <div className="mb-6 p-4 bg-slate-50 border border-slate-100 rounded-lg">
+                                <h4 className="text-[10px] font-black uppercase text-slate-400 mb-2">Customer Message</h4>
+                                <p className="text-sm text-slate-700 whitespace-pre-wrap">{selectedInquiry.message || 'No message provided.'}</p>
+                            </div>
+
                             <form onSubmit={handleReply} className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Your message</label>
