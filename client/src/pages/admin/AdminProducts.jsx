@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
-import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, Flag } from 'lucide-react';
+import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, Flag, Eye } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
+    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
@@ -189,6 +191,13 @@ const AdminProducts = () => {
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-2 justify-end">
+                                    <button
+                                        onClick={() => navigate(`/admin/products/${product._id}`)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-slate-200 active:scale-95"
+                                    >
+                                        <Eye size={12} />
+                                        View
+                                    </button>
                                     <button
                                         onClick={() => handleFlagFake(product._id)}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${product.isFake

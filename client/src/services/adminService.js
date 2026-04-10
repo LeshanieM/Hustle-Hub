@@ -28,6 +28,11 @@ export const adminService = {
         return res.data;
     },
 
+    getProductById: async (id) => {
+        const res = await adminAxios.get(`/products/${id}`);
+        return res.data;
+    },
+
     // User management
     getAllUsers: async () => {
         const res = await adminAxios.get('/users');

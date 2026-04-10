@@ -22,6 +22,7 @@ router.patch('/bookings/:id/status', adminController.overrideBookingStatus);
 
 // ==================== PRODUCT ROUTES ====================
 router.get('/products', adminController.getAllProductsForAdmin);
+router.get('/products/:id', adminController.getProductByIdForAdmin);
 router.patch('/products/:id/flag', adminController.toggleProductFlag);
 
 // ==================== SYSTEM ROUTES ====================
