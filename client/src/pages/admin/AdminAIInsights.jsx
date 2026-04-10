@@ -159,6 +159,7 @@ const AdminAIInsights = () => {
         { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
+        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
         { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },

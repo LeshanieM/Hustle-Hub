@@ -11,7 +11,7 @@ const DashboardHeader = ({ title, showSearch = true, hideProfile = false }) => {
         
         {showSearch && (
           <div className="relative hidden md:block w-80 group">
-            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1111d4] transition-colors text-xl">search</span>
+            <span className="material-symbols-outlined notranslate absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1111d4] transition-colors text-xl">search</span>
             <input 
               type="text" 
               placeholder="Search anything..." 
@@ -26,7 +26,7 @@ const DashboardHeader = ({ title, showSearch = true, hideProfile = false }) => {
           <>
         {/* Notifications */}
         <button className="h-9 w-9 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-[#1111d4] transition-all relative cursor-pointer ring-0 outline-none">
-          <span className="material-symbols-outlined text-[20px]">notifications</span>
+          <span className="material-symbols-outlined notranslate text-[20px]">notifications</span>
           <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-rose-500 rounded-full border border-white"></span>
         </button>
 

@@ -1,4 +1,4 @@
-
+const FAQ = require('../models/FAQ');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -9,22 +9,46 @@ const parseTokens = (str) => {
     return str.toLowerCase().replace(/[^\w\s]/gi, '').split(/\s+/).filter(word => word.length > 0);
 };
 
-// Common stopwords to ignore in matching for better semantic extraction
+// Common stopwords to ignore
 const stopWords = new Set(['a', 'an', 'the', 'is', 'are', 'was', 'were', 'it', 'its', 'to', 'for', 'with', 'about', 'on', 'in', 'at', 'do', 'does', 'did']);
 
-const getFaqs = async () => {
-    // 1. Cache FAQ JSON after first load
-    if (faqCache) {
-        return faqCache;
-    }
-    
+/**
+ * Migration function to seed DB from JSON if empty
+ */
+const seedFaqsIfEmpty = async () => {
     try {
-        const filePath = path.join(__dirname, '../data/faqs.json');
-        const data = await fs.readFile(filePath, 'utf8');
-        faqCache = JSON.parse(data);
-        return faqCache;
+        const count = await FAQ.countDocuments();
+        if (count === 0) {
+            console.log('[FAQ Service] Database empty. Seeding from faqs.json...');
+            const filePath = path.join(__dirname, '../data/faqs.json');
+            const data = await fs.readFile(filePath, 'utf8');
+            const initialFaqs = JSON.parse(data);
+            
+            // Map JSON structure to Model structure if needed
+            const mappedFaqs = initialFaqs.map(f => ({
+                question: f.question,
+                answer: f.answer,
+                category: f.category || 'General',
+                keywords: f.keywords || []
+            }));
+
+            await FAQ.insertMany(mappedFaqs);
+            console.log(`[FAQ Service] Seeded ${mappedFaqs.length} FAQs successfully.`);
+        }
     } catch (error) {
-        console.error('Error loading FAQs:', error);
+        console.error('[FAQ Service] Seeding error:', error);
+    }
+};
+
+const getFaqs = async () => {
+    try {
+        // Ensure DB is seeded before first fetch
+        await seedFaqsIfEmpty();
+        
+        // Fetch fresh from DB (no local cache to ensure admin changes reflect immediately)
+        return await FAQ.find({});
+    } catch (error) {
+        console.error('[FAQ Service] Error fetching FAQs from DB:', error);
         return [];
     }
 };
@@ -38,22 +62,21 @@ const findBestMatch = async (userMessage) => {
     let bestMatch = null;
     let highestScore = 0;
     
-    // Minimum threshold before match is valid
-    const MIN_THRESHOLD = 0.5; // Require at least 50% match score
+    const MIN_THRESHOLD = 0.5;
     
     for (const faq of faqs) {
-        // Case-insensitive exact phrase match check
+        // Case-insensitive exact phrase match
         if (faq.question.toLowerCase() === userMessage.toLowerCase().trim()) {
             return faq;
         }
 
-        // Keywords check for short button phrases like "Try Simulator"
+        // Keywords check
         const userClean = parseTokens(userMessage).join(' ');
-        if (faq.keywords) {
+        if (faq.keywords && faq.keywords.length > 0) {
             for (const kw of faq.keywords) {
                 const kwClean = parseTokens(kw).join(' ');
                 if (kwClean === userClean) {
-                    return faq; // Exact match on keyword (ignores emojis/punctuation)
+                    return faq;
                 }
             }
         }
@@ -61,7 +84,6 @@ const findBestMatch = async (userMessage) => {
         const faqTokens = parseTokens(faq.question).filter(t => !stopWords.has(t));
         if (faqTokens.length === 0) continue;
         
-        // Keyword/token finding
         let matchCount = 0;
         for (const token of faqTokens) {
             if (userTokens.includes(token)) {
@@ -69,26 +91,19 @@ const findBestMatch = async (userMessage) => {
             }
         }
         
-        // Token scoring
-        // Calculate score based on how much of the original FAQ query is satisfied by the user's input
-        // plus how much of the user's input aligns with the FAQ.
         const faqSatisfied = matchCount / faqTokens.length;
         const userProvided = userTokens.length > 0 ? matchCount / userTokens.length : 0;
-        
-        // Blended score, prioritizes satisfying the FAQ core tokens
         const score = (faqSatisfied * 0.7) + (userProvided * 0.3);
         
-        // Highest-score selection
         if (score > highestScore && score >= MIN_THRESHOLD) {
             highestScore = score;
             bestMatch = faq;
         }
         
-        // Partial phrase matching (e.g. string subset)
+        // Partial phrase matching
         if (userMessage.toLowerCase().includes(faq.question.toLowerCase()) || 
             faq.question.toLowerCase().includes(userMessage.toLowerCase())) {
             
-            // Substring phrase matches are a strong signal
             const substringScore = 0.8;
             if (substringScore > highestScore && substringScore >= MIN_THRESHOLD) {
                 highestScore = substringScore;

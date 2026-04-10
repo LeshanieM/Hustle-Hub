@@ -26,13 +26,14 @@
         z-index: 9999;
         display: flex;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 6px;
-        border-radius: 30px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px;
+        border-radius: 40px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         cursor: grab;
-        border: 1px solid #e5e7eb;
-        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
+        align-items: center;
       }
       #langSwitcherContainer:active {
         cursor: grabbing;
@@ -40,24 +41,97 @@
       .lang-btn {
         background: white;
         color: #1e3a8a; /* deep blue */
-        border: 1px solid #1e3a8a;
-        padding: 6px 12px;
+        border: 1px solid #e2e8f0;
+        padding: 8px 16px;
         border-radius: 20px;
         cursor: pointer;
         font-family: inherit;
         font-size: 13px;
         font-weight: 600;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .lang-btn:hover {
         background: #1e3a8a;
         color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
       }
+      .lang-btn.active {
+        background: #1e3a8a;
+        color: white;
+      }
+
+      /* Camera button for Image Translation */
+      .img-trans-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #051094;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(5, 16, 148, 0.3);
+      }
+      .img-trans-btn:hover {
+        transform: scale(1.1) rotate(5deg);
+        background: #1111d4;
+      }
+
+      /* Translation Modal */
+      #transModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 10000;
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+      }
+      #transModalContent {
+        background: white;
+        padding: 32px;
+        border-radius: 24px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        position: relative;
+        text-align: center;
+      }
+      #transModalContent h2 { color: #1e3a8a; margin-top: 0; }
+      #transResult { 
+        margin: 20px 0; 
+        font-size: 16px; 
+        line-height: 1.6; 
+        color: #334155;
+        text-align: left;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 12px;
+      }
+      .close-modal {
+        position: absolute;
+        top: 16px; right: 16px;
+        cursor: pointer;
+        color: #94a3b8;
+        transition: color 0.2s;
+      }
+      .close-modal:hover { color: #1e3a8a; }
+
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 
     <div id="langSwitcherContainer">
       <button class="lang-btn" onclick="changeLanguage('si')">සිංහල</button>
+      <button class="lang-btn" onclick="changeLanguage('ta')">தமிழ்</button>
       <button class="lang-btn" onclick="changeLanguage('en')">English</button>
     </div>
 
@@ -68,7 +142,7 @@
       function googleTranslateElementInit() {
         new google.translate.TranslateElement({
           pageLanguage: 'en',
-          includedLanguages: 'en,si',
+          includedLanguages: 'en,si,ta',
           autoDisplay: false
         }, 'google_translate_element');
       }
@@ -78,15 +152,33 @@
         if (selectElement) {
           selectElement.value = langCode;
           selectElement.dispatchEvent(new Event('change'));
+          
+          // Update active button state
+          document.querySelectorAll('.lang-btn').forEach(btn => {
+             btn.classList.remove('active');
+             if(btn.getAttribute('onclick')?.includes(langCode)) btn.classList.add('active');
+          });
         }
       }
 
-      // Make the language switcher draggable
+      // --- ICON FIX SCRIPT ---
+      function fixIcons() {
+        // Add 'notranslate' to all Material Symbols to prevent Google Translate from breaking them
+        document.querySelectorAll('.material-symbols-outlined').forEach(icon => {
+          if (!icon.classList.contains('notranslate')) {
+            icon.classList.add('notranslate');
+            icon.setAttribute('translate', 'no');
+          }
+        });
+      }
+      setInterval(fixIcons, 1000); // Run every second to catch React-rendered icons
+
+      // DRAGGABLE LOGIC
       const langSwitcher = document.getElementById('langSwitcherContainer');
       let isDragging = false, startX, startY, initialX, initialY;
 
       const dragStart = (e) => {
-        if (e.target.tagName.toLowerCase() === 'button') return; // Don't drag if clicking buttons
+        if (e.target.closest('button') || e.target.closest('input')) return;
         isDragging = true;
         const _e = e.type.includes('mouse') ? e : e.touches[0];
         startX = _e.clientX;
@@ -94,6 +186,7 @@
         const rect = langSwitcher.getBoundingClientRect();
         initialX = rect.left;
         initialY = rect.top;
+        langSwitcher.style.transition = 'none';
       };
 
       const dragMove = (e) => {
@@ -104,11 +197,14 @@
         const dy = _e.clientY - startY;
         langSwitcher.style.left = (initialX + dx) + 'px';
         langSwitcher.style.top = (initialY + dy) + 'px';
-        langSwitcher.style.bottom = 'auto'; // Disable CSS bottom
+        langSwitcher.style.bottom = 'auto';
         langSwitcher.style.right = 'auto';
       };
 
-      const dragEnd = () => { isDragging = false; };
+      const dragEnd = () => { 
+        isDragging = false; 
+        langSwitcher.style.transition = 'all 0.2s';
+      };
 
       langSwitcher.addEventListener('mousedown', dragStart);
       document.addEventListener('mousemove', dragMove);
@@ -122,3 +218,4 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
