@@ -19,7 +19,7 @@ const AuditLogs = () => {
 
                 // Fetch real audit logs from the new backend endpoint
                 const response = await axios.get('http://localhost:5000/api/admin/audit-logs', config);
-                
+
                 const logs = (response.data || []).map(l => ({
                     ...l,
                     time: new Date(l.time) // Re-hydrate Date object
@@ -38,8 +38,10 @@ const AuditLogs = () => {
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
         { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
+        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
@@ -50,13 +52,13 @@ const AuditLogs = () => {
     });
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <DashboardLayout role="Administrator"
             headerTitle="Security & Activity Logs"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
             loading={loading}
-        >
+
+            showSearch={false}>
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in py-4">
                 {/* Header Profile */}
                 <div className="relative overflow-hidden bg-slate-900 rounded-[32px] p-8 md:p-12 text-white shadow-xl">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import OwnerHeader from '../../components/OwnerHeader';
-import Footer from '../../components/Footer';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -415,10 +414,9 @@ const OwnerOrders = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <OwnerHeader />
-      <div className="flex-grow pt-24 pb-24">
-        <div className="container mx-auto px-4 max-w-4xl">
+    <OwnerLayout activeTab="orders" theme="light">
+      <div className="pb-24">
+        <div className="container mx-auto max-w-4xl">
 
           {/* Heading & Tabs */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -595,9 +593,7 @@ const OwnerOrders = () => {
       )}
 
       {showBulkReject && <RejectModal bulk onConfirm={handleBulkReject} onClose={() => setShowBulkReject(false)} />}
-
-      <Footer />
-    </div>
+    </OwnerLayout>
   );
 };
 

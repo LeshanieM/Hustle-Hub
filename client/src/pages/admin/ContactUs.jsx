@@ -31,7 +31,7 @@ const ContactUs = () => {
         try {
             const { data } = await api.patch(`/support/${selectedTicket._id}/admin-resolve`, { reply: replyAction });
             if (data.success) {
-                setTickets(tickets.map(t => 
+                setTickets(tickets.map(t =>
                     t._id === selectedTicket._id ? { ...t, status: 'Resolved', reply: replyAction } : t
                 ));
                 setSelectedTicket(null);
@@ -43,21 +43,24 @@ const ContactUs = () => {
         }
     };
 
-    const filteredTickets = tickets.filter(t => 
+    const filteredTickets = tickets.filter(t =>
         t.targetStore && t.targetStore.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
+        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
     return (
-        <DashboardLayout 
-            role="Administrator" 
+        <DashboardLayout
+            role="Administrator"
             headerTitle="Administrative Console"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
@@ -70,22 +73,22 @@ const ContactUs = () => {
                         <h1 className="text-3xl font-bold text-[#051094] mb-2 tracking-tight">Support Intelligence</h1>
                         <p className="text-slate-500 text-sm">Review all customer inquiries and direct support requests globally across the platform.</p>
                     </div>
-                    
+
                     <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                         <div className="flex gap-4">
-                             <div className="px-5 py-3 bg-[#051094]/5 rounded-xl border border-[#051094]/10">
-                                 <p className="text-[10px] font-black uppercase text-[#051094]/60 mb-0.5 tracking-wider">Active Tickets</p>
-                                 <p className="text-2xl font-black text-[#051094] leading-none">{tickets.filter(t => t.status !== 'Resolved').length}</p>
-                             </div>
-                             <div className="px-5 py-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                                 <p className="text-[10px] font-black uppercase text-emerald-600/60 mb-0.5 tracking-wider">Resolved Tickets</p>
-                                 <p className="text-2xl font-black text-emerald-600 leading-none">{tickets.filter(t => t.status === 'Resolved').length}</p>
-                             </div>
+                            <div className="px-5 py-3 bg-[#051094]/5 rounded-xl border border-[#051094]/10">
+                                <p className="text-[10px] font-black uppercase text-[#051094]/60 mb-0.5 tracking-wider">Active Tickets</p>
+                                <p className="text-2xl font-black text-[#051094] leading-none">{tickets.filter(t => t.status !== 'Resolved').length}</p>
+                            </div>
+                            <div className="px-5 py-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                                <p className="text-[10px] font-black uppercase text-emerald-600/60 mb-0.5 tracking-wider">Resolved Tickets</p>
+                                <p className="text-2xl font-black text-emerald-600 leading-none">{tickets.filter(t => t.status === 'Resolved').length}</p>
+                            </div>
                         </div>
 
                         <div className="relative w-full md:w-96">
                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search by Store Name..."
                                 value={searchTerm}
@@ -125,7 +128,7 @@ const ContactUs = () => {
                                         <td className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-tighter">{new Date(t.createdAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 text-center">
                                             {t.status === 'Resolved' ? (
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedTicket(t)}
                                                     className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center justify-center gap-1 w-full hover:bg-emerald-100 active:scale-[0.98] transition-all bg-emerald-50 rounded-lg px-2 py-1"
                                                 >
@@ -133,7 +136,7 @@ const ContactUs = () => {
                                                     View Resolved
                                                 </button>
                                             ) : (
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedTicket(t)}
                                                     className="px-4 py-1.5 bg-[#051094] text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm hover:brightness-110 transition-all w-full"
                                                 >
@@ -159,19 +162,19 @@ const ContactUs = () => {
                 {selectedTicket && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm transition-all">
                         <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-8 relative animate-in slide-in-from-bottom-5 duration-300">
-                            <button 
+                            <button
                                 onClick={() => setSelectedTicket(null)}
                                 className="absolute top-6 right-6 text-slate-300 hover:text-slate-900 transition-colors"
                             >
                                 <span className="material-symbols-outlined">close</span>
                             </button>
-                            
+
                             <h3 className="text-xl font-bold text-[#051094] mb-2 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[20px] text-[#051094]">settings_suggest</span>
                                 Ticket Review
                             </h3>
                             <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Ticket #{selectedTicket._id.slice(-6)} • Store: {selectedTicket.targetStore}</p>
-                            
+
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-6">
                                 <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Original Message</p>
                                 <p className="text-sm text-slate-600 leading-relaxed font-medium">{selectedTicket.message}</p>
@@ -186,7 +189,7 @@ const ContactUs = () => {
                                 <form onSubmit={handleAction} className="space-y-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Force Resolve / Intervene</label>
-                                        <textarea 
+                                        <textarea
                                             required
                                             rows="5"
                                             placeholder="Type administrative action taken to override or resolve this incident..."
@@ -195,7 +198,7 @@ const ContactUs = () => {
                                             onChange={(e) => setReplyAction(e.target.value)}
                                         ></textarea>
                                     </div>
-                                    <button 
+                                    <button
                                         type="submit"
                                         className="w-full py-4 bg-[#051094] text-white rounded-lg text-sm font-black uppercase tracking-widest shadow-md hover:brightness-110 active:scale-[0.98] transition-all"
                                     >
