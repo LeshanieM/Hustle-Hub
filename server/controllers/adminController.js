@@ -391,6 +391,33 @@ const toggleProductFlag = async (req, res) => {
     }
 };
 
+// @desc    Get single product details (Admin only)
+// @route   GET /api/admin/products/:id
+// @access  Private (ADMIN)
+const getProductByIdForAdmin = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).lean();
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const owner = await User.findById(product.ownerId, 'firstName lastName').lean();
+        const store = await Store.findOne({ ownerId: product.ownerId }, 'storeName').lean();
+
+        const formattedProduct = {
+            ...product,
+            seller: store ? store.storeName : (owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown Seller'),
+            category: product.type,
+            status: product.isFake ? 'Flagged' : 'Verified'
+        };
+
+        res.status(200).json(formattedProduct);
+    } catch (error) {
+        console.error('Error in getProductByIdForAdmin:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     // User management
     getAllUsers,
@@ -410,5 +437,6 @@ module.exports = {
 
     // Product management
     getAllProductsForAdmin,
-    toggleProductFlag
+    toggleProductFlag,
+    getProductByIdForAdmin
 };
