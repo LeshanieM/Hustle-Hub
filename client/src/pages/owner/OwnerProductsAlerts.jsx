@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
 import OwnerLayout from '../../components/dashboard/OwnerLayout';
+import { resolveImageUrl } from '../../utils/imageUtils';
 
 import { useAuth } from '../../context/AuthContext';
 
@@ -42,11 +43,6 @@ const OwnerProductsAlerts = () => {
     }
   };
 
-  const getImageUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `http://localhost:5000/${url.replace(/\\/g, '/')}`;
-  };
 
   return (
     <OwnerLayout activeTab="alerts" headerTitle="System Alerts">
@@ -89,7 +85,7 @@ const OwnerProductsAlerts = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                             {product.imageUrl ? (
-                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(${getImageUrl(product.imageUrl)})` }} />
+                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(${resolveImageUrl(product.imageUrl)})` }} />
                             ) : (
                               <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
                                 <span className="material-symbols-outlined text-slate-400">inventory_2</span>

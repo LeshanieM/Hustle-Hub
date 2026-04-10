@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import ModelViewer from '../../components/products/ModelViewer';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import { adminService } from '../../services/adminService';
 import { 
     Flag, 
@@ -53,11 +54,6 @@ const AdminProductDetails = () => {
         }
     };
 
-    const getImageUrl = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http')) return url;
-        return `http://localhost:5000/${url.replace(/\\/g, '/')}`;
-    };
 
     if (loading) {
         return (
@@ -108,14 +104,14 @@ const AdminProductDetails = () => {
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden relative min-h-[500px] group">
                             {product.modelUrl ? (
                                 <ModelViewer 
-                                    src={getImageUrl(product.modelUrl)} 
+                                    src={resolveImageUrl(product.modelUrl)} 
                                     alt={product.name}
                                     className="h-full"
                                 />
                             ) : product.imageUrl ? (
                                 <div className="h-full flex items-center justify-center p-12 bg-slate-50">
                                     <img 
-                                        src={getImageUrl(product.imageUrl)} 
+                                        src={resolveImageUrl(product.imageUrl)} 
                                         alt={product.name} 
                                         className="max-h-full max-w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
                                     />
