@@ -3,53 +3,128 @@ const Product = require('../models/Product');
 const Booking = require('../models/Booking');
 const Store = require('../models/Store');
 
-// @desc    Get owner Key Performance Indicators
+/**
+ * Helper: Generates reusable date ranges for current and previous periods.
+ * Removes all hardcoded change values by enabling relative comparison.
+ */
+const getReportingDates = (period) => {
+    const end = new Date();
+    const start = new Date();
+    const prevEnd = new Date();
+    const prevStart = new Date();
+
+    switch (period.toLowerCase()) {
+        case 'daily':
+            start.setHours(0, 0, 0, 0);
+            prevEnd.setDate(start.getDate());
+            prevEnd.setHours(0, 0, 0, 0);
+            prevStart.setDate(start.getDate() - 1);
+            prevStart.setHours(0, 0, 0, 0);
+            break;
+        case 'weekly':
+            start.setDate(end.getDate() - 7);
+            prevEnd.setDate(start.getDate());
+            prevStart.setDate(start.getDate() - 7);
+            break;
+        case 'monthly':
+            start.setMonth(end.getMonth() - 1);
+            prevEnd.setMonth(start.getMonth());
+            prevStart.setMonth(start.getMonth() - 1);
+            break;
+        case 'annual':
+        case 'yearly':
+            start.setFullYear(end.getFullYear() - 1);
+            prevEnd.setFullYear(start.getFullYear());
+            prevStart.setFullYear(start.getFullYear() - 1);
+            break;
+        default:
+            // Default to weekly logic if invalid period
+            start.setDate(end.getDate() - 7);
+            prevEnd.setDate(start.getDate());
+            prevStart.setDate(start.getDate() - 7);
+    }
+
+    return { start, end, prevStart, prevEnd };
+};
+
+/**
+ * Helper: Calculates percentage change between two values.
+ */
+const calculateChange = (current, previous) => {
+    if (!previous || previous === 0) return current > 0 ? 100 : 0;
+    const change = ((current - previous) / previous) * 100;
+    return parseFloat(change.toFixed(1));
+};
+
+// @desc    Get owner Key Performance Indicators (REAL DATA ONLY)
 // @route   GET /api/analytics/owner/kpis
 // @access  Private/Owner
 const getOwnerKPIs = async (req, res) => {
     try {
         const ownerId = req.user._id;
         const period = req.query.period || 'weekly';
-        
+        const { start, end, prevStart, prevEnd } = getReportingDates(period);
+
+        // 1. Fetch Owner's Products
         const products = await Product.find({ ownerId }).select('_id name stock alertThreshold trackStock type');
         const productIds = products.map(p => p._id);
 
-        const customerCount = await User.countDocuments({ role: { $regex: /^customer$/i } });
-        
-        let startDate = new Date();
-        if (period === 'daily') startDate.setHours(0, 0, 0, 0);
-        else if (period === 'weekly') startDate.setDate(startDate.getDate() - 7);
-        else if (period === 'monthly') startDate.setMonth(startDate.getMonth() - 1);
-        else if (period === 'annual') startDate.setFullYear(startDate.getFullYear() - 1);
+        if (productIds.length === 0) {
+            return res.json({
+                totalRevenue: { value: 0, change: 0 },
+                todayRevenue: { value: 0, change: 0 },
+                pendingOrders: { value: 0, change: 0 },
+                lowStock: { value: 0, change: 0 },
+                totalExpenses: { value: 0, change: 0 },
+                netProfit: { value: 0, change: 0 },
+                activeCustomers: { value: 0, change: 0 },
+                topItems: [],
+                periodStats: { startDate: start.toLocaleDateString(), endDate: end.toLocaleDateString(), label: period }
+            });
+        }
 
-        const completedBookings = await Booking.find({ 
-            product_id: { $in: productIds }, 
-            status: 'completed',
-            createdAt: { $gte: startDate }
-        });
+        // 2. Aggregate Bookings (Current vs Previous)
+        const [currentBookings, prevBookings] = await Promise.all([
+            Booking.find({ product_id: { $in: productIds }, status: 'completed', createdAt: { $gte: start, $lte: end } }),
+            Booking.find({ product_id: { $in: productIds }, status: 'completed', createdAt: { $gte: prevStart, $lte: prevEnd } })
+        ]);
 
-        const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+        const currentRevenue = currentBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+        const prevRevenue = prevBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+        // 3. Today's Snapshot
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(todayStart.getDate() - 1);
+
+        const todayBookings = await Booking.find({ product_id: { $in: productIds }, status: 'completed', createdAt: { $gte: todayStart } });
+        const yesterdayBookings = await Booking.find({ product_id: { $in: productIds }, status: 'completed', createdAt: { $gte: yesterdayStart, $lt: todayStart } });
+
+        const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+        const yesterdayRevenue = yesterdayBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+        // 4. Counts & Metrics
         const pendingOrdersCount = await Booking.countDocuments({ 
             product_id: { $in: productIds }, 
             status: 'pending',
-            createdAt: { $gte: startDate }
+            createdAt: { $gte: start }
         });
-        
+
         const lowStockCount = products.filter(p => p.trackStock && p.stock <= p.alertThreshold).length;
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayBookings = completedBookings.filter(b => b.createdAt >= today);
-        const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
 
-        // Calculate Top Items
-        const itemSales = {};
-        completedBookings.forEach(b => {
+        // Active customers who ordered in this period
+        const activeCustomerIds = [...new Set(currentBookings.map(b => b.customer_id?.toString()).filter(id => id))];
+        const prevActiveCustomerIds = [...new Set(prevBookings.map(b => b.customer_id?.toString()).filter(id => id))];
+
+        // 5. Top Performing Items
+        const itemSalesMap = {};
+        currentBookings.forEach(b => {
             const pid = b.product_id.toString();
-            itemSales[pid] = (itemSales[pid] || 0) + 1;
+            itemSalesMap[pid] = (itemSalesMap[pid] || 0) + (b.quantity || 1);
         });
 
-        const topItems = Object.entries(itemSales)
+        const topItems = Object.entries(itemSalesMap)
             .map(([pid, sales]) => {
                 const product = products.find(p => p._id.toString() === pid);
                 return { 
@@ -59,122 +134,125 @@ const getOwnerKPIs = async (req, res) => {
                 };
             })
             .sort((a, b) => b.sales - a.sales)
-            .slice(0, 10);
+            .slice(0, 5);
 
-        const kpis = {
-            totalRevenue: { value: totalRevenue, change: period === 'weekly' ? 12.5 : 0 },
-            todayRevenue: { value: todayRevenue, change: 5.2 },
+        // 6. Detailed Financials (Assuming 0 if no Expense model exists)
+        // Strictly avoid mock multipliers like 0.2 or 0.8
+        const totalExpenses = 0; // Placeholder for real expense records if implemented
+        const netProfit = currentRevenue - totalExpenses;
+
+        res.json({
+            totalRevenue: { value: currentRevenue, change: calculateChange(currentRevenue, prevRevenue) },
+            todayRevenue: { value: todayRevenue, change: calculateChange(todayRevenue, yesterdayRevenue) },
             pendingOrders: { value: pendingOrdersCount, change: 0 },
             lowStock: { value: lowStockCount, change: 0 },
-            totalExpenses: { value: Math.round(totalRevenue * 0.2), change: 0 },
-            netProfit: { value: Math.round(totalRevenue * 0.8), change: 0 },
-            activeCustomers: { value: customerCount, change: 0 },
+            totalExpenses: { value: totalExpenses, change: 0 },
+            netProfit: { value: netProfit, change: calculateChange(netProfit, (prevRevenue - 0)) },
+            activeCustomers: { value: activeCustomerIds.length, change: calculateChange(activeCustomerIds.length, prevActiveCustomerIds.length) },
             topItems,
             periodStats: {
-                startDate: startDate.toLocaleDateString(),
-                endDate: new Date().toLocaleDateString(),
+                startDate: start.toLocaleDateString(),
+                endDate: end.toLocaleDateString(),
                 label: period.charAt(0).toUpperCase() + period.slice(1)
             }
-        };
-        res.json(kpis);
+        });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('KPI Engine Error:', error);
+        res.status(500).json({ message: 'Internal Analytics Fault' });
     }
 };
 
-// @desc    Get owner sales chart data
-// @route   GET /api/analytics/owner/sales?period=weekly
+// @desc    Get owner sales chart data (REAL DATA ONLY)
+// @route   GET /api/analytics/owner/sales
 // @access  Private/Owner
 const getOwnerSales = async (req, res) => {
     try {
-        const period = req.query.period || 'weekly';
         const ownerId = req.user._id;
+        const period = req.query.period || 'weekly';
+        const { start, end } = getReportingDates(period);
+
         const products = await Product.find({ ownerId }).select('_id');
         const productIds = products.map(p => p._id);
-        
-        let startDate = new Date();
-        if (period === 'daily') startDate.setHours(0, 0, 0, 0);
-        else if (period === 'weekly') startDate.setDate(startDate.getDate() - 7);
-        else if (period === 'monthly') startDate.setMonth(startDate.getMonth() - 1);
-        else if (period === 'annual') startDate.setFullYear(startDate.getFullYear() - 1);
 
-        const completedBookings = await Booking.find({ 
+        const bookings = await Booking.find({ 
             product_id: { $in: productIds }, 
             status: 'completed',
-            createdAt: { $gte: startDate }
-        });
-        
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
-        let salesData = [];
-        
-        if (period === 'annual') {
-            const monthlyMap = {};
-            months.forEach(m => monthlyMap[m] = 0);
-            completedBookings.forEach(b => {
+            createdAt: { $gte: start, $lte: end }
+        }).sort({ createdAt: 1 });
+
+        const salesMap = new Map();
+
+        // Dynamically build map based on period
+        if (period === 'annual' || period === 'yearly') {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            months.forEach(m => salesMap.set(m, 0));
+            bookings.forEach(b => {
                 const m = months[new Date(b.createdAt).getMonth()];
-                monthlyMap[m] += (b.total_price || 0);
+                salesMap.set(m, salesMap.get(m) + (b.total_price || 0));
             });
-            salesData = months.map(m => ({ name: m, sales: monthlyMap[m] }));
+        } else if (period === 'daily') {
+            // Hourly breakdown for daily
+            for (let i = 0; i < 24; i++) salesMap.set(`${i}:00`, 0);
+            bookings.forEach(b => {
+                const h = new Date(b.createdAt).getHours();
+                salesMap.set(`${h}:00`, salesMap.get(`${h}:00`) + (b.total_price || 0));
+            });
         } else {
-            const dayMap = {};
-            days.forEach(d => dayMap[d] = 0);
-            completedBookings.forEach(b => {
+            // Weekly/Monthly - Day of week
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(d => salesMap.set(d, 0));
+            bookings.forEach(b => {
                 const d = days[new Date(b.createdAt).getDay()];
-                dayMap[d] += (b.total_price || 0);
+                salesMap.set(d, salesMap.get(d) + (b.total_price || 0));
             });
-            const order = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            salesData = order.map(d => ({ name: d, sales: dayMap[d] }));
         }
 
+        const salesData = Array.from(salesMap, ([name, sales]) => ({ name, sales }));
         res.json(salesData);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Sales Aggregation Error:', error);
+        res.status(500).json({ message: 'Internal Sales Fault' });
     }
 };
 
-// @desc    Get global platform stats (mocked data for Admin dashboard)
-// @route   GET /api/analytics/admin/platform
-// @access  Private/Admin
+// @desc    Get global platform stats (ADMIN ONLY)
 const getPlatformStats = async (req, res) => {
     try {
-        const activeStores = await Store.countDocuments({ status: { $ne: 'SUSPENDED' } });
-        const blockedBatch = await Store.countDocuments({ status: 'SUSPENDED' });
-        const registeredStudents = await User.countDocuments({ role: { $regex: /^customer$/i } });
+        const [activeStores, blockedBatch, registeredStudents, totalRevenueData] = await Promise.all([
+            Store.countDocuments({ status: { $ne: 'SUSPENDED' } }),
+            Store.countDocuments({ status: 'SUSPENDED' }),
+            User.countDocuments({ role: { $regex: /^customer$/i } }),
+            Booking.aggregate([
+                { $match: { status: 'completed' } },
+                { $group: { _id: null, total: { $sum: '$total_price' } } }
+            ])
+        ]);
 
         res.json({
-            totalVolume: 0,
+            totalVolume: totalRevenueData[0]?.total || 0,
             activeStores,
             blockedBatch,
             registeredStudents,
-            growthRate: 0
+            growthRate: 0 // Placeholder for real growth logic if requested
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Admin Stats Error' });
     }
 };
 
 // @desc    Get owner revenue targets
-// @route   GET /api/analytics/targets
-// @access  Private/Owner
 const getTargets = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('analyticsTargets');
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.json(user.analyticsTargets || { daily: 0, monthly: 0, yearly: 0 });
+        res.json(user?.analyticsTargets || { daily: 0, monthly: 0, yearly: 0 });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Target Retrieval Error' });
     }
 };
 
 // @desc    Update owner revenue targets
-// @route   PUT /api/analytics/targets
-// @access  Private/Owner
 const updateTargets = async (req, res) => {
     try {
         const { daily, monthly, yearly } = req.body;
@@ -189,29 +267,22 @@ const updateTargets = async (req, res) => {
             },
             { new: true }
         ).select('analyticsTargets');
-        if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user.analyticsTargets);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Target Update Error' });
     }
 };
 
-// @desc    Get owner's inventory alerts (all tracked products)
-// @route   GET /api/analytics/owner/inventory-alerts
-// @access  Private/Owner
+// @desc    Get owner's inventory alerts
 const getInventoryAlerts = async (req, res) => {
     try {
-        const ownerId = req.user._id;
-        const products = await Product.find({ ownerId });
-
+        const products = await Product.find({ ownerId: req.user._id });
         const lowStockProducts = products.filter(p => p.trackStock && p.stock <= p.alertThreshold);
-        const trackedProducts = products.filter(p => p.trackStock);
-
+        
         res.json({
             alertsConfigured: true,
             lowStockCount: lowStockProducts.length,
-            trackedCount: trackedProducts.length,
+            trackedCount: products.filter(p => p.trackStock).length,
             alerts: products.map(p => ({
                 _id: p._id,
                 name: p.name,
@@ -221,27 +292,14 @@ const getInventoryAlerts = async (req, res) => {
                 trackStock: p.trackStock,
                 status: !p.trackStock ? 'No Tracking' : (p.stock === 0 ? 'Out of Stock' : (p.stock <= p.alertThreshold ? 'Low Stock' : 'Healthy')),
                 imageUrl: p.imageUrl
-            })).sort((a, b) => {
-                // Untracked at the bottom
-                if (a.trackStock && !b.trackStock) return -1;
-                if (!a.trackStock && b.trackStock) return 1;
-                // Tracked sorting
-                if (a.stock === 0 && b.stock > 0) return -1;
-                if (b.stock === 0 && a.stock > 0) return 1;
-                if (a.stock <= a.threshold && b.stock > b.threshold) return -1;
-                if (b.stock <= b.threshold && a.stock > a.threshold) return 1;
-                return 0;
-            })
+            })).sort((a, b) => (b.trackStock - a.trackStock) || (a.stock - b.stock))
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error fetching inventory alerts' });
+        res.status(500).json({ message: 'Inventory Fetch Error' });
     }
 };
 
 // @desc    Update inventory alert threshold
-// @route   PUT /api/analytics/owner/inventory-alerts/:id
-// @access  Private/Owner
 const updateInventoryAlert = async (req, res) => {
     try {
         const { threshold, trackStock } = req.body;
@@ -255,14 +313,9 @@ const updateInventoryAlert = async (req, res) => {
             { new: true }
         );
         if (!product) return res.status(404).json({ message: 'Product not found' });
-        res.json({ 
-            success: true, 
-            threshold: product.alertThreshold,
-            trackStock: product.trackStock,
-        });
+        res.json({ success: true, threshold: product.alertThreshold, trackStock: product.trackStock });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error updating threshold' });
+        res.status(500).json({ message: 'Inventory Update Error' });
     }
 };
 
