@@ -20,6 +20,10 @@ router.get('/bookings/stats', adminController.getBookingStats);
 router.get('/bookings/export', adminController.exportBookingsCSV);
 router.patch('/bookings/:id/status', adminController.overrideBookingStatus);
 
+// ==================== PRODUCT ROUTES ====================
+router.get('/products', adminController.getAllProductsForAdmin);
+router.patch('/products/:id/flag', adminController.toggleProductFlag);
+
 // ==================== SYSTEM ROUTES ====================
 router.get('/audit-logs', adminController.getAuditLogs);
 
