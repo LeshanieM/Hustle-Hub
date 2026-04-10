@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import ChartCard from '../../components/dashboard/ChartCard';
@@ -10,7 +10,6 @@ import {
     LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import AdminHeader from '../../components/AdminHeader';
 import AdminAIAssistant from '../../components/admin/AdminAIAssistant';
 
 const AdminDashboard = () => {
@@ -184,28 +183,12 @@ const AdminDashboard = () => {
         }
     };
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
-
-
 
     return (
-        <DashboardLayout role="Administrator"
+        <AdminLayout 
             headerTitle="Administrative Intelligence"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
             loading={loading}
-
-            showSearch={false}>
+        >
             <div className="space-y-10">
 
                 {/* KPI Summary Cards */}
@@ -304,7 +287,7 @@ const AdminDashboard = () => {
                 />
             </div>
 
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

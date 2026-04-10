@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const BusinessDirectory = () => {
     const { user } = useAuth();
@@ -51,17 +50,6 @@ const BusinessDirectory = () => {
         }
     };
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     const filtered = businesses.filter(b => {
         const matchesSearch = b.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,13 +59,10 @@ const BusinessDirectory = () => {
     });
 
     return (
-        <DashboardLayout role="Administrator"
+        <AdminLayout
             headerTitle="Business Directory"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
             loading={loading}
-
-            showSearch={false}>
+        >
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Header section with elegant glassmorphism */}
                 <div className="relative overflow-hidden bg-slate-900 rounded-[32px] p-8 md:p-12 text-white shadow-2xl border border-slate-800">
@@ -225,7 +210,7 @@ const BusinessDirectory = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

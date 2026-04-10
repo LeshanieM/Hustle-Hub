@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
-import AdminHeader from '../../components/AdminHeader';
 import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, Flag } from 'lucide-react';
 
 const AdminProducts = () => {
@@ -97,24 +96,10 @@ const AdminProducts = () => {
 
     const categories = ['All', ...new Set(products.map(p => p.category))];
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <AdminLayout
             headerTitle="Product Intelligence"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
         >
             <div className="space-y-8 max-w-[1600px] mx-auto">
                 {/* Stats Section */}
@@ -243,7 +228,7 @@ const AdminProducts = () => {
                     animation: fadeIn 0.5s ease-out forwards;
                 }
             `}</style>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

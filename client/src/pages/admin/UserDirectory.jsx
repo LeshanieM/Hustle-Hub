@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const UserDirectory = () => {
     const { user: currentAdmin } = useAuth();
@@ -27,17 +26,6 @@ const UserDirectory = () => {
         fetchUsers();
     }, [currentAdmin]);
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     const filtered = users.filter(u => {
         const matchesSearch =
@@ -60,12 +48,9 @@ const UserDirectory = () => {
     );
 
     return (
-        <DashboardLayout role="Administrator"
+        <AdminLayout
             headerTitle="User Directory"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
-
-            showSearch={false}>
+        >
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                 {/* Modern Hero Header */}
@@ -205,7 +190,7 @@ const UserDirectory = () => {
                 </div>
 
             </div>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

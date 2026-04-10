@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 import { generateHybridReport } from '../../utils/reportGenerator';
 import toast from 'react-hot-toast';
 
@@ -98,16 +97,6 @@ const AdminReports = () => {
 
     const timeRanges = ['Daily', 'Weekly', 'Monthly', 'Annual'];
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
-        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     const activeReport = reportTypes.find(p => p.id === selectedType);
 
@@ -234,13 +223,9 @@ const AdminReports = () => {
     };
 
     return (
-        <DashboardLayout 
-            role="Administrator"
+        <AdminLayout 
             headerTitle="Reporting Center"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
             loading={false}
-            showSearch={false}
         >
             <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
                 {/* Header Section */}
@@ -351,7 +336,7 @@ const AdminReports = () => {
                     <p className="text-[10px] font-black uppercase tracking-widest">Official Campus Data Record</p>
                 </div>
             </div>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 
