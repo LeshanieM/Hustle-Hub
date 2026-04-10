@@ -29,6 +29,7 @@ const UserDirectory = () => {
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 

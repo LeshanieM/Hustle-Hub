@@ -29,6 +29,7 @@ const AdminDashboard = () => {
 
     const [businesses, setBusinesses] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Real user data
+    const [auditLogs, setAuditLogs] = useState([]); // Real audit logs
 
     const growthData = useMemo(() => {
         const months = [];
@@ -94,34 +95,7 @@ const AdminDashboard = () => {
         return arr.length ? arr : [{ name: 'No Stores', value: 1, color: '#e2e8f0' }];
     }, [businesses]);
 
-    const auditLogs = useMemo(() => {
-        const logs = [];
-        allUsers.forEach(u => {
-            logs.push({
-                id: u._id,
-                action: `${u.role || 'USER'} Reg.`,
-                target: u.username,
-                admin: 'System',
-                time: new Date(u.createdAt),
-                rawTime: new Date(u.createdAt).getTime()
-            });
-        });
-        businesses.forEach(b => {
-            logs.push({
-                id: b._id,
-                action: `Store ${b.status}`,
-                target: b.storeName,
-                admin: 'System',
-                time: new Date(b.updatedAt || b.createdAt),
-                rawTime: new Date(b.updatedAt || b.createdAt).getTime()
-            });
-        });
 
-        return logs.sort((a, b) => b.rawTime - a.rawTime).slice(0, 5).map(l => ({
-            ...l,
-            time: l.time.toLocaleDateString() + ' ' + l.time.toLocaleTimeString()
-        }));
-    }, [allUsers, businesses]);
 
 
 
@@ -133,10 +107,11 @@ const AdminDashboard = () => {
                 if (!token) throw new Error('No token');
 
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                const [statsRes, storesRes, usersRes] = await Promise.all([
+                const [statsRes, storesRes, usersRes, auditRes] = await Promise.all([
                     axios.get('http://localhost:5000/api/analytics/admin/platform', config).catch(() => ({ data: null })),
                     axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] }))
+                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] })),
+                    axios.get('http://localhost:5000/api/admin/audit-logs', config).catch(() => ({ data: [] }))
                 ]);
 
                 const computedStudents = usersRes.data ? usersRes.data.filter(u => u.role === 'CUSTOMER' || u.role === 'OWNER').length : 0;
@@ -163,6 +138,15 @@ const AdminDashboard = () => {
 
                 setBusinesses(storesRes.data || []);
                 setAllUsers(usersRes.data || []);
+
+                 const logs = (auditRes.data || []).slice(0, 5).map(l => {
+                    const lDate = new Date(l.time);
+                    return {
+                        ...l,
+                        time: lDate.toLocaleDateString() + ' ' + lDate.toLocaleTimeString()
+                    };
+                });
+                setAuditLogs(logs);
 
             } catch (error) {
                 console.error('Admin data mapping failed:', error);
@@ -201,20 +185,14 @@ const AdminDashboard = () => {
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
         { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Loading System Intelligence...</p>
-            </div>
-        </div>
-    );
+   
 
     return (
         <DashboardLayout
@@ -222,6 +200,7 @@ const AdminDashboard = () => {
             headerTitle="Administrative Intelligence"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
+            loading={loading}
         >
             <div className="space-y-10">
 

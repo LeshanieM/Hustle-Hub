@@ -200,8 +200,8 @@ const AlertPanel = () => {
                 </button>
             </form>
             
-            <div className="flex-1 overflow-y-auto">
-                <table className="w-full text-left max-h-[300px]">
+            <div className="flex-1 overflow-x-auto">
+                <table className="w-full text-left min-w-[600px]">
                     <thead className="bg-slate-50/50 text-slate-500 text-[10px] font-bold uppercase tracking-widest sticky top-0 z-10 backdrop-blur-md">
                         <tr>
                             <th className="px-6 py-4">Tracked Product</th>

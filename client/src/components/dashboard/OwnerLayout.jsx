@@ -31,14 +31,20 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                             <span className="material-icons-filled">dashboard</span>
                             <span>Overview</span>
                         </Link>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'products' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        <Link 
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'products' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
+                            to="/owner/products"
+                        >
                             <span className="material-symbols-outlined">inventory_2</span>
                             <span>Products</span>
-                        </a>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'orders' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        </Link>
+                        <Link 
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'orders' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
+                            to="/owner/orders"
+                        >
                             <span className="material-symbols-outlined">shopping_cart</span>
                             <span>Orders</span>
-                        </a>
+                        </Link>
                         <Link className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'reports' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} to="/owner/reports">
                             <span className="material-symbols-outlined">bar_chart</span>
                             <span>Reports</span>
@@ -85,7 +91,6 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                                     <p className="text-sm font-semibold">{user?.firstName ? `${user.firstName} ${user.lastName}` : "Shop Owner"}</p>
                                     <p className="text-xs text-slate-500">Shop Owner</p>
                                 </div>
-                                <div className="h-10 w-10 rounded-full bg-slate-200 border border-[#1111d4]/20 overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || 'Owner'}&backgroundColor=b6e3f4')` }}></div>
                             </div>
                         </div>
                     </header>

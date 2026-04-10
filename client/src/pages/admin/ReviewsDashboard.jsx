@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import AdminHeader from '../../components/AdminHeader';
 import ReviewStatsBar from '../../components/admin/ReviewStatsBar';
 import RatingDistribution from '../../components/admin/RatingDistribution';
 import FlaggedQueue from '../../components/admin/FlaggedQueue';
@@ -12,6 +14,15 @@ const ReviewsDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const sidebarItems = [
+    { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+    { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+    { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
+    { label: 'User Directory', icon: 'group', path: '/admin/users' },
+    { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' }, 
+    { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+  ];
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -52,7 +63,13 @@ const ReviewsDashboard = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-64px)] mt-16 bg-[#f8f9fa] pt-8 pb-12 px-4 sm:px-8 font-sans">
+    <DashboardLayout 
+      role="Administrator" 
+      headerTitle="Review Management"
+      sidebarItems={sidebarItems}
+      TopHeader={AdminHeader}
+      loading={loading}
+    >
       <Toaster position="top-right" />
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-8 text-left">
@@ -86,7 +103,7 @@ const ReviewsDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
