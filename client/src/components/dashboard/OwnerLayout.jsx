@@ -29,20 +29,26 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                             to="/owner-dashboard"
                         >
                             <span className="material-icons-filled">dashboard</span>
-                            <span>Dashboard</span>
+                            <span>Overview</span>
                         </Link>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'products' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        <Link 
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'products' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
+                            to="/owner/products"
+                        >
                             <span className="material-symbols-outlined">inventory_2</span>
                             <span>Products</span>
-                        </a>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'orders' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        </Link>
+                        <Link 
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'orders' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
+                            to="/owner/orders"
+                        >
                             <span className="material-symbols-outlined">shopping_cart</span>
                             <span>Orders</span>
-                        </a>
-                        <a className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'reports' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} href="#">
+                        </Link>
+                        <Link className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'reports' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} to="/owner/reports">
                             <span className="material-symbols-outlined">bar_chart</span>
                             <span>Reports</span>
-                        </a>
+                        </Link>
                         <Link 
                             className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeTab === 'analytics' ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' : 'text-slate-600 hover:bg-slate-100'}`} 
                             to="/analytics"
@@ -72,20 +78,13 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', theme = 'light' }) => 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden">
                     {/* Top Navigation */}
-                    <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 shrink-0">
-                        <div className="flex-1 max-w-xl">
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1111d4] transition-colors">search</span>
-                                <input className="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-[#1111d4] transition-all text-sm outline-none" placeholder="Search products, orders, or analytics..." type="text" />
-                            </div>
-                        </div>
+                    <header className="h-16 flex items-center justify-end px-8 bg-white border-b border-slate-200 shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3 pl-2">
                                 <div className="text-right hidden md:block">
                                     <p className="text-sm font-semibold">{user?.firstName ? `${user.firstName} ${user.lastName}` : "Shop Owner"}</p>
                                     <p className="text-xs text-slate-500">Shop Owner</p>
                                 </div>
-                                <div className="h-10 w-10 rounded-full bg-slate-200 border border-[#1111d4]/20 overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.firstName || 'Owner'}&backgroundColor=b6e3f4')` }}></div>
                             </div>
                         </div>
                     </header>

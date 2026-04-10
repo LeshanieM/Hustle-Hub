@@ -17,11 +17,11 @@ const DashboardSidebar = ({ menuItems = [], role = 'Customer' }) => {
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full sticky top-0">
-      {/* Logo Section - Aligned with Header height if needed, but kept for context */}
+      {/* Logo Section */}
       <div className="p-6 border-b border-slate-100 min-h-[70px] flex items-center">
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 bg-[#1111d4] rounded-lg flex items-center justify-center text-white shrink-0">
-            <span className="material-symbols-outlined text-xl font-bold">rocket_launch</span>
+            <span className="material-symbols-outlined notranslate text-xl font-bold">rocket_launch</span>
           </div>
           <div>
             <p className="text-[10px] font-black text-[#1111d4] uppercase tracking-[0.15em]">{role} Portal</p>
@@ -34,7 +34,7 @@ const DashboardSidebar = ({ menuItems = [], role = 'Customer' }) => {
         {menuItems.map((item, idx) => {
           const content = (
             <>
-              <span className={`material-symbols-outlined text-[20px] transition-transform group-hover:scale-105`}>
+              <span className={`material-symbols-outlined notranslate text-[20px] transition-transform group-hover:scale-105`}>
                 {item.icon}
               </span>
               <span className="text-sm">{item.label}</span>
@@ -45,11 +45,11 @@ const DashboardSidebar = ({ menuItems = [], role = 'Customer' }) => {
               )}
             </>
           );
-          
+
           const classes = (active) => `
             flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group w-full text-left border-none cursor-pointer
-            ${active 
-              ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold' 
+            ${active
+              ? 'bg-[#1111d4]/10 text-[#1111d4] font-bold'
               : 'text-slate-600 hover:bg-slate-100 font-medium'}
           `;
 
@@ -71,22 +71,24 @@ const DashboardSidebar = ({ menuItems = [], role = 'Customer' }) => {
             </NavLink>
           );
         })}
+
+
       </nav>
 
       {/* Footer Nav */}
       <div className="p-4 border-t border-slate-100 space-y-1">
         <NavLink
-            to="/profile"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium text-sm"
-          >
-            <span className="material-symbols-outlined text-[20px]">person</span>
-            <span>Profile</span>
-          </NavLink>
+          to="/profile"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium text-sm"
+        >
+          <span className="material-symbols-outlined notranslate text-[20px]">person</span>
+          <span>Profile</span>
+        </NavLink>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors font-medium text-sm"
         >
-          <span className="material-symbols-outlined text-[20px]">logout</span>
+          <span className="material-symbols-outlined notranslate text-[20px]">logout</span>
           <span>Sign Out</span>
         </button>
       </div>

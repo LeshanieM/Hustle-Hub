@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import CustomerHeader from '../../components/CustomerHeader';
 import Footer from '../../components/Footer';
@@ -8,7 +8,9 @@ const BrowseStores = () => {
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-     const [activeTab, setActiveTab] = useState('All');
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState('All');
+    const [searchQuery, setSearchQuery] = useState(location.state?.search || '');
 
     const tabs = ['All', 'Apparel', 'Food & Drink', 'Services', 'Tech', 'Creatives'];
 
@@ -39,8 +41,22 @@ const BrowseStores = () => {
             <main className="flex-1 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-16 w-full">
                 <div className="mb-10 text-center">
                     <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">University Storefronts</h1>
-                    <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto mb-10">Support student entrepreneurs and discover unique products across campus.</p>
+                    <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto mb-6">Support student entrepreneurs and discover unique products across campus.</p>
                     
+                    {/* Store Search Input */}
+                    <div className="max-w-md mx-auto mb-10 relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span className="material-symbols-outlined text-slate-400">search</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Find a specific store..."
+                            className="block w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full shadow-sm focus:ring-2 focus:ring-[#1111d4] focus:border-transparent outline-none transition-all"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
                     {/* Category Filter Tabs */}
                     <div className="flex flex-wrap items-center justify-center gap-2">
                         {tabs.map((tab) => (
@@ -67,9 +83,9 @@ const BrowseStores = () => {
                     <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-6 font-medium">
                         <strong>Error loading stores:</strong> {error}
                     </div>
-                ) : stores.length > 0 ? (
+                ) : stores.filter(s => s.storeName.toLowerCase().includes(searchQuery.toLowerCase()) || s.description?.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {stores.map((store) => (
+                        {stores.filter(s => s.storeName.toLowerCase().includes(searchQuery.toLowerCase()) || s.description?.toLowerCase().includes(searchQuery.toLowerCase())).map((store) => (
                             <Link
                                 to={`/store/${encodeURIComponent(store.storeName)}`}
                                 key={store._id}

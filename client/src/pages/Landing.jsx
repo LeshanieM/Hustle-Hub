@@ -308,7 +308,22 @@ export default function Landing() {
   const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState('products');
   const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      if (searchType === 'stores') {
+        navigate('/stores', { state: { search: searchQuery.trim() } });
+      } else {
+        navigate('/customer/products', { state: { search: searchQuery.trim() } });
+      }
+    } else {
+      navigate(searchType === 'stores' ? '/stores' : '/customer/products');
+    }
+  };
 
   const renderHeader = () => {
     if (!user) return <CustomerHeader />;
@@ -362,25 +377,32 @@ export default function Landing() {
           <p className="text-lg text-slate-500 mb-10">
             Discover local student-run businesses and essentials on campus.
           </p>
-          <div className="relative group max-w-2xl mx-auto">
-            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-              <MaterialIcon
-                name="search"
-                className="text-slate-400 group-focus-within:text-[#1111d4]"
-                size={24}
-              />
+          <form onSubmit={handleSearch} className="relative group max-w-3xl mx-auto flex items-center bg-white rounded-2xl shadow-lg shadow-[#1111d4]/5 focus-within:ring-1 focus-within:ring-[#1111d4] h-[64px]">
+            <div className="pl-5 flex items-center justify-center">
+              <MaterialIcon name="search" className="text-slate-400 group-focus-within:text-[#1111d4]" size={24} />
             </div>
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              className="bg-transparent border-none outline-none font-bold text-slate-700 pl-4 pr-1 py-4 focus:ring-0 cursor-pointer text-sm"
+            >
+              <option value="products">Products</option>
+              <option value="stores">Stores</option>
+            </select>
+            <div className="w-px h-8 bg-slate-200 mx-1"></div>
             <input
-              className="block w-full pl-14 pr-32 py-5 bg-white border-none rounded-2xl shadow-lg shadow-[#1111d4]/5 focus:ring-1 focus:ring-[#1111d4] text-base placeholder-slate-300 outline-none"
-              placeholder="Search textbooks, tech, food, and more..."
+              className="flex-1 w-full pl-3 pr-4 py-4 bg-transparent border-none outline-none text-base placeholder-slate-300"
+              placeholder={searchType === 'stores' ? "Search for student-run stores..." : "Search textbooks, tech, food, and more..."}
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <div className="absolute inset-y-2 right-2">
-              <button className="h-full px-8 bg-[#1111d4] text-white font-bold rounded-xl hover:bg-[#0d0db0] transition-all active:scale-95 border-none cursor-pointer">
+            <div className="pr-2">
+              <button type="submit" className="h-[48px] px-8 bg-[#1111d4] text-white font-bold rounded-xl hover:bg-[#0d0db0] transition-all active:scale-95 border-none cursor-pointer">
                 Search
               </button>
             </div>
-          </div>
+          </form>
         </section>
 
         {/* Featured Categories */}

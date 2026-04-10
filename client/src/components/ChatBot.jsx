@@ -16,9 +16,65 @@ const ChatBot = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  
+  // Add ID counter ref
+  const idCounterRef = useRef(1);
+  
+  // Helper function to get next ID
+  const getNextId = () => {
+    idCounterRef.current += 1;
+    return idCounterRef.current;
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = true;
+
+      recognitionRef.current.onresult = (event) => {
+        let currentTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          currentTranscript += event.results[i][0].transcript;
+        }
+        setInputValue(currentTranscript);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          toast.error("Microphone access denied.");
+        }
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      toast.error('Voice recognition is not supported in this browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      setInputValue(''); // Clear previous input
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   useEffect(() => {
@@ -30,13 +86,31 @@ const ChatBot = () => {
     if (!hasOpened) setHasOpened(true);
   };
 
-  const handleSendMessage = (e) => {
+  const fetchBotResponse = async (userText) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userText }),
+      });
+      const data = await response.json();
+      return data.reply || "Sorry, I am having trouble connecting.";
+    } catch (error) {
+      console.error("Chat API Error:", error);
+      return "Error connecting to the server.";
+    }
+  };
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
+    const userText = inputValue;
     const userMessage = { 
-      id: Date.now(), 
-      text: inputValue, 
+      id: getNextId(), 
+      text: userText, 
       sender: 'user', 
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
     };
@@ -44,50 +118,40 @@ const ChatBot = () => {
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        text: getBotResponse(inputValue),
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        reactions: { up: 0, down: 0 }
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1500);
+    const replyText = await fetchBotResponse(userText);
+    
+    const botResponse = {
+      id: getNextId(),
+      text: replyText,
+      sender: 'bot',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      reactions: { up: 0, down: 0 }
+    };
+    setMessages(prev => [...prev, botResponse]);
+    setIsTyping(false);
   };
 
-  const getBotResponse = (query) => {
-    const q = query.toLowerCase();
-    if (q.includes('price') || q.includes('cost')) return "Our pricing depends on the services you choose. You can find detailed pricing on our services page.";
-    if (q.includes('contact')) return "You can reach us at support@hustle-hub.com or through our contact form.";
-    if (q.includes('hours') || q.includes('open')) return "We are open Monday to Friday, 9 AM to 6 PM.";
-    if (q.includes('hello') || q.includes('hi')) return "Hello! How can I assist you with Hustle-Hub today?";
-    if (q.includes('simulator') || q.includes('room') || q.includes('build')) return "Our Room Builder Simulator is ready! You can drag, resize, and rotate products in a virtual space. Click 'Try Simulator' below to check it out.";
-    return "I'm not sure about that. Let me connect you with a team member, or you can try asking about our services, pricing, or contact info!";
-  };
-
-  const handleFAQClick = (faq) => {
+  const handleFAQClick = async (faqText) => {
     const userMessage = { 
-      id: Date.now(), 
-      text: faq, 
+      id: getNextId(), 
+      text: faqText, 
       sender: 'user', 
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
     };
     setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        text: getBotResponse(faq),
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        reactions: { up: 0, down: 0 }
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1000);
+    const replyText = await fetchBotResponse(faqText);
+
+    const botResponse = {
+      id: getNextId(),
+      text: replyText,
+      sender: 'bot',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      reactions: { up: 0, down: 0 }
+    };
+    setMessages(prev => [...prev, botResponse]);
+    setIsTyping(false);
   };
 
   const copyToClipboard = (text) => {
@@ -133,8 +197,14 @@ const ChatBot = () => {
           {/* Header */}
           <div className="p-4 bg-gray-50 border-bottom border-gray-100 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-sm">HB</span>
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-400 rounded-full blur-sm animate-pulse opacity-30"></div>
+                <svg viewBox="0 0 100 100" className="w-6 h-6 relative z-10 animate-bounce" style={{ animationDuration: '3s' }}>
+                    <circle cx="50" cy="50" r="45" fill="white" stroke="#1111d4" strokeWidth="2" />
+                    <circle cx="35" cy="45" r="5" fill="#1111d4" />
+                    <circle cx="65" cy="45" r="5" fill="#1111d4" />
+                    <path d="M 35 65 Q 50 75 65 65" fill="none" stroke="#1111d4" strokeWidth="3" strokeLinecap="round" />
+                </svg>
               </div>
               <div>
                 <h3 className="font-bold text-gray-800 text-sm leading-tight">Hustle-Bot</h3>
@@ -205,22 +275,29 @@ const ChatBot = () => {
 
           {/* FAQ Shortcuts */}
           <div className="px-4 pb-3 flex flex-wrap gap-2 overflow-x-auto">
-            {['Simulator', 'Pricing', 'Contact Us', 'Hours'].map((faq) => (
+            {['Try Simulator', 'Growth Tip 💡', 'Contact Us'].map((faq) => (
               <button 
                 key={faq} 
-                onClick={() => {
-                  if (faq === 'Simulator') navigate('/room-builder');
-                  else handleFAQClick(faq);
-                }}
+                onClick={() => handleFAQClick(faq === 'Growth Tip 💡' ? 'Get a random Growth Tip' : faq === 'Try Simulator' ? '🏡 Try Simulator' : faq)}
                 className="whitespace-nowrap px-3 py-1.5 bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 rounded-full text-xs font-semibold transition-all shadow-sm"
               >
-                {faq === 'Simulator' ? '🏠 Try Simulator' : faq}
+                {faq === 'Try Simulator' ? '🏡 Try Simulator' : faq}
               </button>
             ))}
           </div>
 
           {/* Input Area */}
           <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-100 flex items-center space-x-2">
+            <button 
+              type="button"
+              onClick={toggleListening}
+              className={`p-2 flex-shrink-0 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+              title={isListening ? "Stop listening" : "Start voice input"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8h-2a5 5 0 01-10 0H3a7.001 7.001 0 006 6.93V17H6v2h8v-2h-3v-2.07z" clipRule="evenodd" />
+              </svg>
+            </button>
             <input 
               type="text" 
               placeholder="Type your message..." 

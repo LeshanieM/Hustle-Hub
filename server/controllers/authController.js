@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { extractStudentId } = require("../services/ocrService");
 const { generateOTP } = require("../utils/generateOTP");
 const { sendOTP } = require("../services/emailService");
+const { logAction } = require("../utils/auditLogger");
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "secret_fallback", {
@@ -139,6 +140,13 @@ const verifyOTP = async (req, res) => {
       isVerified: true,
     });
 
+     await logAction({
+      action: `${user.role || 'USER'} Registered`,
+      type: 'USER',
+      target: user.username,
+      icon: 'person_add'
+    });
+
     // Auto-create store if user is an OWNER
     if (tempUser.role === "OWNER") {
       await Store.create({
@@ -146,6 +154,12 @@ const verifyOTP = async (req, res) => {
         storeName: `${user.username}'s Store`,
         description: `Welcome to ${user.username}'s official storefront!`,
         status: "ACTIVE", // Auto-activating for now as per "auto-created" request
+      });
+      await logAction({
+        action: 'Store CREATED',
+        type: 'STORE',
+        target: `${user.username}'s Store`,
+        icon: 'storefront'
       });
     }
 

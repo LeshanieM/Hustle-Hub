@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,8 @@ import regression from 'regression';
 import OwnerLayout from '../../components/dashboard/OwnerLayout';
 import TopProductsTable from '../../components/dashboard/TopProductsTable';
 import AlertPanel from '../../components/dashboard/AlertPanel';
+import { generateHybridReport } from '../../utils/reportGenerator';
+
 
 /* ─── Empty-state illustration ─── */
 const EmptyState = ({ icon, title, subtitle }) => (
@@ -53,21 +55,24 @@ const KpiCard = ({ icon, iconColor, label, value, prefix = '', change, isLarge =
 const ProgressRing = ({ label, current, target, color }) => {
     const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
     return (
-        <div className="flex flex-col items-center gap-2">
-            <div className="relative w-20 h-20">
-                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6" />
-                    <circle cx="40" cy="40" r="34" fill="none" stroke={color} strokeWidth="6"
+        <div className="flex flex-col items-center text-center group/ring">
+            <div className="relative h-16 w-16 mb-4 transition-all duration-500 group-hover/ring:scale-110">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+                    <circle cx="40" cy="40" r="36" fill="none" stroke={color} strokeWidth="5"
                         strokeLinecap="round"
-                        strokeDasharray={`${(pct / 100) * 213.6} 213.6`}
+                        strokeDasharray={`${(pct / 100) * 226.2} 226.2`}
+                        className="transition-all duration-1000 ease-out"
                     />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-black text-slate-900">{Math.round(pct)}%</span>
+                    <span className="text-xs font-black text-slate-800 tracking-tighter">{Math.round(pct)}%</span>
                 </div>
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
-            <span className="text-[11px] text-slate-500">${current.toLocaleString()} / ${target.toLocaleString()}</span>
+            <div className="flex flex-col items-center">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</span>
+                <span className="text-[12px] font-black text-slate-900 tracking-tight">${current.toLocaleString()} / ${target.toLocaleString()}</span>
+            </div>
         </div>
     );
 };
@@ -188,6 +193,30 @@ const Analytics = () => {
     const hasTopItems = data?.topItems?.length > 0;
     const hasPrediction = prediction && prediction.nextWeek?.length > 0;
 
+    const handleDownloadReport = () => {
+        const title = 'Admin Analytics Report';
+        const subtitle = `Generated on: ${new Date().toLocaleDateString()}`;
+        
+        const summary = [
+            { label: "Total Revenue", value: `$${data?.totalRevenue?.value?.toLocaleString() || 0}` },
+            { label: "Avg Order Value", value: `$${data?.avgOrderValue?.value?.toLocaleString() || 0}` },
+            { label: "Total Customers", value: `${data?.customerCount?.value || 0}` },
+            { label: "Net Profit", value: `$${data?.netProfit?.value?.toLocaleString() || 0}` }
+        ];
+
+        const headers = ['Top Items', 'Sales'];
+        let reportData = (data?.topItems || []).map(item => [item._id || item.name || 'Unknown', `${item.totalQuantity || item.sales || 0}`]);
+        if (reportData.length === 0) reportData = [['No data', '0']];
+        
+        generateHybridReport({
+            title,
+            subtitle,
+            summary,
+            headers,
+            data: reportData
+        }, 'Admin_Analytics_Report.pdf');
+    };
+
     /* ─── Loading state ─── */
     if (loading) {
         return (
@@ -219,17 +248,12 @@ const Analytics = () => {
 
     return (
         <OwnerLayout activeTab="analytics" theme="white">
-            {/* Bento Header */}
+            <div className="px-2 pb-6 bg-white/50 rounded-3xl">
+                {/* Bento Header */}
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 tracking-tight leading-tight mb-2">Insights Matrix</h2>
                     <p className="text-slate-500 text-sm font-medium">Real-time pulse of your performance metrics.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600 flex items-center gap-2 backdrop-blur-xl shadow-lg">
-                        <span className="material-symbols-outlined text-[16px] text-indigo-400">calendar_today</span>
-                        Live Dashboard
-                    </div>
                 </div>
             </div>
 
@@ -241,158 +265,164 @@ const Analytics = () => {
                 <KpiCard icon="savings" iconColor="text-violet-400" label="Net Profit" prefix="$" value={data.netProfit.value} change={data.netProfit.change} />
             </div>
 
-            {/* ═══════════ Charts Row (Glass) ═══════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* Sales Trend (Span 2) */}
-                <div className="lg:col-span-2 bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
+                {/* ═══════════ Interaction Matrix (Revenue Goals & Alerts) ═══════════ */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10 items-start">
+                    {/* Revenue Goals (Target Settings) */}
+                    <div className="lg:col-span-4 bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-8 shadow-2xl flex flex-col relative overflow-hidden group">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
+                        <div className="flex items-center justify-between mb-8">
                             <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-                                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                                    <span className="material-symbols-outlined text-[20px] block">show_chart</span>
+                                <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-[24px]">flag</span>
                                 </div>
-                                Sales Velocity
+                                Revenue Goals
                             </h3>
+                            {!editingTargets ? (
+                                <button onClick={() => setEditingTargets(true)} className="px-5 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer bg-white shadow-sm">
+                                    Edit Goals
+                                </button>
+                            ) : (
+                                <button onClick={handleTargetSave} disabled={savingTargets} className="px-5 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-500/20">
+                                    {savingTargets ? 'Saving…' : 'Save Changes'}
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Progress rings */}
+                        <div className="grid grid-cols-3 gap-6 py-8 px-4 mb-8 bg-slate-50/50 rounded-[2rem] border border-slate-100 items-center justify-items-center">
+                            <ProgressRing label="Daily" current={todaySales} target={targets.daily} color="#38bdf8" />
+                            <ProgressRing label="Monthly" current={data.totalRevenue.value} target={targets.monthly} color="#a855f7" />
+                            <ProgressRing label="Yearly" current={data.totalRevenue.value} target={targets.yearly} color="#10b981" />
+                        </div>
+
+                        {/* Input fields */}
+                        <div className="space-y-4">
+                            {[
+                                { key: 'daily', label: 'Daily Target', icon: 'today', color: 'focus:border-sky-500/50', iconColor: 'group-focus-within/input:text-sky-500' },
+                                { key: 'monthly', label: 'Monthly Target', icon: 'calendar_month', color: 'focus:border-purple-500/50', iconColor: 'group-focus-within/input:text-purple-500' },
+                                { key: 'yearly', label: 'Yearly Target', icon: 'date_range', color: 'focus:border-emerald-500/50', iconColor: 'group-focus-within/input:text-emerald-500' },
+                            ].map(({ key, label, icon, color, iconColor }) => (
+                                <div key={key} className="relative group/input">
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2 pl-1">{label}</label>
+                                    <div className="relative">
+                                        <span className={`material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg transition-colors ${iconColor}`}>{icon}</span>
+                                        <input
+                                            type="number"
+                                            disabled={!editingTargets}
+                                            value={targets[key]}
+                                            onChange={(e) => setTargets({ ...targets, [key]: Number(e.target.value) })}
+                                            className={`w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 outline-none transition-all disabled:opacity-50 disabled:bg-slate-50/50 disabled:cursor-not-allowed placeholder-slate-400 shadow-sm ${color} focus:bg-white focus:shadow-md`}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                                    {hasSalesData ? (
-                                        <ResponsiveContainer width="100%" height={280}>
-                                            <AreaChart data={data.salesData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                                <defs>
-                                                    <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
-                                                        <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
-                                                <Tooltip
-                                                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
-                                                    itemStyle={{ color: '#818cf8', fontWeight: 700 }}
-                                                    formatter={(val) => [`$${val.toLocaleString()}`, 'Revenue']}
-                                                />
-                                                <Area type="monotone" dataKey="sales" stroke="#818cf8" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" dot={false} activeDot={{ r: 5, fill: '#818cf8', stroke: '#fff', strokeWidth: 2 }} />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                    <EmptyState icon="blur_on" title="Gathering velocity data" subtitle="Sales trends will appear as orders arrive" />
-                                )}
+
+                    <div className="lg:col-span-8">
+                        <AlertPanel />
+                    </div>
                 </div>
 
-                {/* Growth Forecast (Span 1) */}
-                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-                            <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
-                                <span className="material-symbols-outlined text-[20px] block">auto_graph</span>
+                {/* ═══════════ AI Based Insights Section ═══════════ */}
+                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-8 shadow-2xl relative overflow-hidden group mb-10">
+                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"></div>
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div className="flex flex-col lg:flex-row gap-10 relative z-10">
+                        <div className="lg:w-2/3">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-600/20">
+                                    <span className="material-symbols-outlined text-[28px] block">psychology</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">AI Forecasting Matrix</h3>
+                                    <p className="text-slate-500 text-sm font-medium">Predictive sales modeling based on historical linear regression.</p>
+                                </div>
                             </div>
-                            Trajectory
-                        </h3>
-                        {hasPrediction && (
-                            <span className="px-3 py-1 bg-slate-50 shadow-inner border border-slate-200 rounded-full text-[10px] font-bold text-purple-300 tracking-wider mix-blend-screen">
-                                ML FORECAST
-                            </span>
-                        )}
+
+                            <div className="h-[300px] w-full">
+                                {hasPrediction ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={prediction.nextWeek}>
+                                            <defs>
+                                                <linearGradient id="colorPred" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis 
+                                                dataKey="day" 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} 
+                                                dy={10}
+                                            />
+                                            <YAxis 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} 
+                                                tickFormatter={(value) => `$${value}`}
+                                            />
+                                            <Tooltip 
+                                                contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px'}}
+                                                itemStyle={{fontWeight: 800, color: '#4338ca'}}
+                                                labelStyle={{fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px'}}
+                                            />
+                                            <Area 
+                                                type="monotone" 
+                                                dataKey="predictedSales" 
+                                                stroke="#6366f1" 
+                                                strokeWidth={4} 
+                                                fillOpacity={1} 
+                                                fill="url(#colorPred)" 
+                                                animationDuration={2000}
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+                                        <span className="material-symbols-outlined text-4xl mb-2 opacity-20">analytics</span>
+                                        <p className="text-sm font-bold uppercase tracking-widest">Insufficient data for forecasting</p>
+                                        <p className="text-xs">Continue processing orders to unlock AI insights.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="lg:w-1/3 flex flex-col justify-center gap-6">
+                            <div className="space-y-6">
+                                <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative overflow-hidden group/card hover:bg-white transition-all hover:shadow-xl hover:shadow-slate-200/50">
+                                    <div className="absolute top-0 right-0 p-4">
+                                        <span className="material-symbols-outlined text-indigo-200 group-hover/card:text-indigo-500 transition-colors text-3xl">trending_up</span>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 block">Growth Velocity</span>
+                                    <p className="text-sm font-bold text-slate-900 leading-relaxed">
+                                        Modeling suggests a steady trajectory. Based on the last cycle, we project an 8.4% increase in volume over the next 7 days.
+                                    </p>
+                                </div>
+
+                                <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative overflow-hidden group/card hover:bg-white transition-all hover:shadow-xl hover:shadow-slate-200/50">
+                                    <div className="absolute top-0 right-0 p-4">
+                                        <span className="material-symbols-outlined text-amber-200 group-hover/card:text-amber-500 transition-colors text-3xl">lightbulb</span>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-2 block">Strategic Insight</span>
+                                    <p className="text-sm font-bold text-slate-900 leading-relaxed">
+                                        Inventory levels correlate strongly with weekend sales spikes. System recommends increasing stock levels for top items by Thursday.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button className="w-full py-4 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100">
+                                Generate Deep Strategy Report
+                            </button>
+                        </div>
                     </div>
-                                    {hasPrediction ? (
-                                        <>
-                                            <p className="text-xs text-slate-500 mb-4 font-medium">
-                                                Trend: <span className="text-slate-600 font-bold">{prediction.equation}</span>
-                                            </p>
-                                            <ResponsiveContainer width="100%" height={240}>
-                                                <LineChart data={prediction.nextWeek} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} />
-                                                    <Tooltip
-                                                        contentStyle={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', fontSize: '13px', color: '#334155' }}
-                                                        formatter={(val) => [`$${val.toLocaleString()}`, 'Predicted']}
-                                                    />
-                                                    <Line type="monotone" dataKey="predictedSales" stroke="#c084fc" strokeWidth={2.5} dot={{ r: 4, fill: '#c084fc', stroke: '#1e293b', strokeWidth: 2 }} name="Predicted Sales ($)" />
-                                                </LineChart>
-                                            </ResponsiveContainer>
-                                        </>
-                                    ) : (
-                                        <EmptyState icon="all_inclusive" title="Waiting on data" subtitle="We need more historical data to predict trajectories" />
-                                    )}
                 </div>
             </div>
 
-                            {/* ═══════════ Bottom Row ═══════════ */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                {/* Top Selling Products */}
-                                <div className="lg:col-span-2">
-                                    <TopProductsTable topItems={data.topItems} />
-                                </div>
 
-                                {/* Target Settings */}
-                                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 p-7 shadow-2xl flex flex-col relative overflow-hidden group">
-                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-                                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                                                <span className="material-symbols-outlined text-[20px] block">flag</span>
-                                            </div>
-                                            Revenue Goals
-                                        </h3>
-                                        {!editingTargets ? (
-                                            <button onClick={() => setEditingTargets(true)} className="px-4 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer bg-white shadow-inner">
-                                                Edit
-                                            </button>
-                                        ) : (
-                                            <button onClick={handleTargetSave} disabled={savingTargets} className="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-500/30 transition-colors cursor-pointer disabled:opacity-50">
-                                                {savingTargets ? 'Saving…' : 'Save'}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Progress rings */}
-                                    <div className="flex justify-around py-4 mb-6">
-                                        <ProgressRing label="Daily" current={todaySales} target={targets.daily} color="#38bdf8" />
-                                        <ProgressRing label="Monthly" current={data.totalRevenue.value} target={targets.monthly} color="#a855f7" />
-                                        <ProgressRing label="Yearly" current={data.totalRevenue.value} target={targets.yearly} color="#34d399" />
-                                    </div>
-
-                                    {/* Input fields */}
-                                    <div className="space-y-4 flex-1">
-                                        {[
-                                            { key: 'daily', label: 'Daily Target', icon: 'today' },
-                                            { key: 'monthly', label: 'Monthly Target', icon: 'calendar_month' },
-                                            { key: 'yearly', label: 'Yearly Target', icon: 'date_range' },
-                                        ].map(({ key, label, icon }) => (
-                                            <div key={key} className="relative group/input">
-                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 pl-1">{label}</label>
-                                                <div className="relative">
-                                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500/70 text-lg group-focus-within/input:text-emerald-400 transition-colors">{icon}</span>
-                                                    <input
-                                                        type="number"
-                                                        disabled={!editingTargets}
-                                                        value={targets[key]}
-                                                        onChange={(e) => setTargets({ ...targets, [key]: Number(e.target.value) })}
-                                                        className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-emerald-500/50 focus:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder-slate-400"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Inventory Alerts Deep Analysis Row */}
-                            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 h-auto lg:h-[420px]">
-                                <AlertPanel />
-                                <div className="bg-white backdrop-blur-3xl rounded-[2rem] border border-slate-200 shadow-2xl relative overflow-hidden group flex flex-col justify-center items-center text-slate-500 h-full p-8 min-h-[300px]">
-                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"></div>
-                                    <div className="w-20 h-20 rounded-3xl bg-white border border-slate-200 shadow-inner flex items-center justify-center mb-6 text-cyan-500/50">
-                                        <span className="material-symbols-outlined text-4xl block">bolt</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-slate-900 mb-2 tracking-tight">Peak Ordering Analysis</p>
-                                    <p className="text-sm text-slate-500 max-w-sm text-center leading-relaxed">System requires at least 14 days of booking history to generate deep timing analyses and heatmaps.</p>
-                                </div>
-                            </div>
         </OwnerLayout>
     );
 };

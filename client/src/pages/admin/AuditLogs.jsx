@@ -16,44 +16,16 @@ const AuditLogs = () => {
                 const token = localStorage.getItem('token');
                 if (!token) throw new Error("No token");
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                
-                // Fetch users and stores to dynamically build logs
-                const [storesRes, usersRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] }))
-                ]);
 
-                const stores = storesRes.data || [];
-                const users = usersRes.data || [];
+                // Fetch real audit logs from the new backend endpoint
+                const response = await axios.get('http://localhost:5000/api/admin/audit-logs', config);
 
-                const logs = [];
-                users.forEach(u => {
-                    logs.push({
-                        id: u._id,
-                        action: `${u.role || 'USER'} Registered`,
-                        type: 'USER',
-                        target: u.username,
-                        admin: 'System',
-                        time: new Date(u.createdAt),
-                        rawTime: new Date(u.createdAt).getTime(),
-                        icon: 'person_add'
-                    });
-                });
-                stores.forEach(b => {
-                    logs.push({
-                        id: b._id,
-                        action: `Store ${b.status}`,
-                        type: 'STORE',
-                        target: b.storeName,
-                        admin: 'System',
-                        time: new Date(b.createdAt),
-                        rawTime: new Date(b.createdAt).getTime(),
-                        icon: 'storefront'
-                    });
-                });
+                const logs = (response.data || []).map(l => ({
+                    ...l,
+                    time: new Date(l.time) // Re-hydrate Date object
+                }));
 
-                // Sort descending
-                setAuditLogs(logs.sort((a,b) => b.rawTime - a.rawTime));
+                setAuditLogs(logs);
             } catch (error) {
                 console.error('Failed to fetch audit records:', error);
             } finally {
@@ -65,10 +37,14 @@ const AuditLogs = () => {
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
+        { label: 'Products Management', icon: 'shopping_bag', path: '/admin/products' },
+        { label: 'Order Management', icon: 'receipt_long', path: '/admin/orders' },
         { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
         { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'System Health', icon: 'monitor_heart', path: '/admin/system-health' }, 
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' }, 
+        { label: 'FAQ Management', icon: 'quiz', path: '/admin/faqs' },
+        { label: 'Reports', icon: 'analytics', path: '/admin/reports' },
+        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
+        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
     const filtered = auditLogs.filter(log => {
@@ -76,22 +52,14 @@ const AuditLogs = () => {
         return matchesSearch;
     });
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Compiling Logs...</p>
-            </div>
-        </div>
-    );
-
     return (
-        <DashboardLayout 
-            role="Administrator" 
+        <DashboardLayout role="Administrator"
             headerTitle="Security & Activity Logs"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
-        >
+            loading={loading}
+
+            showSearch={false}>
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in py-4">
                 {/* Header Profile */}
                 <div className="relative overflow-hidden bg-slate-900 rounded-[32px] p-8 md:p-12 text-white shadow-xl">
@@ -116,9 +84,9 @@ const AuditLogs = () => {
                 <div className="bg-white p-2 rounded-2xl border border-slate-200">
                     <div className="relative">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search logs by action or target..." 
+                        <input
+                            type="text"
+                            placeholder="Search logs by action or target..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-transparent rounded-xl py-3 pl-12 pr-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none"
@@ -141,14 +109,12 @@ const AuditLogs = () => {
                                             <span className="material-symbols-outlined text-sm">{log.icon}</span>
                                         </div>
                                     </div>
-                                    
                                     {/* Log Content */}
                                     <div className="flex-1 bg-slate-50 group-hover:bg-indigo-50/30 rounded-2xl p-4 md:p-6 border border-slate-100 transition-colors">
                                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
                                             <div className="flex items-center gap-2">
-                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-widest font-black ${
-                                                    log.type === 'STORE' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-                                                }`}>{log.type}</span>
+                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-widest font-black ${log.type === 'STORE' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
+                                                    }`}>{log.type}</span>
                                                 <h4 className="font-black text-slate-900 text-sm">{log.action}</h4>
                                             </div>
                                             <time className="text-xs font-bold text-slate-400 flex items-center gap-1">

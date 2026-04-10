@@ -42,6 +42,11 @@ const Header = () => {
                 Stores
               </button>
             </Link>
+            <Link to="/customer/contact">
+              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+                Contact Us
+              </button>
+            </Link>
             <Link to="/profile">
               <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
                 Profile

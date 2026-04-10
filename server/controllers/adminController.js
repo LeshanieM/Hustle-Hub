@@ -2,6 +2,8 @@ const Booking = require('../models/Booking');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const Store = require('../models/Store');
+const AuditLog = require('../models/AuditLog');
+const { logAction } = require('../utils/auditLogger');
 
 // ==================== USER MANAGEMENT ====================
 // @desc    Get all users
@@ -50,6 +52,13 @@ const updateStoreStatus = async (req, res) => {
 
         store.status = status;
         const updatedStore = await store.save();
+
+        await logAction({
+            action: `Store ${status}`,
+            type: 'STORE',
+            target: updatedStore.storeName,
+            icon: 'storefront'
+        });
 
         res.json(updatedStore);
     } catch (error) {
@@ -287,6 +296,30 @@ const exportBookingsCSV = async (req, res) => {
     }
 };
 
+// ==================== SYSTEM MANAGEMENT ====================
+// @desc    Get real audit logs
+// @route   GET /api/admin/audit-logs
+// @access  Private/Admin
+const getAuditLogs = async (req, res) => {
+    try {
+        const logs = await AuditLog.find().sort({ createdAt: -1 });
+        const formattedLogs = logs.map(l => ({
+            id: l._id.toString(),
+            action: l.action,
+            type: l.type,
+            target: l.target,
+            admin: l.admin,
+            time: l.createdAt,
+            rawTime: l.createdAt.getTime(),
+            icon: l.icon
+        }));
+        res.status(200).json(formattedLogs);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch logs' });
+    }
+};
+
 module.exports = {
     // User management
     getAllUsers,
@@ -299,5 +332,8 @@ module.exports = {
     getAllBookings,
     getBookingStats,
     overrideBookingStatus,
-    exportBookingsCSV
+    exportBookingsCSV,
+
+    // System management
+    getAuditLogs
 };
