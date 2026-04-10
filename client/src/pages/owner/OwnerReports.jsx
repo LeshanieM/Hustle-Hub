@@ -127,7 +127,7 @@ const OwnerReports = () => {
     };
 
     return (
-        <OwnerLayout activeTab="reports">
+        <OwnerLayout activeTab="reports" headerTitle="Business Analytics">
             <div className="max-w-5xl mx-auto py-8 px-4">
                 
                 {/* --- Page Header --- */}

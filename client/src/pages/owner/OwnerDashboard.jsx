@@ -34,7 +34,7 @@ const OwnerDashboard = () => {
     }, []);
 
     return (
-        <OwnerLayout activeTab="dashboard">
+        <OwnerLayout activeTab="dashboard" headerTitle="Store Overview">
             <div className="pb-6 bg-slate-50/50 rounded-3xl p-2">
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between mb-8 gap-4">

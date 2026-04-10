@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import OwnerHeader from '../../components/OwnerHeader';
-import { useAuth } from '../../context/AuthContext';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
 import Footer from '../../components/Footer';
 import api from '../../api/axios';
 
 const ContactUs = () => {
-    const { user } = useAuth();
     const [inquiries, setInquiries] = useState([]);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
     const [replyText, setReplyText] = useState('');
@@ -54,22 +51,8 @@ const ContactUs = () => {
         }
     };
 
-    const sidebarItems = [
-        { label: 'Dashboard', icon: 'dashboard', path: '/owner-dashboard' },
-        { label: 'Products', icon: 'inventory_2', path: '/owner/products' },
-        { label: 'Orders', icon: 'shopping_bag', path: '/owner/orders' },
-        { label: 'Analytics', icon: 'analytics', path: '/analytics' },
-        { label: 'Store Editor', icon: 'brush', path: '/store-editor' },
-    ];
-
     return (
-        <DashboardLayout 
-            role="Owner" 
-            headerTitle="Seller Support"
-            sidebarItems={sidebarItems}
-            TopHeader={OwnerHeader}
-            showSearch={false}
-        >
+        <OwnerLayout activeTab="contact" headerTitle="Seller Support">
             <div className="max-w-6xl mx-auto py-8 px-4 font-inter flex flex-col min-h-[calc(100vh-100px)] w-full" style={{ fontFamily: "'Inter', sans-serif" }}>
                 {/* Minimal Header */}
                 <div className="mb-12 border-b border-slate-100 pb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -170,7 +153,7 @@ const ContactUs = () => {
                     <Footer />
                 </div>
             </div>
-        </DashboardLayout>
+        </OwnerLayout>
     );
 };
 

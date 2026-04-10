@@ -414,7 +414,7 @@ const OwnerOrders = () => {
   ];
 
   return (
-    <OwnerLayout activeTab="orders" theme="light">
+    <OwnerLayout activeTab="orders" headerTitle="Inbound Orders">
       <div className="pb-24">
         <div className="container mx-auto max-w-4xl">
 

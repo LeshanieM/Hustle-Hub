@@ -1,15 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ProductCard from '../../components/products/ProductCard';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import OwnerHeader from '../../components/OwnerHeader';
-import Footer from '../../components/Footer';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
 
 import { useAuth } from '../../context/AuthContext';
 
-const OwnerProductsDashboard = () => {
+const OwnerProductsAlerts = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,9 +43,8 @@ const OwnerProductsDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <OwnerHeader />
-      <div className="flex-grow pt-20 pb-12 bg-slate-50/50">
+    <OwnerLayout activeTab="alerts" headerTitle="System Alerts">
+      <div className="pb-12 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
@@ -163,9 +159,8 @@ const OwnerProductsDashboard = () => {
           )}
         </div>
       </div>
-      <Footer />
-    </div>
+    </OwnerLayout>
   );
 };
 
-export default OwnerProductsDashboard;
+export default OwnerProductsAlerts;
