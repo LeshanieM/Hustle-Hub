@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import OwnerHeader from '../../components/OwnerHeader';
+import { resolveImageUrl } from '../../utils/imageUtils';
 
 const StoreEditor = () => {
     const { user, logout } = useAuth();
@@ -10,7 +11,8 @@ const StoreEditor = () => {
     const [viewMode, setViewMode] = useState('desktop'); // 'desktop' or 'mobile'
     const [activeTab, setActiveTab] = useState('design'); // 'design', 'content', 'settings'
 
-    const mockProducts = [];
+    const [products, setProducts] = useState([]);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
     // Mock store state for editor
     const [storeData, setStoreData] = useState({
@@ -111,8 +113,6 @@ const StoreEditor = () => {
 
                 if (res.data && res.data.success && res.data.store) {
                     const s = res.data.store;
-                    console.log('DEBUG: RAW STORE FROM SERVER', s);
-
                     setStoreData(prev => ({
                         ...prev,
                         name: s.storeName || prev.name,
@@ -129,8 +129,24 @@ const StoreEditor = () => {
                 console.log("No store profile found yet, using defaults", err);
             }
         };
+
+        const fetchProducts = async () => {
+            try {
+                const ownerId = user?._id || user?.id;
+                if (!ownerId) return;
+                const res = await axios.get(`http://localhost:5000/api/products/owner/${ownerId}`);
+                const data = res.data?.products || res.data || [];
+                setProducts(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error('Failed to fetch store products for preview', err);
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        };
+
         fetchStore();
-    }, []);
+        fetchProducts();
+    }, [user]);
 
     const handleSave = async () => {
         if (!validateForm()) return;
@@ -525,40 +541,37 @@ const StoreEditor = () => {
                                         Featured Products
                                     </h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 opacity-80">
-                                        {[
-                                            { id: 1, stock: 'in_stock', label: 'In Stock', color: 'bg-emerald-100 text-emerald-700' },
-                                            { id: 2, stock: 'low_stock', label: 'Low Stock', color: 'bg-amber-100 text-amber-700' },
-                                            { id: 3, stock: 'out_of_stock', label: 'Out of Stock', color: 'bg-rose-100 text-rose-700' },
-                                            { id: 4, stock: 'in_stock', label: 'In Stock', color: 'bg-emerald-100 text-emerald-700' }
-                                        ].map(item => (
-                                            <div key={item.id} className="bg-white p-4 rounded-3xl border border-slate-200 relative group overflow-hidden">
-                                                <div className={`aspect-[4/5] bg-slate-100 rounded-2xl mb-4 relative overflow-hidden ${item.stock === 'out_of_stock' ? 'opacity-80 grayscale' : ''}`}>
-                                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                                        <span className="material-symbols-outlined text-4xl">inventory_2</span>
-                                                    </div>
+                                        {(products.length > 0 ? products.slice(0, 4) : [
+                                            { _id: 1, name: 'Premium Watch', price: 299.00, stock: 10, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400' },
+                                            { _id: 2, name: 'Wireless Audio', price: 159.00, stock: 5, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400' },
+                                            { _id: 3, name: 'Smart Camera', price: 89.00, stock: 0, img: 'https://images.unsplash.com/photo-1526170315870-ef6d82f58396?q=80&w=400' },
+                                            { _id: 4, name: 'Leather Bag', price: 120.00, stock: 20, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400' }
+                                        ]).map(item => (
+                                            <div key={item._id} className="bg-white p-4 rounded-3xl border border-slate-200 relative group overflow-hidden">
+                                                <div className={`aspect-[4/5] bg-slate-100 rounded-2xl mb-4 relative overflow-hidden ${item.stock === 0 ? 'opacity-80 grayscale' : ''}`}>
+                                                    {(item.imageUrl || item.img) ? (
+                                                        <img src={resolveImageUrl(item.imageUrl || item.img)} alt={item.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                                            <span className="material-symbols-outlined text-4xl">inventory_2</span>
+                                                        </div>
+                                                    )}
 
-                                                    {/* Stock Badge Centered Over Image */}
-                                                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${item.color} z-10 shadow-sm flex items-center gap-1 backdrop-blur-sm`}>
-                                                        <span className="material-symbols-outlined text-[11px]">
-                                                            {item.stock === 'in_stock' ? 'check_circle' : item.stock === 'low_stock' ? 'warning' : 'error'}
-                                                        </span>
-                                                        {item.label}
+                                                    {/* Stock Badge */}
+                                                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                                        item.stock === 0 ? 'bg-rose-100 text-rose-700' : 
+                                                        item.stock <= 5 ? 'bg-amber-100 text-amber-700' : 
+                                                        'bg-emerald-100 text-emerald-700'
+                                                    } z-10 shadow-sm flex items-center gap-1 backdrop-blur-sm`}>
+                                                        {item.stock === 0 ? 'Out of Stock' : item.stock <= 5 ? 'Low Stock' : 'In Stock'}
                                                     </div>
                                                 </div>
 
-                                                <div className="h-4 bg-slate-200 rounded-md w-3/4 mb-2"></div>
-                                                <div className="h-4 bg-slate-100 rounded-md w-1/2 mb-4"></div>
-
-                                                <div className="mt-auto flex justify-between items-center">
-                                                    <div className="h-5 bg-slate-200 rounded-md w-1/3"></div>
-                                                    <button
-                                                        disabled={item.stock === 'out_of_stock'}
-                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${item.stock === 'out_of_stock'
-                                                                ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                                                                : 'bg-slate-100 text-[#1111d4] hover:bg-[#1111d4] hover:text-white cursor-pointer'
-                                                            }`}
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">shopping_cart</span>
+                                                <div className="font-bold text-slate-900 text-xs mb-1 truncate">{item.name}</div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="text-primary font-black text-xs">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</div>
+                                                    <button className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 text-primary">
+                                                        <span className="material-symbols-outlined text-xs">shopping_cart</span>
                                                     </button>
                                                 </div>
                                             </div>
