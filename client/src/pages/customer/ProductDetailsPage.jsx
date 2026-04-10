@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ModelViewer from '../../components/products/ModelViewer';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import CustomerHeader from '../../components/CustomerHeader';
-import Footer from '../../components/Footer';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import ReviewSection from '../../components/reviews/ReviewSection';
 import BookingModal from '../../components/BookingModal';
 import BookingSuccess from '../../components/BookingSuccess';
@@ -60,9 +59,8 @@ const ProductDetailsPage = () => {
   if (!product) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <CustomerHeader />
-      <div className="flex-grow pt-24 pb-12">
+    <CustomerLayout activeTab="products" headerTitle="Product Details">
+      <div className="pb-12">
         <div className="container mx-auto px-4 max-w-6xl">
           <button 
             onClick={() => navigate('/stores')}
@@ -152,8 +150,6 @@ const ProductDetailsPage = () => {
       <div className="bg-white border-t border-gray-100 mt-8">
         <ReviewSection targetType="product" targetId={id} />
       </div>
-      
-      <Footer />
 
       {/* Booking Modal */}
       {showBooking && (
@@ -172,7 +168,7 @@ const ProductDetailsPage = () => {
           onViewOrders={handleViewOrders}
         />
       )}
-    </div>
+    </CustomerLayout>
   );
 };
 

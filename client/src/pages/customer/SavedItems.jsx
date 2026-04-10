@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import CustomerHeader from '../../components/CustomerHeader';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 
 const SavedItems = () => {
     const { user } = useAuth();
@@ -36,29 +35,8 @@ const SavedItems = () => {
         // You would also want to call an API to remove it from the backend
     };
 
-    const sidebarItems = [
-        { label: 'Overview', icon: 'dashboard', path: '/customer-dashboard' },
-        { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
-        { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
-        { label: 'Settings', icon: 'settings', path: '/profile' },
-    ];
-
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Loading saved items...</p>
-            </div>
-        </div>
-    );
-
     return (
-        <DashboardLayout 
-            role="Customer" 
-            headerTitle="Saved Items"
-            sidebarItems={sidebarItems}
-            TopHeader={CustomerHeader}
-        >
+        <CustomerLayout activeTab="saved" headerTitle="Saved Items">
             <div className="max-w-5xl mx-auto space-y-8">
                 <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8">
                     {savedItems.length > 0 ? (
@@ -100,7 +78,7 @@ const SavedItems = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </CustomerLayout>
     );
 };
 
