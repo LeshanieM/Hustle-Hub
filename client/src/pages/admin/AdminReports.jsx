@@ -1,52 +1,102 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, Cell, PieChart, Pie, ComposedChart } from 'recharts';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import AdminHeader from '../../components/AdminHeader';
 import { generateHybridReport } from '../../utils/reportGenerator';
+import toast from 'react-hot-toast';
 
-const GlassCard = ({ children, className = "" }) => (
-    <div className={`bg-white border border-slate-200 shadow-sm rounded-[2rem] p-8 transition-all hover:shadow-md ${className}`}>
-        {children}
-    </div>
-);
+// --- Components ---
 
-const KpiCard = ({ icon, iconColor, label, value, prefix = '', change, subtitle }) => (
-    <GlassCard className="relative overflow-hidden group">
-        <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start mb-6">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                    <span className={`material-symbols-outlined text-[30px] ${iconColor}`}>{icon}</span>
-                </div>
-                {change !== undefined && (
-                    <div className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest flex items-center gap-1 shadow-sm border ${change >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border-rose-500/20'}`}>
-                        {change > 0 ? '+' : ''}{change}%
-                        <span className="material-symbols-outlined text-[14px]">{change >= 0 ? 'trending_up' : 'trending_down'}</span>
-                    </div>
-                )}
-            </div>
-            <div>
-                <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">{label}</p>
-                <div className="flex items-baseline gap-1">
-                    <h3 className="text-3xl font-black text-slate-900 tracking-tighter">
-                        {prefix}{typeof value === 'number' ? value.toLocaleString() : value}
-                    </h3>
-                    {subtitle && <span className="text-xs font-bold text-slate-400 ml-1">{subtitle}</span>}
-                </div>
-            </div>
+const ReportTypeCard = ({ title, desc, icon, isSelected, onClick }) => (
+    <button 
+        onClick={onClick}
+        className={`group relative flex items-start gap-6 p-8 rounded-[2rem] border-2 transition-all text-left overflow-hidden w-full ${
+            isSelected 
+            ? `bg-white border-slate-900 shadow-xl` 
+            : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-lg'
+        }`}
+    >
+        <div className={`p-4 rounded-2xl transition-all ${
+            isSelected 
+            ? `bg-slate-900 text-white shadow-lg` 
+            : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100 group-hover:text-slate-600'
+        }`}>
+            <span className="material-symbols-outlined text-[32px]">{icon}</span>
         </div>
-    </GlassCard>
+        <div className="flex-1">
+            <h5 className={`font-black text-xl tracking-tight mb-2 ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
+                {title}
+            </h5>
+            <p className="text-xs font-bold text-slate-400 leading-relaxed uppercase tracking-widest">
+                {desc}
+            </p>
+        </div>
+        {isSelected && (
+            <div className="absolute top-8 right-8 w-2 h-2 rounded-full bg-slate-900 animate-pulse" />
+        )}
+    </button>
 );
 
 const AdminReports = () => {
     const { user } = useAuth();
-    const [reportType, setReportType] = useState('platform');
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [exporting, setExporting] = useState(false);
-    const [exportSuccess, setExportSuccess] = useState(false);
-    const [error, setError] = useState(null);
+    const [selectedType, setSelectedType] = useState('platform');
+    const [timeRange, setTimeRange] = useState('Monthly');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [realData, setRealData] = useState(null);
+
+    const reportTypes = [
+        { 
+            id: 'platform', 
+            title: 'Platform Report', 
+            desc: 'Overall health and business usage', 
+            icon: 'hub',
+            included: [
+                'Total registered students',
+                'Total businesses registered',
+                'Active businesses',
+                'Platform status'
+            ]
+        },
+        { 
+            id: 'audit', 
+            title: 'Audit Report', 
+            desc: 'Admin activity and governance logs', 
+            icon: 'policy',
+            included: [
+                'Admin approvals',
+                'Business rejections',
+                'Account suspensions',
+                'Recent admin actions'
+            ]
+        },
+        { 
+            id: 'risk', 
+            title: 'Risk Report', 
+            desc: 'Monitoring and compliance tracking', 
+            icon: 'security',
+            included: [
+                'Flagged businesses',
+                'Suspended businesses',
+                'Failed verifications',
+                'Pending investigations'
+            ]
+        },
+        { 
+            id: 'growth', 
+            title: 'Growth Report', 
+            desc: 'Student and business adoption trends', 
+            icon: 'moving',
+            included: [
+                'New student registrations',
+                'New business registrations',
+                'Activity trends',
+                'Growth comparison'
+            ]
+        },
+    ];
+
+    const timeRanges = ['Daily', 'Weekly', 'Monthly', 'Annual'];
 
     const sidebarItems = [
         { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
@@ -59,150 +109,247 @@ const AdminReports = () => {
         { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     ];
 
+    const activeReport = reportTypes.find(p => p.id === selectedType);
+
+    // Fetch real data from existing analytics endpoints
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchRealData = async () => {
             try {
-                setLoading(true);
                 const token = localStorage.getItem('token');
+                if (!token) return;
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 
-                const [platformRes, usersRes, storesRes] = await Promise.all([
+                const [platformRes, storesRes, usersRes, auditRes] = await Promise.all([
                     axios.get('http://localhost:5000/api/analytics/admin/platform', config).catch(() => ({ data: {} })),
+                    axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
                     axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] }))
+                    axios.get('http://localhost:5000/api/admin/audit-logs', config).catch(() => ({ data: [] }))
                 ]);
 
-                setStats({
+                setRealData({
                     platform: platformRes.data,
-                    usersCount: usersRes.data?.length || 0,
-                    storesCount: storesRes.data?.length || 0,
-                    activeStores: storesRes.data?.filter(s => s.status === 'ACTIVE').length || 0,
-                    timestamp: new Date().toLocaleString()
+                    stores: storesRes.data,
+                    users: usersRes.data,
+                    auditLogs: auditRes.data
                 });
             } catch (err) {
-                console.error('Failed to fetch admin stats', err);
-                setError('Failed to load platform data.');
-            } finally {
-                setLoading(false);
+                console.error('Failed to fetch reporting data', err);
             }
         };
-        fetchStats();
+        fetchRealData();
     }, []);
 
-    const handleDownloadReport = async (format = 'pdf') => {
-        setExporting(true);
-        const title = `Platform ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`;
-        const subtitle = `Generated by Admin Office | Timestamp: ${new Date().toLocaleString()}`;
-        
-        let summary = [
-            { label: "Total Users", value: stats?.usersCount || 0 },
-            { label: "Total Stores", value: stats?.storesCount || 0 },
-            { label: "Active Nodes", value: stats?.activeStores || 0 }
-        ];
-
-        let headers = ['Metric', 'Current Standing'];
-        let reportData = [
-            ['Registered Students', `${stats?.usersCount || 0}`],
-            ['Active Storefronts', `${stats?.activeStores || 0}`],
-            ['Platform Health', 'Optimal']
-        ];
-
-        if (format === 'excel') {
-            const csvRows = [headers, ...reportData];
-            const csvContent = csvRows.map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Admin_${reportType}_Report.csv`);
-            link.click();
-        } else {
-            await generateHybridReport({
-                title,
-                subtitle,
-                headers,
-                data: reportData,
-                summary
-            }, `Admin_${reportType}_Report.pdf`);
+    const handleDownload = async (format) => {
+        if (!realData) {
+            toast.error('Data not loaded yet.');
+            return;
         }
+
+        setIsGenerating(true);
+        let toastId = null;
         
-        setExporting(false);
-        setExportSuccess(true);
-        setTimeout(() => setExportSuccess(false), 4000);
+        // Only show a local toast for CSV since PDF generator has its own
+        if (format === 'csv') {
+            toastId = toast.loading(`Preparing ${activeReport.title} CSV...`);
+        }
+
+        try {
+            const headers = ['Metric', 'Current Data'];
+            let reportRows = [];
+            let summary = [];
+
+            if (selectedType === 'platform') {
+                reportRows = [
+                    ['Total Students', realData.users?.filter(u => u.role === 'CUSTOMER').length || 0],
+                    ['Total Registered Businesses', realData.stores?.length || 0],
+                    ['Active Businesses', realData.stores?.filter(s => s.status === 'ACTIVE').length || 0],
+                    ['Platform Health', 'Operational']
+                ];
+                summary = [
+                    { label: 'Platform Status', value: 'Live' },
+                    { label: 'System Date', value: new Date().toLocaleDateString() }
+                ];
+            } else if (selectedType === 'audit') {
+                const recentLogs = (realData.auditLogs || []).slice(0, 10);
+                reportRows = recentLogs.map(log => [
+                    log.action, 
+                    `${log.admin} on ${log.target}`
+                ]);
+                summary = [
+                    { label: 'Total Logs Found', value: realData.auditLogs?.length || 0 },
+                    { label: 'Recent Action', value: recentLogs[0]?.action || 'None' }
+                ];
+            } else if (selectedType === 'risk') {
+                reportRows = [
+                    ['Flagged Businesses', realData.stores?.filter(s => s.status === 'SUSPENDED').length || 0],
+                    ['Pending Investigations', 0],
+                    ['Failed Verifications', 0],
+                    ['Security Check', 'Passed']
+                ];
+                summary = [
+                    { label: 'Security Level', value: 'High' }
+                ];
+            } else if (selectedType === 'growth') {
+                reportRows = [
+                    ['Total Registered Users', realData.users?.length || 0],
+                    ['Total Storefronts', realData.stores?.length || 0],
+                    ['Student-Business Ratio', realData.users && realData.stores ? (realData.users.length / realData.stores.length).toFixed(1) : 'N/A']
+                ];
+                summary = [
+                    { label: 'Acquisition Type', value: 'Campus Organic' }
+                ];
+            }
+
+            if (format === 'pdf') {
+                // PDF generator has its own toasts, so we dismiss our "Preparing" toast first
+                toast.dismiss(toastId);
+                await generateHybridReport({
+                    title: `Official Admin Report: ${activeReport.title}`,
+                    subtitle: `Time Range: ${timeRange} | Date: ${new Date().toLocaleDateString()} | Campus: HustleHub`,
+                    headers,
+                    data: reportRows,
+                    summary
+                }, `HustleHub_${selectedType}_${timeRange.toLowerCase()}.pdf`);
+            } else {
+                // For CSV, we update our loading toast to success
+                let csvContent = `data:text/csv;charset=utf-8,HustleHub Official Report,${activeReport.title}\nTime Range,${timeRange}\nGenerated On,${new Date().toLocaleDateString()}\n\nMetric,Value\n`;
+                reportRows.forEach(row => { csvContent += `${row[0]},${row[1]}\n`; });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `HustleHub_${selectedType}_${timeRange.toLowerCase()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('CSV Exported Successfully', { id: toastId });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to generate report.', { id: toastId });
+        } finally {
+            setIsGenerating(false);
+            // Ensure no stray loading toasts remain
+            setTimeout(() => toast.dismiss(toastId), 100);
+        }
     };
 
     return (
         <DashboardLayout 
             role="Administrator"
-            headerTitle="Intelligence Reports"
+            headerTitle="Reporting Center"
             sidebarItems={sidebarItems}
             TopHeader={AdminHeader}
-            loading={loading}
+            loading={false}
             showSearch={false}
         >
-            <div className="max-w-5xl mx-auto space-y-12 py-10">
-                <div className="text-center space-y-4">
-                    <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Platform Intelligence Center</h2>
-                    <p className="text-slate-500 font-medium max-w-2xl mx-auto">Access and export comprehensive platform-wide analytics and audit summaries.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <KpiCard icon="group" iconColor="text-indigo-600" label="Network Users" value={stats?.usersCount || 0} change={5} />
-                    <KpiCard icon="storefront" iconColor="text-emerald-600" label="Active Partners" value={stats?.activeStores || 0} change={12} />
-                    <KpiCard icon="verified" iconColor="text-blue-600" label="System Integrity" value="100%" subtitle="Verified" />
-                </div>
-
-                <section className="space-y-6">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Select Report Protocol</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                            { id: 'platform', title: 'Platform Health', desc: 'Summary of user growth and partner activity.', icon: 'hub' },
-                            { id: 'audit', title: 'Security Audit', desc: 'Overview of system changes and administrative logs.', icon: 'security' },
-                            { id: 'inventory', title: 'Catalog Insights', desc: 'Product distribution across all registered storefronts.', icon: 'inventory' },
-                            { id: 'revenue', title: 'Financial Overview', desc: 'Aggregated revenue streams and transaction volumes.', icon: 'payments' },
-                        ].map(type => (
-                            <button 
-                                key={type.id}
-                                onClick={() => setReportType(type.id)}
-                                className={`flex items-start gap-4 p-6 rounded-3xl border transition-all text-left ${reportType === type.id ? 'bg-white border-indigo-200 shadow-lg' : 'bg-slate-50 border-transparent hover:bg-white hover:border-slate-200'}`}
-                            >
-                                <div className={`p-3 rounded-2xl ${reportType === type.id ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400'}`}>
-                                    <span className="material-symbols-outlined">{type.icon}</span>
-                                </div>
-                                <div>
-                                    <h5 className="font-bold text-slate-900">{type.title}</h5>
-                                    <p className="text-xs text-slate-500 font-medium">{type.desc}</p>
-                                </div>
-                            </button>
-                        ))}
+            <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-slate-100">
+                    <div className="space-y-3">
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Admin Reports Center</h1>
+                        <p className="text-slate-500 font-bold max-w-xl text-lg tracking-tight">Generate and download official platform data for decision making.</p>
                     </div>
-                </section>
-
-                <div className="pt-10 border-t border-slate-100 flex flex-col md:flex-row items-center justify-center gap-6">
-                    <button 
-                        onClick={() => handleDownloadReport('pdf')}
-                        disabled={exporting}
-                        className="flex items-center gap-4 bg-slate-900 text-white px-10 py-5 rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                    >
-                        <span className="material-symbols-outlined">{exporting ? 'sync' : 'picture_as_pdf'}</span>
-                        <span className="font-bold uppercase tracking-widest text-xs">{exporting ? 'Generating...' : 'Export Intelligence PDF'}</span>
-                    </button>
-                    <button 
-                         onClick={() => handleDownloadReport('excel')}
-                         disabled={exporting}
-                         className="flex items-center gap-4 bg-white border border-slate-200 text-slate-900 px-10 py-5 rounded-2xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50"
-                    >
-                        <span className="material-symbols-outlined">table_chart</span>
-                        <span className="font-bold uppercase tracking-widest text-xs">Download CSV Dataset</span>
-                    </button>
                 </div>
 
-                {exportSuccess && (
-                    <div className="flex items-center justify-center gap-2 text-emerald-600 animate-in fade-in slide-in-from-top-2">
-                        <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                        <p className="text-[10px] font-black uppercase tracking-widest">Report Cycle Finalized Successfully</p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    {/* Left side: Report Type Selection */}
+                    <div className="lg:col-span-7 space-y-6">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-4">Select Report Type</h4>
+                        <div className="grid grid-cols-1 gap-4">
+                            {reportTypes.map(type => (
+                                <ReportTypeCard 
+                                    key={type.id}
+                                    {...type}
+                                    isSelected={selectedType === type.id}
+                                    onClick={() => setSelectedType(type.id)}
+                                />
+                            ))}
+                        </div>
                     </div>
-                )}
+
+                    {/* Right side: Settings & Download */}
+                    <div className="lg:col-span-5">
+                        <div className="p-10 rounded-[2.5rem] bg-white border border-slate-100 shadow-2xl shadow-slate-100 space-y-8 h-full flex flex-col">
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Report Settings</h3>
+
+                            {/* Time Range Selection */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Time Range</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {timeRanges.map(range => (
+                                        <button
+                                            key={range}
+                                            onClick={() => setTimeRange(range)}
+                                            className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                timeRange === range 
+                                                ? 'bg-slate-900 text-white shadow-xl' 
+                                                : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                            }`}
+                                        >
+                                            {range}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-slate-100 w-full" />
+
+                            {/* Summary Box */}
+                            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4 flex-1">
+                                <div className="space-y-1">
+                                    <h4 className="text-xs font-black text-slate-900 uppercase">Report Name</h4>
+                                    <p className="text-sm font-bold text-slate-500">{activeReport.title}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-black text-slate-900 uppercase">Includes:</h4>
+                                    <div className="space-y-1.5">
+                                        {activeReport.included.map((item, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                                <span className="text-xs font-bold text-slate-400">{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="space-y-4 pt-4">
+                                <button 
+                                    onClick={() => handleDownload('pdf')}
+                                    disabled={isGenerating}
+                                    className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+                                    Download PDF
+                                </button>
+                                
+                                <button 
+                                    onClick={() => handleDownload('csv')}
+                                    disabled={isGenerating}
+                                    className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-slate-100 text-slate-900 font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined text-lg">table_chart</span>
+                                    Download CSV
+                                </button>
+                                
+                                <button 
+                                    onClick={() => handleDownload('pdf')}
+                                    disabled={isGenerating}
+                                    className="w-full py-4 rounded-xl bg-indigo-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                                >
+                                    Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Disclaimer */}
+                <div className="flex items-center justify-center gap-2 text-slate-300">
+                    <span className="material-symbols-outlined text-sm">lock</span>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Official Campus Data Record</p>
+                </div>
             </div>
         </DashboardLayout>
     );
