@@ -99,7 +99,7 @@ export default function Profile() {
               <div className="bg-[#051094]/10 p-2 rounded-2xl border border-[#051094]/20 shadow-sm overflow-hidden flex items-center justify-center w-16 h-16">
                 {user.profilePicture ? (
                   <img
-                    src={`http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`}
+                    src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`}
                     alt="Profile"
                     className="w-full h-full object-cover rounded-xl"
                   />

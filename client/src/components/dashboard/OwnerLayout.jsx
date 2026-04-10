@@ -71,8 +71,12 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', headerTitle = 'Owner D
                                 <p className="text-sm font-black text-slate-900 tracking-tight">{user?.firstName ? `${user.firstName} ${user.lastName}` : "Shop Owner"}</p>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user?.storeName || 'Verified Merchant'}</p>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
+                            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                {user?.profilePicture ? (
+                                    <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
+                                )}
                             </div>
                         </div>
                     </header>
