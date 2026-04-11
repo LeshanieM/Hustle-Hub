@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ModelViewer from '../../components/products/ModelViewer';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import CustomerHeader from '../../components/CustomerHeader';
-import Footer from '../../components/Footer';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import ReviewSection from '../../components/reviews/ReviewSection';
 import BookingModal from '../../components/BookingModal';
 import BookingSuccess from '../../components/BookingSuccess';
@@ -60,9 +59,8 @@ const ProductDetailsPage = () => {
   if (!product) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <CustomerHeader />
-      <div className="flex-grow pt-24 pb-12">
+    <CustomerLayout activeTab="products" headerTitle="Product Details">
+      <div className="pb-12">
         <div className="container mx-auto px-4 max-w-6xl">
           <button 
             onClick={() => navigate('/stores')}
@@ -104,6 +102,20 @@ const ProductDetailsPage = () => {
                 {product.type || 'General'}
               </div>
               
+              {product.isFake && (
+                <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 shadow-md shadow-rose-100 animate-in fade-in slide-in-from-top-4 duration-700">
+                  <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-200">
+                    <span className="material-symbols-outlined text-[20px]">warning</span>
+                  </div>
+                  <div>
+                    <h4 className="text-rose-900 font-black uppercase text-xs tracking-wider">Product Integrity Alert</h4>
+                    <p className="text-rose-700/80 text-xs font-semibold leading-relaxed mt-0.5">
+                      This item has been flagged by administrators as a potential imitation or counterfeit. Proceed with caution.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4">{product.name}</h1>
               
               <div className="text-3xl font-bold text-emerald-600 mb-6">
@@ -138,8 +150,6 @@ const ProductDetailsPage = () => {
       <div className="bg-white border-t border-gray-100 mt-8">
         <ReviewSection targetType="product" targetId={id} />
       </div>
-      
-      <Footer />
 
       {/* Booking Modal */}
       {showBooking && (
@@ -158,7 +168,7 @@ const ProductDetailsPage = () => {
           onViewOrders={handleViewOrders}
         />
       )}
-    </div>
+    </CustomerLayout>
   );
 };
 

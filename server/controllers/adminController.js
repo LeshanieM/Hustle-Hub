@@ -2,6 +2,8 @@ const Booking = require('../models/Booking');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const Store = require('../models/Store');
+const AuditLog = require('../models/AuditLog');
+const { logAction } = require('../utils/auditLogger');
 
 // ==================== USER MANAGEMENT ====================
 // @desc    Get all users
@@ -50,6 +52,13 @@ const updateStoreStatus = async (req, res) => {
 
         store.status = status;
         const updatedStore = await store.save();
+
+        await logAction({
+            action: `Store ${status}`,
+            type: 'STORE',
+            target: updatedStore.storeName,
+            icon: 'storefront'
+        });
 
         res.json(updatedStore);
     } catch (error) {
@@ -287,6 +296,128 @@ const exportBookingsCSV = async (req, res) => {
     }
 };
 
+// ==================== SYSTEM MANAGEMENT ====================
+// @desc    Get real audit logs
+// @route   GET /api/admin/audit-logs
+// @access  Private/Admin
+const getAuditLogs = async (req, res) => {
+    try {
+        const logs = await AuditLog.find().sort({ createdAt: -1 });
+        const formattedLogs = logs.map(l => ({
+            id: l._id.toString(),
+            action: l.action,
+            type: l.type,
+            target: l.target,
+            admin: l.admin,
+            time: l.createdAt,
+            rawTime: l.createdAt.getTime(),
+            icon: l.icon
+        }));
+        res.status(200).json(formattedLogs);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch logs' });
+    }
+};
+
+// ==================== PRODUCT MANAGEMENT ====================
+// @desc    Get all products with seller info (Admin only)
+// @route   GET /api/admin/products
+// @access  Private (ADMIN)
+const getAllProductsForAdmin = async (req, res) => {
+    try {
+        const products = await Product.find().sort({ createdAt: -1 }).lean();
+        
+        // Manual population for owner/seller info
+        const ownerIds = [...new Set(products.map(p => p.ownerId))];
+        const owners = await User.find({ _id: { $in: ownerIds } }, 'firstName lastName').lean();
+        const stores = await Store.find({ ownerId: { $in: ownerIds } }, 'ownerId storeName').lean();
+
+        const ownerMap = {};
+        owners.forEach(o => {
+            ownerMap[o._id.toString()] = { name: `${o.firstName} ${o.lastName}` };
+        });
+
+        const storeMap = {};
+        stores.forEach(s => {
+            storeMap[s.ownerId.toString()] = s.storeName;
+        });
+
+        const formattedProducts = products.map(p => {
+            const owner = ownerMap[p.ownerId] || { name: 'Unknown Seller' };
+            const storeName = storeMap[p.ownerId] || owner.name;
+            
+            return {
+                ...p,
+                seller: storeName,
+                category: p.type,
+                status: p.status || 'Verified'
+            };
+        });
+
+        res.status(200).json(formattedProducts);
+    } catch (error) {
+        console.error('Error in getAllProductsForAdmin:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle product fake flag (Admin only)
+// @route   PATCH /api/admin/products/:id/flag
+// @access  Private (ADMIN)
+const toggleProductFlag = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        product.isFake = !product.isFake;
+        product.status = product.isFake ? 'Flagged' : 'Verified';
+        
+        await product.save();
+
+        await logAction({
+            action: `Product ${product.isFake ? 'Flagged as Fake' : 'Unflagged'}`,
+            type: 'PRODUCT',
+            target: product.name,
+            icon: product.isFake ? 'report' : 'verified'
+        });
+
+        res.status(200).json(product);
+    } catch (error) {
+        console.error('Error in toggleProductFlag:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get single product details (Admin only)
+// @route   GET /api/admin/products/:id
+// @access  Private (ADMIN)
+const getProductByIdForAdmin = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).lean();
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const owner = await User.findById(product.ownerId, 'firstName lastName').lean();
+        const store = await Store.findOne({ ownerId: product.ownerId }, 'storeName').lean();
+
+        const formattedProduct = {
+            ...product,
+            seller: store ? store.storeName : (owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown Seller'),
+            category: product.type,
+            status: product.isFake ? 'Flagged' : 'Verified'
+        };
+
+        res.status(200).json(formattedProduct);
+    } catch (error) {
+        console.error('Error in getProductByIdForAdmin:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     // User management
     getAllUsers,
@@ -299,5 +430,13 @@ module.exports = {
     getAllBookings,
     getBookingStats,
     overrideBookingStatus,
-    exportBookingsCSV
-};
+    exportBookingsCSV,
+
+    // System management
+    getAuditLogs,
+
+    // Product management
+    getAllProductsForAdmin,
+    toggleProductFlag,
+    getProductByIdForAdmin
+};

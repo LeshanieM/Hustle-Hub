@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { resolveImageUrl } from '../../utils/imageUtils';
 
 const ProductCard = ({ product, isOwner = false, onDelete }) => {
   return (
@@ -7,7 +8,7 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
       <div className="relative h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
         {product.imageUrl ? (
           <>
-            <img src={product.imageUrl} alt={product.name} className={`object-cover w-full h-full ${product.stock === 0 ? 'opacity-80 grayscale' : ''}`} />
+            <img src={resolveImageUrl(product.imageUrl)} alt={product.name} className={`object-cover w-full h-full ${product.stock === 0 ? 'opacity-80 grayscale' : ''}`} />
             {product.modelUrl && (
               <div className="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-xs font-semibold flex items-center">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,8 +36,16 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
             Out of Stock
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-[#051094] text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full shadow-sm z-10">
-          {product.type || 'Standard'}
+        <div className="absolute top-2 right-2 flex flex-col gap-1 items-end z-10">
+          <div className="bg-[#051094] text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full shadow-sm">
+            {product.type || 'Standard'}
+          </div>
+          {product.isFake && (
+            <div className="bg-rose-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-full shadow-lg border border-rose-400 flex items-center gap-1 animate-pulse">
+              <span className="material-symbols-outlined text-[12px]">warning</span>
+              Fake Product
+            </div>
+          )}
         </div>
       </div>
       

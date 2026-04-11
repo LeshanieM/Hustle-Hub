@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import ChartCard from '../../components/dashboard/ChartCard';
@@ -10,7 +10,7 @@ import {
     LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import AdminHeader from '../../components/AdminHeader';
+import AdminAIAssistant from '../../components/admin/AdminAIAssistant';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
@@ -29,6 +29,7 @@ const AdminDashboard = () => {
 
     const [businesses, setBusinesses] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Real user data
+    const [auditLogs, setAuditLogs] = useState([]); // Real audit logs
 
     const growthData = useMemo(() => {
         const months = [];
@@ -94,34 +95,7 @@ const AdminDashboard = () => {
         return arr.length ? arr : [{ name: 'No Stores', value: 1, color: '#e2e8f0' }];
     }, [businesses]);
 
-    const auditLogs = useMemo(() => {
-        const logs = [];
-        allUsers.forEach(u => {
-            logs.push({
-                id: u._id,
-                action: `${u.role || 'USER'} Reg.`,
-                target: u.username,
-                admin: 'System',
-                time: new Date(u.createdAt),
-                rawTime: new Date(u.createdAt).getTime()
-            });
-        });
-        businesses.forEach(b => {
-            logs.push({
-                id: b._id,
-                action: `Store ${b.status}`,
-                target: b.storeName,
-                admin: 'System',
-                time: new Date(b.updatedAt || b.createdAt),
-                rawTime: new Date(b.updatedAt || b.createdAt).getTime()
-            });
-        });
 
-        return logs.sort((a, b) => b.rawTime - a.rawTime).slice(0, 5).map(l => ({
-            ...l,
-            time: l.time.toLocaleDateString() + ' ' + l.time.toLocaleTimeString()
-        }));
-    }, [allUsers, businesses]);
 
 
 
@@ -133,10 +107,11 @@ const AdminDashboard = () => {
                 if (!token) throw new Error('No token');
 
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                const [statsRes, storesRes, usersRes] = await Promise.all([
+                const [statsRes, storesRes, usersRes, auditRes] = await Promise.all([
                     axios.get('http://localhost:5000/api/analytics/admin/platform', config).catch(() => ({ data: null })),
                     axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] }))
+                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] })),
+                    axios.get('http://localhost:5000/api/admin/audit-logs', config).catch(() => ({ data: [] }))
                 ]);
 
                 const computedStudents = usersRes.data ? usersRes.data.filter(u => u.role === 'CUSTOMER' || u.role === 'OWNER').length : 0;
@@ -163,6 +138,15 @@ const AdminDashboard = () => {
 
                 setBusinesses(storesRes.data || []);
                 setAllUsers(usersRes.data || []);
+
+                const logs = (auditRes.data || []).slice(0, 5).map(l => {
+                    const lDate = new Date(l.time);
+                    return {
+                        ...l,
+                        time: lDate.toLocaleDateString() + ' ' + lDate.toLocaleTimeString()
+                    };
+                });
+                setAuditLogs(logs);
 
             } catch (error) {
                 console.error('Admin data mapping failed:', error);
@@ -199,29 +183,11 @@ const AdminDashboard = () => {
         }
     };
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
-
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Loading System Intelligence...</p>
-            </div>
-        </div>
-    );
 
     return (
-        <DashboardLayout
-            role="Administrator"
+        <AdminLayout 
             headerTitle="Administrative Intelligence"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
+            loading={loading}
         >
             <div className="space-y-10">
 
@@ -287,7 +253,17 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-
+                {/* AI-Powered Command Center */}
+                {!loading && (
+                    <AdminAIAssistant 
+                        dashboardData={{
+                            stats,
+                            businesses: businesses.map(b => ({ name: b.name, status: b.status, category: b.category })),
+                            auditLogs: auditLogs.map(l => ({ action: l.action, target: l.target, time: l.time })),
+                            userGrowth: growthData
+                        }}
+                    />
+                )}
 
                 {/* Lower Grid - Insights & Logs */}
 
@@ -311,7 +287,7 @@ const AdminDashboard = () => {
                 />
             </div>
 
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 

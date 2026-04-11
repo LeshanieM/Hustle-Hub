@@ -2,48 +2,30 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
-
 import Footer from '../../components/Footer';
-import CustomerHeader from '../../components/CustomerHeader';
-import OwnerHeader from '../../components/OwnerHeader';
-import AdminHeader from '../../components/AdminHeader';
 
 const CustomerDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-
-    const getTopHeader = () => {
-        if (!user) return CustomerHeader;
-        switch(user.role) {
-            case 'ADMIN': return AdminHeader;
-            case 'OWNER': return OwnerHeader;
-            default: return CustomerHeader;
-        }
-    };
 
     const [loading, setLoading] = useState(true);
     
     // Data State
     const [stats, setStats] = useState({
         totalOrders: 0,
-        activeOrdersCount: 0,
-        savedProducts: 0,
-        favoriteShops: 0
+        activeOrdersCount: 0
     });
 
     const [activeOrders, setActiveOrders] = useState([]);
     const [orderHistory, setOrderHistory] = useState([]);
 
-    const [savedItems, setSavedItems] = useState([]);
-    const [favoriteShops, setFavoriteShops] = useState([]);
-
 
 
     const spendingData = {
-        totalSpent: orderHistory.reduce((sum, order) => sum + (order.total_price || 0), 0)
+        totalSpent: orderHistory.filter(o => o.status !== 'cancelled').reduce((sum, order) => sum + (order.total_price || 0), 0)
     };
     const orders = orderHistory.slice(0, 5);
 
@@ -54,13 +36,17 @@ const CustomerDashboard = () => {
                     <span className="material-symbols-outlined">receipt_long</span>
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm text-slate-900">{order.product_id?.name || 'Order'} - {order.product_id?.storefront_id?.storeName || 'Store'}</h4>
+                    <h4 className="font-bold text-sm text-slate-900">{order.product_id?.name || 'Order'} - {order.product_id?.storefront_id?.storefront_name || 'Store'}</h4>
                     <p className="text-xs text-slate-400 font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
             </div>
             <div className="text-right">
                 <p className="font-black text-slate-900 text-sm">${(order.total_price || 0).toFixed(2)}</p>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${order.status === 'completed' ? 'text-emerald-500' : 'text-amber-500'}`}>{order.status}</p>
+                <p className={`text-[10px] font-black uppercase tracking-widest ${
+                    order.status === 'completed' ? 'text-emerald-500' :
+                    order.status === 'cancelled' ? 'text-rose-500' :
+                    order.status === 'confirmed' ? 'text-blue-500' : 'text-amber-500'
+                }`}>{order.status}</p>
             </div>
         </div>
     );
@@ -71,34 +57,18 @@ const CustomerDashboard = () => {
                 const token = localStorage.getItem('token');
                 const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
                 
-                const [ordersRes, dashboardRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/bookings/my', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/customer/dashboard', config).catch(() => ({ data: null }))
-                ]);
+                const ordersRes = await axios.get('http://localhost:5000/api/bookings/my', config).catch(() => ({ data: [] }));
 
                 const allOrders = ordersRes.data || [];
                 const active = allOrders.filter(o => ['pending', 'confirmed'].includes(o.status));
-                const history = allOrders.filter(o => ['completed', 'cancelled'].includes(o.status));
+                const history = allOrders; // Show all orders in history
                 setActiveOrders(active);
                 setOrderHistory(history);
 
-                if (dashboardRes.data) {
-                    setStats({
-                        totalOrders: allOrders.length,
-                        activeOrdersCount: active.length,
-                        savedProducts: dashboardRes.data.savedProductsCount || 0,
-                        favoriteShops: dashboardRes.data.favoriteShopsCount || 0
-                    });
-                    if (dashboardRes.data.savedItems) setSavedItems(dashboardRes.data.savedItems);
-                    if (dashboardRes.data.favoriteShops) setFavoriteShops(dashboardRes.data.favoriteShops);
-                } else {
-                    // Fallback using just orders data
-                    setStats(prev => ({
-                        ...prev,
-                        totalOrders: allOrders.length,
-                        activeOrdersCount: active.length
-                    }));
-                }
+                setStats({
+                    totalOrders: allOrders.length,
+                    activeOrdersCount: active.length
+                });
             } catch (error) {
                 console.error('Data mapping failed.', error);
             } finally {
@@ -109,35 +79,18 @@ const CustomerDashboard = () => {
         fetchData();
     }, [user]);
 
-    const removeSavedItem = (id) => {
-        setSavedItems(prev => prev.filter(item => item._id !== id));
-        setStats(prev => ({ ...prev, savedProducts: prev.savedProducts - 1 }));
-    };
-
-    const sidebarItems = [
-        { label: 'Dashboard', icon: 'dashboard', path: '/customer-dashboard' },
-       { label: 'My Orders', icon: 'shopping_bag', path: '/orders' },
-        { label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
-        { label: 'Settings', icon: 'settings', path: '/profile' },
-    ];
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#051094] border-t-transparent rounded-full animate-spin"></div>
                 <p className="font-bold text-slate-400">Loading your hustle...</p>
             </div>
         </div>
     );
 
     return (
-        <DashboardLayout 
-            role="Customer" 
-            headerTitle="Customer Overview"
-            sidebarItems={sidebarItems}
-            TopHeader={getTopHeader()}
-            showSearch={false}
-        >
+        <CustomerLayout activeTab="dashboard" headerTitle="Customer Overview">
             <div className="space-y-10">
                  {/* Welcome Message */}
                 <div className="flex flex-col gap-1">
@@ -145,17 +98,15 @@ const CustomerDashboard = () => {
                     <p className="text-slate-500 font-medium pb-2">Here's your personal shopping activity and campus hustle overview.</p>
                 </div>
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <StatCard title="Total Orders" value={stats.totalOrders} icon="receipt_long" color="blue" />
                     <StatCard title="Active Orders" value={activeOrders.length} icon="local_shipping" color="amber" />
-                    <StatCard title="Saved Products" value={stats.savedProducts} icon="favorite" color="rose" />
-                    <StatCard title="Favorite Shops" value={stats.favoriteShops} icon="storefront" color="emerald" />
                 </div>
 
                 {/* Main Content Grid */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-                    {/* Left Column - Orders & Activity */}
-                    <div className="xl:col-span-2 space-y-10">
+                <div className="grid grid-cols-1 gap-10">
+                    {/* Main Sequence */}
+                    <div className="space-y-10">
 
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -210,7 +161,7 @@ const CustomerDashboard = () => {
                                 <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden group">
                                      <div className="flex justify-between items-start mb-8">
                                         <div>
-                                            <h4 className="text-2xl font-black text-slate-900">{activeOrders[0].product_id?.storefront_id?.storeName || 'Shop'}</h4>
+                                            <h4 className="text-2xl font-black text-slate-900">{activeOrders[0].product_id?.storefront_id?.storefront_name || 'Shop'}</h4>
                                             <p className="text-sm font-bold text-slate-400">Order #{activeOrders[0]._id.slice(-6)} • {activeOrders[0].status}</p>
                                         </div>
                                         <div className="text-right">
@@ -249,12 +200,14 @@ const CustomerDashboard = () => {
                             renderRow={(order) => (
                                 <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4 font-black text-sm">#{order._id.slice(-6)}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-600 text-sm">{order.product_id?.storefront_id?.storeName || 'Unknown Shop'}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-600 text-sm">{order.product_id?.storefront_id?.storefront_name || 'Unknown Shop'}</td>
                                     <td className="px-6 py-4 text-slate-400 text-xs font-bold">{new Date(order.createdAt).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 font-black text-sm">${(order.total_price || 0).toFixed(2)}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 
+                                            order.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
+                                            order.status === 'confirmed' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
                                         }`}>
                                             {order.status}
                                         </span>
@@ -272,70 +225,15 @@ const CustomerDashboard = () => {
                             }
                         />
 
-                        {/* Saved Items */}
-                        <section>
-                            <h3 className="text-xl font-black text-slate-900 mb-6">Saved for Later</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {savedItems.length > 0 ? savedItems.map(item => (
-                                    <div key={item._id} className="bg-white rounded-3xl border border-slate-100 shadow-sm flex overflow-hidden hover:shadow-lg transition-all group">
-                                        <div className="w-24 h-24 shrink-0 overflow-hidden">
-                                            <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                        </div>
-                                        <div className="p-4 flex-1 flex flex-col justify-between">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h5 className="font-black text-slate-900 text-sm leading-tight truncate w-32">{item.title}</h5>
-                                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{item.category}</p>
-                                                </div>
-                                                <button onClick={() => removeSavedItem(item._id)} className="text-slate-300 hover:text-rose-500 transition-colors">
-                                                    <span className="material-symbols-outlined text-lg">close</span>
-                                                </button>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-2">
-                                                <span className="font-black text-slate-900 text-lg">${item.price}</span>
-                                                <button className="px-3 py-1.5 bg-indigo-600 text-white font-black text-[10px] rounded-lg shadow-md shadow-indigo-100 hover:brightness-110 active:scale-95 transition-all">Add to Cart</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )) : (
-                                    <div className="col-span-full py-12 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 text-center font-bold text-slate-400">
-                                        No saved items yet. Start exploring!
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+
                     </div>
 
-                    {/* Right Column - Insights & Notifications */}
-                    <div className="space-y-10">
 
-
-                        {/* Favorite Shops Quick View */}
-                        <section className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-                            <h3 className="text-lg font-black text-slate-900 mb-6">Favorite Shops</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                {favoriteShops.map(shop => (
-                                    <div key={shop._id} className="flex flex-col items-center group cursor-pointer">
-                                        <div className="w-16 h-16 rounded-2xl bg-slate-50 overflow-hidden mb-2 border border-slate-50 group-hover:scale-110 transition-transform duration-300">
-                                            <img src={shop.image} alt={shop.storeName} className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="text-[10px] font-black text-slate-900 truncate w-full text-center">{shop.storeName}</span>
-                                    </div>
-                                ))}
-                                <button className="flex flex-col items-center group">
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all border border-dashed border-slate-200">
-                                        <span className="material-symbols-outlined">add</span>
-                                    </div>
-                                    <span className="text-[10px] font-black text-slate-400 mt-2">Explore</span>
-                                </button>
-                            </div>
-                        </section>
-                    </div>
                 </div>
 
                 <Footer />
             </div>
-        </DashboardLayout>
+        </CustomerLayout>
     );
 };
 

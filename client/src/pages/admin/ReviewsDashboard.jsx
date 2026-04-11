@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import AdminLayout from '../../components/admin/AdminLayout';
 import ReviewStatsBar from '../../components/admin/ReviewStatsBar';
 import RatingDistribution from '../../components/admin/RatingDistribution';
 import FlaggedQueue from '../../components/admin/FlaggedQueue';
@@ -13,6 +14,7 @@ const ReviewsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
@@ -23,7 +25,7 @@ const ReviewsDashboard = () => {
 
       setReviews(revRes.data);
       setStats(statsRes.data);
-      
+
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       toast.error('Failed to load dashboard data');
@@ -52,7 +54,10 @@ const ReviewsDashboard = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-64px)] mt-16 bg-[#f8f9fa] pt-8 pb-12 px-4 sm:px-8 font-sans">
+    <AdminLayout
+      headerTitle="Review Management"
+      loading={loading}
+    >
       <Toaster position="top-right" />
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-8 text-left">
@@ -64,16 +69,16 @@ const ReviewsDashboard = () => {
 
         <div className="flex flex-col xl:flex-row gap-6 mt-6">
           <div className="w-full xl:w-2/3 flex flex-col">
-            <ReviewTable 
+            <ReviewTable
               reviews={reviews}
               loading={loading}
               onApprove={(id) => executeAction(`/${id}/approve`, 'PATCH')}
               onFlag={(id) => executeAction(`/${id}/flag`, 'PATCH')}
               onDelete={(id) => {
-                if(window.confirm('Delete this review permanently?')) executeAction(`/${id}`, 'DELETE');
+                if (window.confirm('Delete this review permanently?')) executeAction(`/${id}`, 'DELETE');
               }}
               onBulkDelete={(ids) => {
-                if(window.confirm(`Delete ${ids.length} reviews permanently?`)) executeAction('/bulk', 'DELETE', { ids });
+                if (window.confirm(`Delete ${ids.length} reviews permanently?`)) executeAction('/bulk', 'DELETE', { ids });
               }}
               onBulkFlag={(ids) => executeAction('/bulk/flag', 'PATCH', { ids })}
             />
@@ -86,7 +91,7 @@ const ReviewsDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

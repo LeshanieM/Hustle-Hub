@@ -4,8 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ProductForm from '../../components/products/ProductForm';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import OwnerHeader from '../../components/OwnerHeader';
-import Footer from '../../components/Footer';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
 
 const AddProductPage = () => {
   const { user } = useAuth();
@@ -31,27 +30,29 @@ const AddProductPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <OwnerHeader />
-      <div className="flex-grow pt-20 pb-12 px-4">
+    <OwnerLayout activeTab="products" headerTitle="Inbound Inventory">
+      <div className="pb-12 px-4">
         <div className="container mx-auto">
-          <div className="mb-6 max-w-2xl mx-auto">
+          <div className="mb-8 max-w-2xl mx-auto flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Add New Product</h2>
+              <p className="text-slate-500 text-sm font-medium">Define your item details, pricing, and stock limits.</p>
+            </div>
             <button 
               onClick={() => navigate('/owner/products')}
-              className="text-gray-500 hover:text-[#051094] transition-colors flex items-center text-sm font-medium bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm w-fit"
+              className="text-slate-500 hover:text-[#1111d4] transition-colors flex items-center text-xs font-bold bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md"
             >
-              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Dashboard
+              <span className="material-symbols-outlined text-[18px] mr-1.5">arrow_back</span>
+              Back to Catalog
             </button>
           </div>
-          <ProductForm onSubmit={handleSubmit} isLoading={isSubmitting} isEdit={false} />
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <ProductForm onSubmit={handleSubmit} isLoading={isSubmitting} isEdit={false} />
+          </div>
         </div>
       </div>
-      <Footer />
-    </div>
+    </OwnerLayout>
   );
 };
 
-export default AddProductPage;
+export default AddProductPage;

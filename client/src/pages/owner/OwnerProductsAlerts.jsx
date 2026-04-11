@@ -1,15 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ProductCard from '../../components/products/ProductCard';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import OwnerHeader from '../../components/OwnerHeader';
-import Footer from '../../components/Footer';
+import OwnerLayout from '../../components/dashboard/OwnerLayout';
+import { resolveImageUrl } from '../../utils/imageUtils';
 
 import { useAuth } from '../../context/AuthContext';
 
-const OwnerProductsDashboard = () => {
+const OwnerProductsAlerts = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,10 +43,10 @@ const OwnerProductsDashboard = () => {
     }
   };
 
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <OwnerHeader />
-      <div className="flex-grow pt-20 pb-12 bg-slate-50/50">
+    <OwnerLayout activeTab="alerts" headerTitle="System Alerts">
+      <div className="pb-12 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
@@ -87,7 +85,7 @@ const OwnerProductsDashboard = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                             {product.imageUrl ? (
-                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(http://localhost:5000/${product.imageUrl.replace('\\', '/')})` }} />
+                              <div className="h-12 w-12 rounded-lg bg-slate-100 bg-cover bg-center shrink-0 border border-slate-200 shadow-sm" style={{ backgroundImage: `url(${resolveImageUrl(product.imageUrl)})` }} />
                             ) : (
                               <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
                                 <span className="material-symbols-outlined text-slate-400">inventory_2</span>
@@ -163,9 +161,8 @@ const OwnerProductsDashboard = () => {
           )}
         </div>
       </div>
-      <Footer />
-    </div>
+    </OwnerLayout>
   );
 };
 
-export default OwnerProductsDashboard;
+export default OwnerProductsAlerts;

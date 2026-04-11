@@ -197,8 +197,14 @@ const ChatBot = () => {
           {/* Header */}
           <div className="p-4 bg-gray-50 border-bottom border-gray-100 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-sm">HB</span>
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-400 rounded-full blur-sm animate-pulse opacity-30"></div>
+                <svg viewBox="0 0 100 100" className="w-6 h-6 relative z-10 animate-bounce" style={{ animationDuration: '3s' }}>
+                    <circle cx="50" cy="50" r="45" fill="white" stroke="#1111d4" strokeWidth="2" />
+                    <circle cx="35" cy="45" r="5" fill="#1111d4" />
+                    <circle cx="65" cy="45" r="5" fill="#1111d4" />
+                    <path d="M 35 65 Q 50 75 65 65" fill="none" stroke="#1111d4" strokeWidth="3" strokeLinecap="round" />
+                </svg>
               </div>
               <div>
                 <h3 className="font-bold text-gray-800 text-sm leading-tight">Hustle-Bot</h3>
@@ -269,10 +275,10 @@ const ChatBot = () => {
 
           {/* FAQ Shortcuts */}
           <div className="px-4 pb-3 flex flex-wrap gap-2 overflow-x-auto">
-            {['Try Simulator', 'Pricing', 'Contact Us', 'Hours'].map((faq) => (
+            {['Try Simulator', 'Growth Tip 💡', 'Contact Us'].map((faq) => (
               <button 
                 key={faq} 
-                onClick={() => handleFAQClick(faq === 'Try Simulator' ? '🏡 Try Simulator' : faq)}
+                onClick={() => handleFAQClick(faq === 'Growth Tip 💡' ? 'Get a random Growth Tip' : faq === 'Try Simulator' ? '🏡 Try Simulator' : faq)}
                 className="whitespace-nowrap px-3 py-1.5 bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 rounded-full text-xs font-semibold transition-all shadow-sm"
               >
                 {faq === 'Try Simulator' ? '🏡 Try Simulator' : faq}

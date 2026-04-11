@@ -17,7 +17,7 @@ const ProductSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['General', 'Apparel', 'Books', 'Electronics', 'Collectibles', 'Ticket'],
+    enum: ['General', 'Apparel', 'Books', 'Electronics', 'Collectibles', 'Ticket', 'Fashion', 'Shoes', 'Watches', 'Furniture'],
     default: 'General'
   },
   imageUrl: {
@@ -45,6 +45,15 @@ const ProductSchema = new mongoose.Schema({
   ownerId: {
     type: String,
     required: true
+  },
+  isFake: {
+    type: Boolean,
+    default: false
+  },
+  status: {
+    type: String,
+    enum: ['Verified', 'Flagged', 'Pending'],
+    default: 'Verified'
   }
 }, { timestamps: true });
 

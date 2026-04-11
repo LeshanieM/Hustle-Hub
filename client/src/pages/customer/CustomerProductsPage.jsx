@@ -3,8 +3,7 @@ import { useLocation } from 'react-router-dom';
 import ProductCard from '../../components/products/ProductCard';
 import { productService } from '../../services/productService';
 import toast from 'react-hot-toast';
-import CustomerHeader from '../../components/CustomerHeader';
-import Footer from '../../components/Footer';
+import CustomerLayout from '../../components/dashboard/CustomerLayout';
 
 const CustomerProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -40,10 +39,8 @@ const CustomerProductsPage = () => {
   });
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <CustomerHeader />
-      <div className="flex-grow pt-24 pb-12">
-        <div className="container mx-auto px-4 max-w-7xl">
+    <CustomerLayout activeTab="products" headerTitle="Products">
+      <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">University Storefront</h1>
             <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">Discover exclusive university merchandise, tickets, and collectibles.</p>
@@ -112,10 +109,8 @@ const CustomerProductsPage = () => {
               </button>
             </div>
           )}
-        </div>
       </div>
-      <Footer />
-    </div>
+    </CustomerLayout>
   );
 };
 

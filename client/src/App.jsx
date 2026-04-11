@@ -31,10 +31,12 @@ import BusinessDirectory from "./pages/admin/BusinessDirectory";
 import UserDirectory from "./pages/admin/UserDirectory";
 import AdminAIInsights from "./pages/admin/AdminAIInsights";
 import AuditLogs from "./pages/admin/AuditLogs";
+import AdminReports from "./pages/admin/AdminReports";
 import OrderHistory from "./pages/OrderHistory";
 
 import ChatBot from "./components/ChatBot";
 import RoomBuilder from "./components/RoomBuilder";
+import ManageFaqs from "./pages/admin/ManageFaqs";
 
 // Owner Pages
 import OwnerProductsDashboard from "./pages/owner/OwnerProductsDashboard";
@@ -47,6 +49,7 @@ import OwnerReports from "./pages/owner/OwnerReports";
 // Admin Pages
 import ReviewsDashboard from "./pages/admin/ReviewsDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
+import AdminProductDetails from "./pages/admin/AdminProductDetails";
 import AdminHeader from "./components/AdminHeader";
 
 // Contact Us Pages
@@ -317,10 +320,25 @@ function App() {
           }
         />
         <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminReports />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/admin/faqs"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ManageFaqs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/reviews"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminHeader />
               <ReviewsDashboard />
             </ProtectedRoute>
           }
@@ -330,7 +348,6 @@ function App() {
           path="/admin/orders"
           element={
             <ProtectedRoute>
-              <AdminHeader />
               <AdminOrders />
             </ProtectedRoute>
           }
@@ -340,6 +357,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/:id"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProductDetails />
             </ProtectedRoute>
           }
         />

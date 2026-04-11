@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import AdminHeader from '../../components/AdminHeader';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const AuditLogs = () => {
     const { user: currentAdmin } = useAuth();
@@ -17,43 +16,15 @@ const AuditLogs = () => {
                 if (!token) throw new Error("No token");
                 const config = { headers: { Authorization: `Bearer ${token}` } };
 
-                // Fetch users and stores to dynamically build logs
-                const [storesRes, usersRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/admin/stores', config).catch(() => ({ data: [] })),
-                    axios.get('http://localhost:5000/api/admin/users', config).catch(() => ({ data: [] }))
-                ]);
+                // Fetch real audit logs from the new backend endpoint
+                const response = await axios.get('http://localhost:5000/api/admin/audit-logs', config);
 
-                const stores = storesRes.data || [];
-                const users = usersRes.data || [];
+                const logs = (response.data || []).map(l => ({
+                    ...l,
+                    time: new Date(l.time) // Re-hydrate Date object
+                }));
 
-                const logs = [];
-                users.forEach(u => {
-                    logs.push({
-                        id: u._id,
-                        action: `${u.role || 'USER'} Registered`,
-                        type: 'USER',
-                        target: u.username,
-                        admin: 'System',
-                        time: new Date(u.createdAt),
-                        rawTime: new Date(u.createdAt).getTime(),
-                        icon: 'person_add'
-                    });
-                });
-                stores.forEach(b => {
-                    logs.push({
-                        id: b._id,
-                        action: `Store ${b.status}`,
-                        type: 'STORE',
-                        target: b.storeName,
-                        admin: 'System',
-                        time: new Date(b.updatedAt || b.createdAt),
-                        rawTime: new Date(b.updatedAt || b.createdAt).getTime(),
-                        icon: 'storefront'
-                    });
-                });
-
-                // Sort descending
-                setAuditLogs(logs.sort((a, b) => b.rawTime - a.rawTime));
+                setAuditLogs(logs);
             } catch (error) {
                 console.error('Failed to fetch audit records:', error);
             } finally {
@@ -63,34 +34,16 @@ const AuditLogs = () => {
         fetchLogs();
     }, [currentAdmin]);
 
-    const sidebarItems = [
-        { label: 'Platform Overview', icon: 'dashboard', path: '/admin-dashboard' },
-        { label: 'Business Directory', icon: 'storefront', path: '/admin/businesses' },
-        { label: 'User Directory', icon: 'group', path: '/admin/users' },
-        { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
-        { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
-    ];
 
     const filtered = auditLogs.filter(log => {
         const matchesSearch = log.target.toLowerCase().includes(searchTerm.toLowerCase()) || log.action.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
     });
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Compiling Logs...</p>
-            </div>
-        </div>
-    );
-
     return (
-        <DashboardLayout
-            role="Administrator"
+        <AdminLayout
             headerTitle="Security & Activity Logs"
-            sidebarItems={sidebarItems}
-            TopHeader={AdminHeader}
+            loading={loading}
         >
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in py-4">
                 {/* Header Profile */}
@@ -174,7 +127,7 @@ const AuditLogs = () => {
                 </div>
 
             </div>
-        </DashboardLayout>
+        </AdminLayout>
     );
 };
 
