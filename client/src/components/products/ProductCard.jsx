@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { resolveImageUrl } from '../../utils/imageUtils';
 import { useAuth } from '../../context/AuthContext';
+import ModelViewer from './ModelViewer';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -9,6 +10,7 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
   const { user, updateUser } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (user && user.savedItems) {
@@ -51,23 +53,38 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-100 flex flex-col h-full group">
+    <div 
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-100 flex flex-col h-full group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="relative h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-        {product.imageUrl ? (
-          <>
-            <img src={resolveImageUrl(product.imageUrl)} alt={product.name} className={`object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ${product.stock === 0 ? 'opacity-80 grayscale' : ''}`} />
-            {product.modelUrl && (
-              <div className="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-xs font-semibold flex items-center z-10">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                3D Available
-              </div>
-            )}
-          </>
+        {product.modelUrl ? (
+          <div className="absolute inset-0 z-10">
+            <ModelViewer 
+              src={product.modelUrl} 
+              autoRotate={isHovered} 
+              poster={product.imageUrl ? resolveImageUrl(product.imageUrl) : undefined}
+              className="!min-h-0 !h-full !rounded-none !border-none !shadow-none" 
+            />
+          </div>
+        ) : product.imageUrl ? (
+          <img 
+            src={resolveImageUrl(product.imageUrl)} 
+            alt={product.name} 
+            className={`object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ${product.stock === 0 ? 'opacity-80 grayscale' : ''}`} 
+          />
         ) : (
           <div className="text-gray-400 flex flex-col items-center">
              <span className="text-sm font-medium">No Image</span>
+          </div>
+        )}
+
+        {/* 3D Indicator Badge */}
+        {product.modelUrl && !isHovered && (
+          <div className="absolute top-2 left-2 bg-[#051094]/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-[10px] font-bold flex items-center z-10 animate-pulse">
+            <span className="material-symbols-outlined text-[12px] mr-1">3d_rotation</span>
+            Hover for 3D
           </div>
         )}
         

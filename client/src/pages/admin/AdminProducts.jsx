@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
@@ -7,6 +7,41 @@ import { ShoppingBag, AlertTriangle, CheckCircle, Search, Filter, MoreVertical, 
 import { adminService } from '../../services/adminService';
 import { resolveImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
+import ModelViewer from '../../components/products/ModelViewer';
+
+const ProductThumbnail = ({ product }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    return (
+        <div 
+            className="w-12 h-12 rounded-lg shrink-0 border border-slate-200 shadow-sm relative overflow-hidden bg-white"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {product.modelUrl && isHovered ? (
+                <ModelViewer 
+                    src={product.modelUrl} 
+                    autoRotate={true} 
+                    className="!min-h-0 !h-full !rounded-none !border-none !shadow-none" 
+                />
+            ) : product.imageUrl ? (
+                <div 
+                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
+                    style={{ backgroundImage: `url(${resolveImageUrl(product.imageUrl)})` }} 
+                />
+            ) : (
+                <div className={`w-full h-full flex items-center justify-center font-bold text-white ${product.isFake ? 'bg-rose-500' : 'bg-slate-800'}`}>
+                    {product.name.charAt(0)}
+                </div>
+            )}
+            
+            {product.modelUrl && !isHovered && (
+                <div className="absolute bottom-0 right-0 p-0.5 bg-[#051094] text-white rounded-tl-md leading-none">
+                    <span className="material-symbols-outlined text-[10px]">3d_rotation</span>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const AdminProducts = () => {
     const navigate = useNavigate();
@@ -51,8 +86,9 @@ const AdminProducts = () => {
 
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.seller.toLowerCase().includes(searchTerm.toLowerCase());
+            const nameMatch = p.name?.toLowerCase().includes(searchTerm.toLowerCase());
+            const sellerMatch = p.seller?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = nameMatch || sellerMatch;
             const matchesCategory = filterCategory === 'All' || p.category === filterCategory;
             return matchesSearch && matchesCategory;
         });
@@ -151,13 +187,7 @@ const AdminProducts = () => {
                         <tr key={product._id} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
-                                    {product.imageUrl ? (
-                                        <div className="w-10 h-10 rounded-lg shrink-0 border border-slate-200 shadow-sm bg-cover bg-center" style={{ backgroundImage: `url(${resolveImageUrl(product.imageUrl)})` }} />
-                                    ) : (
-                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white shadow-sm shrink-0 ${product.isFake ? 'bg-rose-500' : 'bg-slate-800'}`}>
-                                            {product.name.charAt(0)}
-                                        </div>
-                                    )}
+                                    <ProductThumbnail product={product} />
 
                                     <div>
                                         <div className="font-bold text-slate-900 text-sm whitespace-nowrap">{product.name}</div>

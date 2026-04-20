@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CustomerLayout from '../../components/dashboard/CustomerLayout';
 import toast from 'react-hot-toast';
-import { resolveImageUrl } from '../../utils/imageUtils';
+import ProductCard from '../../components/products/ProductCard';
 
 const SavedItems = () => {
     const { user, updateUser } = useAuth();
@@ -67,46 +67,12 @@ const SavedItems = () => {
                     ) : savedItems.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                             {savedItems.map(item => (
-                                <div key={item._id} className="bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col overflow-hidden hover:shadow-lg transition-all group h-full">
-                                    <div className="w-full h-56 overflow-hidden relative bg-slate-50">
-                                        {item.imageUrl ? (
-                                            <img 
-                                                src={resolveImageUrl(item.imageUrl)} 
-                                                alt={item.name} 
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-5xl text-slate-200">image</span>
-                                            </div>
-                                        )}
-                                        <button 
-                                            onClick={() => removeSavedItem(item._id)} 
-                                            className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-md active:scale-90 border-none cursor-pointer"
-                                            title="Remove from favorites"
-                                        >
-                                            <span className="material-symbols-outlined text-[22px] fill-1">favorite</span>
-                                        </button>
-                                        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                                            <p className="text-[10px] font-black text-[#051094] uppercase tracking-widest m-0">{item.type || 'General'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="p-6 flex-1 flex flex-col">
-                                        <div className="flex-1">
-                                            <h5 className="font-black text-slate-900 text-lg leading-tight mb-2 line-clamp-1">{item.name}</h5>
-                                            <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-4">{item.description}</p>
-                                        </div>
-                                        <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
-                                            <span className="font-black text-slate-900 text-2xl">${Number(item.price).toFixed(2)}</span>
-                                            <button 
-                                                onClick={() => navigate(`/customer/products/${item._id}`)}
-                                                className="px-5 py-2.5 bg-[#051094] hover:bg-[#0d0db0] text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#051094]/10 active:scale-95 border-none cursor-pointer"
-                                            >
-                                                View Details
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ProductCard 
+                                    key={item._id} 
+                                    product={item} 
+                                    isOwner={false} 
+                                    onDelete={removeSavedItem} 
+                                />
                             ))}
                         </div>
                     ) : (
