@@ -60,4 +60,44 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { updateProfile };
+const toggleFavoriteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const index = user.savedItems.indexOf(productId);
+    if (index === -1) {
+      // Add to favorites
+      user.savedItems.push(productId);
+      await user.save();
+      return res.json({ message: "Product added to favorites", isFavorite: true });
+    } else {
+      // Remove from favorites
+      user.savedItems.splice(index, 1);
+      await user.save();
+      return res.json({ message: "Product removed from favorites", isFavorite: false });
+    }
+  } catch (error) {
+    console.error("Toggle Favorite Error:", error);
+    res.status(500).json({ message: "Server error during toggle favorite" });
+  }
+};
+
+const getSavedItems = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("savedItems");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ savedItems: user.savedItems });
+  } catch (error) {
+    console.error("Get Saved Items Error:", error);
+    res.status(500).json({ message: "Server error fetching saved items" });
+  }
+};
+
+module.exports = { updateProfile, toggleFavoriteProduct, getSavedItems };

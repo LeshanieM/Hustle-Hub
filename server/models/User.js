@@ -58,6 +58,12 @@ const userSchema = new mongoose.Schema(
       monthly: { type: Number, default: 0 },
       yearly: { type: Number, default: 0 },
     },
+    savedItems: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true },
 );

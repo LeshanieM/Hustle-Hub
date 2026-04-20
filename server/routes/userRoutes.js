@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { updateProfile } = require('../controllers/userController');
+const { updateProfile, toggleFavoriteProduct, getSavedItems } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -15,5 +15,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.put('/profile', protect, upload.single('profilePicture'), updateProfile);
+router.post('/favorite/:productId', protect, toggleFavoriteProduct);
+router.get('/saved-items', protect, getSavedItems);
 
 module.exports = router;
