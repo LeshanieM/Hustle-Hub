@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const ModelViewer = ({ src, alt = "A 3D model", autoRotate = true, className = "" }) => {
+const ModelViewer = ({ src, alt = "A 3D model", autoRotate = true, className = "", poster }) => {
   const modelRef = useRef(null);
 
   useEffect(() => {
@@ -15,13 +15,14 @@ const ModelViewer = ({ src, alt = "A 3D model", autoRotate = true, className = "
         ref={modelRef}
         src={src}
         alt={alt}
+        poster={poster}
         shadow-intensity="1"
         camera-controls
         auto-rotate={autoRotate ? "true" : undefined}
         auto-rotate-delay="1000"
         rotation-per-second="30deg"
         interaction-prompt="auto"
-        style={{ width: '100%', height: '100%', minHeight: '400px' }}
+        style={{ width: '100%', height: '100%', minHeight: 'inherit' }}
       >
         <div slot="poster" className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="flex flex-col items-center text-gray-500 animate-pulse">

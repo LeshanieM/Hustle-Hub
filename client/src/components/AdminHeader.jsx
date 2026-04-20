@@ -34,10 +34,16 @@ const AdminHeader = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
         setIsProfileMenuOpen(false);
       }
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target)
+      ) {
         setIsNotificationsOpen(false);
       }
       if (messagesRef.current && !messagesRef.current.contains(event.target)) {
@@ -132,50 +138,12 @@ const AdminHeader = () => {
           to="/admin-dashboard"
           className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
         >
-          <span>Admin Dashboard</span>
-        </Link>
-
-        {/*  <Link
-          to="/customer-dashboard"
-          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
-        >
-          <span>Customer Dashboard</span>
-        </Link> */}
-
-        <Link
-          to="/admin/products"
-          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
-        >
-          <ShoppingBag size={18} />
-          <span>Products</span>
-        </Link>
-
-        <Link
-          to="/admin/orders"
-          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors"
-        >
-          <BarChart3 size={18} />
-          <span>Orders</span>
-        </Link>
-
-        <Link
-          to="/admin/reviews"
-          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors mr-2"
-        >
-          <MessageCircle size={18} />
-          <span>Reviews</span>
-        </Link>
-        <Link
-          to="/admin/contact"
-          className="hidden md:flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#6b6860] hover:text-[#0000ff] no-underline font-medium transition-colors mr-2"
-        >
-          <Shield size={18} />
-          <span>Support</span>
+          <span> Dashboard</span>
         </Link>
 
         {/* Notifications */}
         <div className="relative" ref={notificationsRef}>
-          <button 
+          <button
             onClick={() => {
               setIsNotificationsOpen(!isNotificationsOpen);
               setIsMessagesOpen(false);
@@ -185,19 +153,27 @@ const AdminHeader = () => {
           >
             <Bell size={20} className="text-[#6b6860]" />
           </button>
-          
+
           {isNotificationsOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">Notifications</h3>
-                <span className="text-xs text-[#0000ff] cursor-pointer hover:underline">Mark all read</span>
+                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">
+                  Notifications
+                </h3>
+                <span className="text-xs text-[#0000ff] cursor-pointer hover:underline">
+                  Mark all read
+                </span>
               </div>
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
                   <Bell size={20} className="text-gray-400" />
                 </div>
-                <p className="text-sm font-medium text-gray-900 m-0">No new notifications</p>
-                <p className="text-xs text-gray-500 mt-1 m-0">You're all caught up!</p>
+                <p className="text-sm font-medium text-gray-900 m-0">
+                  No new notifications
+                </p>
+                <p className="text-xs text-gray-500 mt-1 m-0">
+                  You're all caught up!
+                </p>
               </div>
             </div>
           )}
@@ -205,7 +181,7 @@ const AdminHeader = () => {
 
         {/* Messages */}
         <div className="relative" ref={messagesRef}>
-          <button 
+          <button
             onClick={() => {
               setIsMessagesOpen(!isMessagesOpen);
               setIsNotificationsOpen(false);
@@ -215,19 +191,30 @@ const AdminHeader = () => {
           >
             <MessageCircle size={20} className="text-[#6b6860]" />
           </button>
-          
+
           {isMessagesOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">Messages</h3>
-                <Link to="/admin/contact" className="text-xs text-[#0000ff] cursor-pointer hover:underline no-underline">View inbox</Link>
+                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">
+                  Messages
+                </h3>
+                <Link
+                  to="/admin/contact"
+                  className="text-xs text-[#0000ff] cursor-pointer hover:underline no-underline"
+                >
+                  View inbox
+                </Link>
               </div>
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
                   <MessageCircle size={20} className="text-gray-400" />
                 </div>
-                <p className="text-sm font-medium text-gray-900 m-0">No new messages</p>
-                <p className="text-xs text-gray-500 mt-1 m-0">Your inbox is empty.</p>
+                <p className="text-sm font-medium text-gray-900 m-0">
+                  No new messages
+                </p>
+                <p className="text-xs text-gray-500 mt-1 m-0">
+                  Your inbox is empty.
+                </p>
               </div>
             </div>
           )}
@@ -243,7 +230,15 @@ const AdminHeader = () => {
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0000ff] to-[#6600ff] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
               {user?.profilePicture ? (
-                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={
+                    user.profilePicture.startsWith('http')
+                      ? user.profilePicture
+                      : `http://localhost:5000/${user.profilePicture.replace(/\\/g, '/')}`
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 getInitials(
                   user ? `${user.firstName} ${user.lastName}` : 'Admin User',

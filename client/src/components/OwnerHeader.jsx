@@ -41,7 +41,7 @@ const OwnerHeader = () => {
           to="/owner-dashboard"
           className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
-          Owner Dashboard
+          Dashboard
         </Link>
 
         <Link
@@ -49,30 +49,6 @@ const OwnerHeader = () => {
           className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
           My Shop
-        </Link>
-        <Link
-          to="/owner/products"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Products
-        </Link>
-        <Link
-          to="/owner/orders"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Orders
-        </Link>
-          <Link
-          to="/owner/alerts"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Alerts
-        </Link>
-        <Link
-          to="/owner/contact"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Support
         </Link>
       </div>
 
@@ -92,7 +68,15 @@ const OwnerHeader = () => {
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#051094] to-[#0a0a0f] flex items-center justify-center text-white font-bold text-sm border border-gray-200 overflow-hidden">
               {user?.profilePicture ? (
-                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={
+                    user.profilePicture.startsWith('http')
+                      ? user.profilePicture
+                      : `http://localhost:5000/${user.profilePicture.replace(/\\/g, '/')}`
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 user?.firstName?.charAt(0) || 'O'
               )}
