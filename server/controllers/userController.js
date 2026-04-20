@@ -1,4 +1,6 @@
 const User = require("../models/User");
+const badgeEngine = require('../utils/badgeEngine');
+const { checkAndAwardBadges } = require('../services/badgeService');
 
 const updateProfile = async (req, res) => {
   try {
@@ -60,6 +62,37 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const getUserBadges = async (req, res) => {
+  try {
+    // Always run a live sync first — this adds new earned badges AND removes
+    // badges that are no longer valid (e.g. after orders cancelled / reviews deleted)
+    await checkAndAwardBadges(req.params.id);
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const enrichedBadges = (user.badges || []).map(ub => {
+      const config = badgeEngine.find(b => b.id === ub.badgeId);
+      if (!config) return null;
+      return {
+        id: config.id,
+        badgeId: ub.badgeId,
+        label: config.label,
+        icon: config.icon,
+        description: config.description,
+        earnedAt: ub.earnedAt
+      };
+    }).filter(Boolean);
+
+    res.status(200).json(enrichedBadges);
+  } catch (error) {
+    console.error("Get User Badges Error:", error);
+    res.status(500).json({ message: "Server error getting badges" });
+  }
+};
+
 const toggleFavoriteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -100,4 +133,9 @@ const getSavedItems = async (req, res) => {
   }
 };
 
-module.exports = { updateProfile, toggleFavoriteProduct, getSavedItems };
+module.exports = { 
+  updateProfile, 
+  getUserBadges, 
+  toggleFavoriteProduct, 
+  getSavedItems 
+};

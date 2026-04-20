@@ -88,7 +88,15 @@ const createBooking = async (req, res) => {
       populatedObj.storefront_name = 'Archived Store';
     }
 
-    res.status(201).json(populatedObj);
+    let newBadges = [];
+    try {
+      const { checkAndAwardBadges } = require('../services/badgeService');
+      newBadges = await checkAndAwardBadges(req.user._id);
+    } catch(err) {
+      console.error('Badge service error:', err);
+    }
+
+    res.status(201).json({ ...populatedObj, newBadges });
   } catch (error) {
     console.error('[createBooking]', error);
     res.status(500).json({ message: error.message });
@@ -209,6 +217,14 @@ const cancelBooking = async (req, res) => {
 
     booking.status = 'cancelled';
     await booking.save();
+
+    // Recalculate badges — cancelled order no longer counts toward shopper badges
+    try {
+      const { checkAndAwardBadges } = require('../services/badgeService');
+      await checkAndAwardBadges(req.user._id);
+    } catch (err) {
+      console.error('Badge recalc error on cancel:', err);
+    }
 
     res.status(200).json({ message: 'Booking cancelled', booking });
   } catch (error) {
@@ -409,7 +425,17 @@ const acceptBooking = async (req, res) => {
     const updated = await Booking.findById(booking._id)
       .populate('product_id', 'name price type category')
       .populate('customer_id', 'firstName lastName username studentEmail');
-    res.status(200).json(updated);
+      
+    // Award Seller Badges
+    let newBadges = [];
+    try {
+      const { checkAndAwardBadges } = require('../services/badgeService');
+      newBadges = await checkAndAwardBadges(req.user._id);
+    } catch(err) {
+      console.error('Seller badge error:', err);
+    }
+    
+    res.status(200).json({ ...updated.toObject(), newBadges });
   } catch (error) {
     console.error('[acceptBooking]', error);
     res.status(500).json({ message: error.message });
@@ -470,7 +496,17 @@ const markReady = async (req, res) => {
     const updated = await Booking.findById(booking._id)
       .populate('product_id', 'name price type category')
       .populate('customer_id', 'firstName lastName username studentEmail');
-    res.status(200).json(updated);
+      
+    // Award Seller Badges
+    let newBadges = [];
+    try {
+      const { checkAndAwardBadges } = require('../services/badgeService');
+      newBadges = await checkAndAwardBadges(req.user._id);
+    } catch(err) {
+      console.error('Seller badge error:', err);
+    }
+
+    res.status(200).json({ ...updated.toObject(), newBadges });
   } catch (error) {
     console.error('[markReady]', error);
     res.status(500).json({ message: error.message });
@@ -513,7 +549,17 @@ const bulkAction = async (req, res) => {
     });
 
     await Promise.all(updates);
-    res.status(200).json({ updated: eligible.length });
+    
+    // Award Seller Badges
+    let newBadges = [];
+    try {
+      const { checkAndAwardBadges } = require('../services/badgeService');
+      newBadges = await checkAndAwardBadges(ownerId);
+    } catch(err) {
+      console.error('Seller badge error:', err);
+    }
+    
+    res.status(200).json({ updated: eligible.length, newBadges });
   } catch (error) {
     console.error('[bulkAction]', error);
     res.status(500).json({ message: error.message });
@@ -535,4 +581,3 @@ module.exports = {
   markReady,
   bulkAction,
 };
-

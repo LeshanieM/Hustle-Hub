@@ -80,7 +80,18 @@ exports.createProduct = async (req, res) => {
 
     const savedProduct = await newProduct.save();
     console.log('Product saved successfully:', savedProduct._id);
-    res.status(201).json(savedProduct);
+    
+    let newBadges = [];
+    if (savedProduct.ownerId && savedProduct.ownerId !== 'owner1') {
+      try {
+        const { checkAndAwardBadges } = require('../services/badgeService');
+        newBadges = await checkAndAwardBadges(savedProduct.ownerId);
+      } catch(err) {
+        console.error('Badge service error:', err);
+      }
+    }
+    
+    res.status(201).json({ ...savedProduct.toJSON(), newBadges });
   } catch (error) {
     console.error('CRITICAL ERROR creating product:', error);
     res.status(500).json({ 
