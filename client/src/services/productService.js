@@ -23,6 +23,9 @@ export const productService = {
 
   createProduct: async (productData) => {
     const res = await axios.post(`${API_URL}/products`, productData);
+    if (res.data && res.data.newBadges && res.data.newBadges.length > 0) {
+      import('../components/badges/BadgeToast').then(({ showBadgeToast }) => showBadgeToast(res.data.newBadges));
+    }
     return res.data;
   },
 

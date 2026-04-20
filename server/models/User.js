@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       monthly: { type: Number, default: 0 },
       yearly: { type: Number, default: 0 },
     },
+    badges: [{
+      badgeId: String,
+      earnedAt: Date,
+    }],
     savedItems: [
       {
         type: mongoose.Schema.Types.ObjectId,
