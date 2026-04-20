@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Product = require('../models/Product');
 const Store = require('../models/Store');
+const User = require('../models/User');
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -74,10 +75,17 @@ const createBooking = async (req, res) => {
     // Convert to object to attach storefront_id
     const populatedObj = populated.toObject();
     if (populatedObj.product_id && populatedObj.product_id.ownerId) {
-      const store = await Store.findOne({ ownerId: populatedObj.product_id.ownerId }).select('storeName');
-      if (store) {
-        populatedObj.product_id.storefront_id = { _id: store._id, storefront_name: store.storeName };
-      }
+      const ownerId = populatedObj.product_id.ownerId.toString();
+      const store = /^[a-f\d]{24}$/i.test(ownerId)
+        ? await Store.findOne({ ownerId }).select('storeName')
+        : null;
+
+      populatedObj.product_id.storefront_id = store
+        ? { _id: store._id, storefront_name: store.storeName }
+        : { _id: ownerId, storefront_name: 'Archived Store' };
+      populatedObj.storefront_name = populatedObj.product_id.storefront_id.storefront_name;
+    } else {
+      populatedObj.storefront_name = 'Archived Store';
     }
 
     res.status(201).json(populatedObj);
@@ -101,18 +109,43 @@ const getMyBookings = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    const ownerIds = [...new Set(bookings.map(b => b.product_id?.ownerId).filter(Boolean))];
-    const stores = await Store.find({ ownerId: { $in: ownerIds } }).select('ownerId storeName');
+    const ownerIds = [...new Set(bookings.map(b => b.product_id?.ownerId?.toString()).filter(Boolean))];
+    const validOwnerIds = ownerIds.filter(id => /^[a-f\d]{24}$/i.test(id));
+
+    const [stores, owners] = await Promise.all([
+      Store.find({ ownerId: { $in: validOwnerIds } }).select('ownerId storeName'),
+      User.find({ _id: { $in: validOwnerIds } }).select('firstName lastName username')
+    ]);
     
     const storeMap = {};
     stores.forEach(s => {
       storeMap[s.ownerId.toString()] = { _id: s._id, storefront_name: s.storeName };
     });
 
+    const ownerMap = {};
+    owners.forEach(owner => {
+      const displayName =
+        [owner.firstName, owner.lastName].filter(Boolean).join(' ').trim() ||
+        owner.username ||
+        'Seller';
+
+      ownerMap[owner._id.toString()] = {
+        _id: owner._id,
+        storefront_name: `${displayName}'s Store`
+      };
+    });
+
     const result = bookings.map(b => {
       const bObj = b.toObject();
       if (bObj.product_id && bObj.product_id.ownerId) {
-         bObj.product_id.storefront_id = storeMap[bObj.product_id.ownerId.toString()] || null;
+         const ownerId = bObj.product_id.ownerId.toString();
+         bObj.product_id.storefront_id = storeMap[ownerId] || ownerMap[ownerId] || {
+          _id: ownerId,
+          storefront_name: 'Archived Store'
+         };
+         bObj.storefront_name = bObj.product_id.storefront_id.storefront_name;
+      } else {
+         bObj.storefront_name = 'Archived Store';
       }
       return bObj;
     });

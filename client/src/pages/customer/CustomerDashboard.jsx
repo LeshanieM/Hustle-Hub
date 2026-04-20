@@ -7,13 +7,48 @@ import StatCard from '../../components/dashboard/StatCard';
 import TableComponent from '../../components/dashboard/TableComponent';
 import Footer from '../../components/Footer';
 
+const parseDeliveryDateTime = (deliveryDate, deliveryTime) => {
+    if (!deliveryDate) return null;
+
+    const scheduled = new Date(`${deliveryDate}T00:00:00`);
+    if (Number.isNaN(scheduled.getTime())) return null;
+
+    if (!deliveryTime) return scheduled;
+
+    const match = deliveryTime.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return scheduled;
+
+    let [, hours, minutes, period] = match;
+    let parsedHours = Number(hours);
+
+    if (period.toUpperCase() === 'PM' && parsedHours !== 12) parsedHours += 12;
+    if (period.toUpperCase() === 'AM' && parsedHours === 12) parsedHours = 0;
+
+    scheduled.setHours(parsedHours, Number(minutes), 0, 0);
+    return scheduled;
+};
+
+const decorateOrder = (order) => {
+    const scheduledAt = parseDeliveryDateTime(order.delivery_date, order.delivery_time);
+    const isLate = Boolean(
+        scheduledAt &&
+        ['pending', 'confirmed'].includes(order.status) &&
+        scheduledAt.getTime() < Date.now()
+    );
+
+    return {
+        ...order,
+        scheduledAt,
+        isLate
+    };
+};
+
 const CustomerDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
-    
-    // Data State
+
     const [stats, setStats] = useState({
         totalOrders: 0,
         activeOrdersCount: 0
@@ -22,12 +57,20 @@ const CustomerDashboard = () => {
     const [activeOrders, setActiveOrders] = useState([]);
     const [orderHistory, setOrderHistory] = useState([]);
 
-
-
     const spendingData = {
-        totalSpent: orderHistory.filter(o => o.status !== 'cancelled').reduce((sum, order) => sum + (order.total_price || 0), 0)
+        totalSpent: orderHistory
+            .filter((o) => o.status !== 'cancelled')
+            .reduce((sum, order) => sum + (order.total_price || 0), 0)
     };
+
     const orders = orderHistory.slice(0, 5);
+    const getStoreName = (order) =>
+        order.storefront_name ||
+        order.product_id?.storefront_id?.storefront_name ||
+        'Archived Store';
+    const highlightedOrder =
+        activeOrders.find((order) => getStoreName(order) !== 'Archived Store') ||
+        [...activeOrders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
 
     const OrderCard = ({ order }) => (
         <div className="flex justify-between items-center p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
@@ -36,17 +79,34 @@ const CustomerDashboard = () => {
                     <span className="material-symbols-outlined">receipt_long</span>
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm text-slate-900">{order.product_id?.name || 'Order'} - {order.product_id?.storefront_id?.storefront_name || 'Store'}</h4>
+                    <h4 className="font-bold text-sm text-slate-900">
+                        {order.product_id?.name || 'Order'} - {getStoreName(order)}
+                    </h4>
                     <p className="text-xs text-slate-400 font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
             </div>
             <div className="text-right">
                 <p className="font-black text-slate-900 text-sm">${(order.total_price || 0).toFixed(2)}</p>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${
-                    order.status === 'completed' ? 'text-emerald-500' :
-                    order.status === 'cancelled' ? 'text-rose-500' :
-                    order.status === 'confirmed' ? 'text-blue-500' : 'text-amber-500'
-                }`}>{order.status}</p>
+                <div className="flex items-center justify-end gap-2">
+                    <p
+                        className={`text-[10px] font-black uppercase tracking-widest ${
+                            order.status === 'completed'
+                                ? 'text-emerald-500'
+                                : order.status === 'cancelled'
+                                  ? 'text-rose-500'
+                                  : order.status === 'confirmed'
+                                    ? 'text-blue-500'
+                                    : 'text-amber-500'
+                        }`}
+                    >
+                        {order.status}
+                    </p>
+                    {order.isLate && (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest">
+                            Late
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -56,14 +116,22 @@ const CustomerDashboard = () => {
             try {
                 const token = localStorage.getItem('token');
                 const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-                
+
                 const ordersRes = await axios.get('http://localhost:5000/api/bookings/my', config).catch(() => ({ data: [] }));
 
-                const allOrders = ordersRes.data || [];
-                const active = allOrders.filter(o => ['pending', 'confirmed'].includes(o.status));
-                const history = allOrders; // Show all orders in history
+                const allOrders = (ordersRes.data || []).map(decorateOrder);
+                const active = allOrders
+                    .filter((o) => ['pending', 'confirmed'].includes(o.status))
+                    .sort((a, b) => {
+                        if (a.isLate !== b.isLate) return a.isLate ? -1 : 1;
+                        if (a.scheduledAt && b.scheduledAt) return a.scheduledAt - b.scheduledAt;
+                        if (a.scheduledAt) return -1;
+                        if (b.scheduledAt) return 1;
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+
                 setActiveOrders(active);
-                setOrderHistory(history);
+                setOrderHistory(allOrders);
 
                 setStats({
                     totalOrders: allOrders.length,
@@ -79,48 +147,47 @@ const CustomerDashboard = () => {
         fetchData();
     }, [user]);
 
-
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#051094] border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-bold text-slate-400">Loading your hustle...</p>
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#051094] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="font-bold text-slate-400">Loading your hustle...</p>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
         <CustomerLayout activeTab="dashboard" headerTitle="Customer Overview">
             <div className="space-y-10">
-                 {/* Welcome Message */}
                 <div className="flex flex-col gap-1">
                     <h1 className="text-3xl font-black text-slate-900">Welcome back, {user?.firstName || 'Student'}!</h1>
                     <p className="text-slate-500 font-medium pb-2">Here's your personal shopping activity and campus hustle overview.</p>
                 </div>
-                {/* KPI Cards */}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <StatCard title="Total Orders" value={stats.totalOrders} icon="receipt_long" color="blue" />
                     <StatCard title="Active Orders" value={activeOrders.length} icon="local_shipping" color="amber" />
                 </div>
 
-                {/* Main Content Grid */}
                 <div className="grid grid-cols-1 gap-10">
-                    {/* Main Sequence */}
                     <div className="space-y-10">
-
-
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Orders List (Takes up 2 columns) */}
                             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 relative overflow-hidden">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-slate-900">Recent Purchase History</h3>
-                                    {orders.length > 0 && <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{orders.length} Total</span>}
+                                    {orders.length > 0 && (
+                                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{orders.length} Total</span>
+                                    )}
                                 </div>
                                 {orders.length === 0 ? (
                                     <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                         <span className="material-symbols-outlined text-5xl mb-4 text-[#1111d4]/30">shopping_cart</span>
                                         <p className="text-slate-900 font-bold mb-2">No past orders found</p>
-                                        <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">Discover amazing products and services on our marketplace to get started.</p>
+                                        <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+                                            Discover amazing products and services on our marketplace to get started.
+                                        </p>
                                         <Link to="/stores" className="px-6 py-2.5 bg-[#1111d4] text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors">
                                             Explore Marketplace
                                         </Link>
@@ -133,8 +200,7 @@ const CustomerDashboard = () => {
                                     </div>
                                 )}
                             </div>
-                            
-                            {/* Spending Insights & Tools */}
+
                             <div className="space-y-6">
                                 <div className="bg-white rounded-2xl border border-slate-200 p-6 relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-0 opacity-50 group-hover:scale-110 transition-transform"></div>
@@ -142,75 +208,110 @@ const CustomerDashboard = () => {
                                         Spending Insights
                                         <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 p-1.5 rounded-full">monitoring</span>
                                     </h3>
-                                    
+
                                     <div className="mb-6 relative z-10">
                                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Spent</p>
                                         <p className="text-3xl font-black text-slate-900">${spendingData.totalSpent.toFixed(2)}</p>
                                     </div>
-                                    
                                 </div>
                             </div>
                         </div>
-                        {/* Active Order Tracker */}
+
                         <section>
                             <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                                 <span className="material-symbols-outlined text-indigo-600">local_shipping</span>
                                 Active Order Status
                             </h3>
-                            {activeOrders.length > 0 ? (
+                            {highlightedOrder ? (
                                 <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden group">
-                                     <div className="flex justify-between items-start mb-8">
+                                    <div className="flex justify-between items-start mb-8 gap-4">
                                         <div>
-                                            <h4 className="text-2xl font-black text-slate-900">{activeOrders[0].product_id?.storefront_id?.storefront_name || 'Shop'}</h4>
-                                            <p className="text-sm font-bold text-slate-400">Order #{activeOrders[0]._id.slice(-6)} • {activeOrders[0].status}</p>
+                                            <h4 className="text-2xl font-black text-slate-900">
+                                                {getStoreName(highlightedOrder)}
+                                            </h4>
+                                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                <p className="text-sm font-bold text-slate-400">
+                                                    Order #{highlightedOrder._id.slice(-6)} • {highlightedOrder.status}
+                                                </p>
+                                                {highlightedOrder.isLate && (
+                                                    <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest">
+                                                        Late
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none mb-1">Estimated Arrival</p>
-                                             <p className="text-2xl font-black text-slate-900">{activeOrders[0].delivery_time || 'Soon'}</p>
+                                            <p
+                                                className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${
+                                                    highlightedOrder.isLate ? 'text-rose-600' : 'text-indigo-600'
+                                                }`}
+                                            >
+                                                {highlightedOrder.isLate ? 'Was Due' : 'Estimated Arrival'}
+                                            </p>
+                                            <p className="text-2xl font-black text-slate-900">{highlightedOrder.delivery_time || 'Soon'}</p>
                                         </div>
-                                     </div>
-                                     
-                                    
-                                     <div className="h-3 bg-slate-100 rounded-full overflow-hidden relative">
-                                        <div 
-                                          className="absolute top-0 left-0 h-full bg-indigo-600 transition-all duration-1000"
-                                          style={{ width: activeOrders[0].status === 'confirmed' ? '75%' : '25%' }}
+                                    </div>
+
+                                    {highlightedOrder.isLate && (
+                                        <div className="mb-6 px-4 py-3 rounded-2xl bg-rose-50 border border-rose-100 text-rose-700 text-sm font-bold">
+                                            This order is past its scheduled delivery time and has been moved to the top of your active orders.
+                                        </div>
+                                    )}
+
+                                    <div className="h-3 bg-slate-100 rounded-full overflow-hidden relative">
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-indigo-600 transition-all duration-1000"
+                                            style={{ width: highlightedOrder.status === 'confirmed' ? '75%' : '25%' }}
                                         ></div>
-                                     </div>
-                                     <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    </div>
+                                    <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                         <span className="text-indigo-600">Placed</span>
-                                        <span className={['pending', 'confirmed'].includes(activeOrders[0].status) ? 'text-indigo-600' : ''}>Preparing</span>
-                                        <span className={activeOrders[0].status === 'confirmed' ? 'text-indigo-600' : ''}>On the way</span>
+                                        <span className={['pending', 'confirmed'].includes(highlightedOrder.status) ? 'text-indigo-600' : ''}>Preparing</span>
+                                        <span className={highlightedOrder.status === 'confirmed' ? 'text-indigo-600' : ''}>On the way</span>
                                         <span>Delivered</span>
-                                     </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="p-12 border-2 border-dashed border-slate-100 rounded-[32px] text-center bg-slate-50/30">
                                     <p className="font-bold text-slate-400">You don't have any active orders right now.</p>
-                                    <button onClick={() => navigate('/customer/products')} className="mt-4 text-indigo-600 font-black hover:underline">Start Shopping →</button>
+                                    <button onClick={() => navigate('/customer/products')} className="mt-4 text-indigo-600 font-black hover:underline">
+                                        Start Shopping →
+                                    </button>
                                 </div>
                             )}
                         </section>
 
-                        {/* Order History */}
-                        <TableComponent 
+                        <TableComponent
                             title="Order History"
                             headers={['Order ID', 'Shop', 'Date', 'Amount', 'Status', 'Action']}
                             data={orderHistory}
                             renderRow={(order) => (
                                 <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4 font-black text-sm">#{order._id.slice(-6)}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-600 text-sm">{order.product_id?.storefront_id?.storefront_name || 'Unknown Shop'}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-600 text-sm">{getStoreName(order)}</td>
                                     <td className="px-6 py-4 text-slate-400 text-xs font-bold">{new Date(order.createdAt).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 font-black text-sm">${(order.total_price || 0).toFixed(2)}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 
-                                            order.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
-                                            order.status === 'confirmed' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
-                                        }`}>
-                                            {order.status}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                                    order.status === 'completed'
+                                                        ? 'bg-emerald-50 text-emerald-600'
+                                                        : order.status === 'cancelled'
+                                                          ? 'bg-rose-50 text-rose-600'
+                                                          : order.status === 'confirmed'
+                                                            ? 'bg-blue-50 text-blue-600'
+                                                            : 'bg-amber-50 text-amber-600'
+                                                }`}
+                                            >
+                                                {order.status}
+                                            </span>
+                                            {order.isLate && (
+                                                <span className="px-2 py-1 rounded-full bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest">
+                                                    Late
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="text-indigo-600 font-black text-xs hover:underline">Reorder</button>
@@ -224,11 +325,7 @@ const CustomerDashboard = () => {
                                 </select>
                             }
                         />
-
-
                     </div>
-
-
                 </div>
 
                 <Footer />

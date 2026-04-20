@@ -14,8 +14,11 @@ const AddProductPage = () => {
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
-      // Append ownerId to the FormData
-      const userId = user?._id || user?.id || 'owner1';
+      const userId = user?._id || user?.id;
+      if (!userId) {
+        throw new Error('Missing owner account information');
+      }
+
       formData.append('ownerId', userId);
 
       await productService.createProduct(formData);
@@ -55,4 +58,4 @@ const AddProductPage = () => {
   );
 };
 
-export default AddProductPage;
+export default AddProductPage;

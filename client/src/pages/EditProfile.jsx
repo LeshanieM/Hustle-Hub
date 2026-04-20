@@ -9,6 +9,9 @@ import {
   Save,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import CustomerLayout from "../components/dashboard/CustomerLayout";
+import OwnerLayout from "../components/dashboard/OwnerLayout";
+import AdminLayout from "../components/admin/AdminLayout";
 
 export default function EditProfile() {
   const { user, login } = useAuth();
@@ -120,146 +123,168 @@ export default function EditProfile() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto mt-16">
-        <button
-          onClick={() => navigate("/profile")}
-          className="flex items-center text-gray-500 hover:text-[#051094] transition-colors mb-6 font-semibold"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Profile
-        </button>
+  const editContent = (
+    <div className="max-w-3xl mx-auto">
+      <button
+        onClick={() => navigate("/profile")}
+        className="flex items-center text-slate-400 hover:text-[#051094] transition-colors mb-6 font-bold uppercase tracking-widest text-[10px] border-none bg-transparent cursor-pointer"
+      >
+        <ArrowLeft className="w-3 h-3 mr-2" />
+        Back to Profile
+      </button>
 
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl">
-          <div className="mb-8 border-b pb-6">
-            <h2 className="text-3xl font-bold text-gray-900">Edit Profile</h2>
-            <p className="text-gray-500 mt-2">
-              Update your personal information and profile picture.
-            </p>
+      <div className="bg-white rounded-[32px] p-8 md:p-12 border border-slate-100 shadow-xl">
+        <div className="mb-10 border-b border-slate-100 pb-8">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Edit Profile</h2>
+          <p className="text-slate-400 mt-2 font-medium">
+            Update your personal information and profile picture.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center mb-10">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group cursor-pointer w-32 h-32 rounded-[40px] overflow-hidden border-4 border-[#051094]/5 shadow-lg bg-slate-50 flex items-center justify-center">
+                {previewSrc ? (
+                  <img
+                    src={previewSrc}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-12 h-12 text-slate-200" />
+                )}
+                <div className="absolute inset-0 bg-[#051094]/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              {previewSrc && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewSrc(null);
+                    setProfilePicture(null);
+                    setRemovePhoto(true);
+                  }}
+                  className="text-xs text-rose-500 font-bold hover:underline border-none bg-transparent cursor-pointer"
+                >
+                  Remove Photo
+                </button>
+              )}
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Click image to change photo
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Profile Picture */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative group cursor-pointer w-32 h-32 rounded-full overflow-hidden border-4 border-[#051094]/10 shadow-lg bg-gray-50 flex items-center justify-center">
-                  {previewSrc ? (
-                    <img
-                      src={previewSrc}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="w-12 h-12 text-gray-400" />
-                  )}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="w-8 h-8 text-white" />
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                </div>
-                {previewSrc && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewSrc(null);
-                      setProfilePicture(null);
-                      setRemovePhoto(true);
-                    }}
-                    className="text-sm text-red-500 font-semibold hover:underline mt-1"
-                  >
-                    Remove Photo
-                  </button>
-                )}
-                <p className="text-sm text-gray-500 font-medium text-center">
-                  Click image to change photo
-                </p>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#051094]/5 focus:border-[#051094] transition-all bg-slate-50 font-medium"
+              />
             </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#051094]/5 focus:border-[#051094] transition-all bg-slate-50 font-medium"
+              />
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#051094]/50 focus:border-[#051094] transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#051094]/50 focus:border-[#051094] transition-all"
-                />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="studentEmail"
+                value={formData.studentEmail}
+                onChange={handleChange}
+                required
+                className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#051094]/5 focus:border-[#051094] transition-all bg-slate-50 font-medium"
+              />
             </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="0771234567"
+                maxLength="10"
+                className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#051094]/5 focus:border-[#051094] transition-all bg-slate-50 font-medium"
+              />
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="studentEmail"
-                  value={formData.studentEmail}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#051094]/50 focus:border-[#051094] transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="0771234567"
-                  maxLength="10"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#051094]/50 focus:border-[#051094] transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#051094] hover:bg-[#051094]/90 text-white font-bold py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Save className="w-5 h-5" />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="pt-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-[#051094] hover:bg-[#0d0db0] text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-[#051094]/20 disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98] border-none cursor-pointer text-lg"
+            >
+              {loading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
+
+  if (!user) return null;
+
+  switch (user.role) {
+    case "ADMIN":
+      return (
+        <AdminLayout headerTitle="Edit Profile">
+          {editContent}
+        </AdminLayout>
+      );
+    case "OWNER":
+      return (
+        <OwnerLayout headerTitle="Edit Profile" activeTab="settings">
+          {editContent}
+        </OwnerLayout>
+      );
+    case "CUSTOMER":
+    default:
+      return (
+        <CustomerLayout headerTitle="Edit Profile" activeTab="settings">
+          {editContent}
+        </CustomerLayout>
+      );
+  }
 }

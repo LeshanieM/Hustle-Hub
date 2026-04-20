@@ -11,14 +11,47 @@ const BrowseStores = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState(location.state?.search || '');
 
-    const tabs = ['All', 'Apparel', 'Food & Drink', 'Services', 'Tech', 'Creatives'];
-
     useEffect(() => {
         const fetchStores = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/stores');
-                if (res.data && res.data.success) {
-                    setStores(res.data.stores);
+                const [storesRes, productsRes] = await Promise.all([
+                    axios.get('http://localhost:5000/api/stores'),
+                    axios.get('http://localhost:5000/api/products')
+                ]);
+
+                if (storesRes.data && storesRes.data.success) {
+                    const allStores = storesRes.data.stores || [];
+                    const allProducts = Array.isArray(productsRes.data) ? productsRes.data : [];
+
+                    const productTypesByOwner = allProducts.reduce((acc, product) => {
+                        const ownerId = product.ownerId?.toString();
+                        const productType = product.type || 'General';
+
+                        if (!ownerId) {
+                            return acc;
+                        }
+
+                        if (!acc[ownerId]) {
+                            acc[ownerId] = new Set();
+                        }
+
+                        acc[ownerId].add(productType);
+                        return acc;
+                    }, {});
+
+                    const storesWithTypes = allStores.map((store) => {
+                        const ownerId = store.ownerId?.toString();
+                        const productTypes = ownerId && productTypesByOwner[ownerId]
+                            ? Array.from(productTypesByOwner[ownerId]).sort()
+                            : [];
+
+                        return {
+                            ...store,
+                            productTypes
+                        };
+                    });
+
+                    setStores(storesWithTypes);
                 } else {
                     setError('API returned unexpected response');
                 }
@@ -31,6 +64,20 @@ const BrowseStores = () => {
         };
         fetchStores();
     }, []);
+
+    const tabs = ['All', ...new Set(stores.flatMap((store) => store.productTypes || []))];
+
+    const filteredStores = stores.filter((store) => {
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+        const matchesSearch = !normalizedQuery ||
+            store.storeName.toLowerCase().includes(normalizedQuery) ||
+            store.description?.toLowerCase().includes(normalizedQuery) ||
+            store.productTypes?.some((type) => type.toLowerCase().includes(normalizedQuery));
+
+        const matchesCategory = activeTab === 'All' || store.productTypes?.includes(activeTab);
+
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <CustomerLayout activeTab="stores" headerTitle="Browse Stores">
@@ -79,9 +126,9 @@ const BrowseStores = () => {
                     <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-6 font-medium">
                         <strong>Error loading stores:</strong> {error}
                     </div>
-                ) : stores.filter(s => s.storeName.toLowerCase().includes(searchQuery.toLowerCase()) || s.description?.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
+                ) : filteredStores.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {stores.filter(s => s.storeName.toLowerCase().includes(searchQuery.toLowerCase()) || s.description?.toLowerCase().includes(searchQuery.toLowerCase())).map((store) => (
+                        {filteredStores.map((store) => (
                             <Link
                                 to={`/store/${encodeURIComponent(store.storeName)}`}
                                 key={store._id}
@@ -140,6 +187,22 @@ const BrowseStores = () => {
                                     <h2 className="text-xl font-black text-slate-900 mb-2 group-hover:text-[#1111d4] transition-colors">
                                         {store.storeName}
                                     </h2>
+                                    <div className="flex flex-wrap gap-2 mb-4 min-h-[1.75rem]">
+                                        {store.productTypes?.length > 0 ? (
+                                            store.productTypes.slice(0, 3).map((type) => (
+                                                <span
+                                                    key={`${store._id}-${type}`}
+                                                    className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wide"
+                                                >
+                                                    {type}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-400 text-[11px] font-bold uppercase tracking-wide">
+                                                No Products Yet
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-slate-500 font-medium line-clamp-2 text-sm flex-1 mb-6">
                                         {store.description || 'Welcome to my shop! Explore our collection.'}
                                     </p>
@@ -165,8 +228,17 @@ const BrowseStores = () => {
                         <div className="h-24 w-24 rounded-full bg-slate-50 flex items-center justify-center mb-6">
                             <span className="material-symbols-outlined text-5xl text-slate-300">storefront</span>
                         </div>
-                        <h2 className="text-2xl font-black text-slate-900 mb-2">No Stores Yet</h2>
-                        <p className="text-slate-500 font-medium max-w-md">There are currently no active storefronts. Be the first to start your hustle!</p>
+                        <h2 className="text-2xl font-black text-slate-900 mb-2">No Stores Match These Filters</h2>
+                        <p className="text-slate-500 font-medium max-w-md mb-6">Try a different search term or switch to another category to find stores.</p>
+                        <button
+                            onClick={() => {
+                                setSearchQuery('');
+                                setActiveTab('All');
+                            }}
+                            className="px-5 py-2.5 rounded-full bg-[#1111d4] text-white text-sm font-bold shadow-lg shadow-[#1111d4]/20"
+                        >
+                            Clear Filters
+                        </button>
                     </div>
                 )}
             </div>
