@@ -64,7 +64,7 @@ const createReview = async (req, res) => {
                     roleScope: 'OWNER',
                     entityType: 'review',
                     entityId: review._id,
-                    link: `/owner-dashboard`, // Adjust as needed
+                    link: `/owner/products`, 
                 });
             }
         }

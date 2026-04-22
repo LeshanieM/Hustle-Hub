@@ -154,7 +154,7 @@ exports.updateProduct = async (req, res) => {
         roleScope: 'OWNER',
         entityType: 'product',
         entityId: updatedProduct._id,
-        link: `/store-editor`,
+        link: `/owner/alerts`,
         dedupeKey: `low-stock-${updatedProduct._id}-${updatedProduct.stock}`, // Dedupe by stock count to avoid spam if updated frequently
       });
     }

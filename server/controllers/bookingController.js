@@ -111,7 +111,7 @@ const createBooking = async (req, res) => {
         roleScope: 'OWNER',
         entityType: 'booking',
         entityId: booking._id,
-        link: `/owner-dashboard`, // Adjust as needed
+        link: `/owner/orders`, // Point to orders management
       });
     }
   } catch (error) {
@@ -258,7 +258,7 @@ const cancelBooking = async (req, res) => {
         roleScope: 'OWNER',
         entityType: 'booking',
         entityId: booking._id,
-        link: `/owner-dashboard`,
+        link: `/owner/orders`,
       });
     }
   } catch (error) {
@@ -482,7 +482,7 @@ const acceptBooking = async (req, res) => {
       roleScope: 'CUSTOMER',
       entityType: 'booking',
       entityId: updated._id,
-      link: `/customer-dashboard`,
+      link: `/orders`,
       required: true, // Mandatory
     });
   } catch (error) {
@@ -531,7 +531,7 @@ const rejectBooking = async (req, res) => {
       roleScope: 'CUSTOMER',
       entityType: 'booking',
       entityId: updated._id,
-      link: `/customer-dashboard`,
+      link: `/orders`,
       required: true, // Mandatory
     });
   } catch (error) {
@@ -583,7 +583,7 @@ const markReady = async (req, res) => {
       roleScope: 'CUSTOMER',
       entityType: 'booking',
       entityId: updated._id,
-      link: `/customer-dashboard`,
+      link: `/orders`,
       required: true, // Mandatory
     });
   } catch (error) {
