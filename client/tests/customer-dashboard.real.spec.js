@@ -10,7 +10,7 @@ test.describe('Customer dashboard flows with real data', () => {
 
   test.beforeEach(async ({ page, browserName }) => {
     test.setTimeout(60000);
-    test.skip(browserName !== 'chromium', 'Real-data flows are stabilized for Chromium only.');
+   
 
     await page.goto('/login');
 

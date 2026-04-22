@@ -10,8 +10,7 @@ test.describe('Customer Products Page Tests', () => {
 
   test.beforeEach(async ({ page, browserName }) => {
     test.setTimeout(60000);
-    // Skip non-chromium browsers if consistent with other tests
-    test.skip(browserName !== 'chromium', 'Real-data flows are stabilized for Chromium only.');
+    
 
     await page.goto('/login');
 
