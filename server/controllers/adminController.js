@@ -70,7 +70,7 @@ const updateStoreStatus = async (req, res) => {
             type: 'STORE_STATUS_UPDATED',
             title: `Store ${status.replace('_', ' ')}`,
             message: `Your store "${updatedStore.storeName}" has been ${status === 'ACTIVE' ? 'approved' : status === 'SUSPENDED' ? 'suspended' : 'updated to ' + status}.`,
-            category: 'systemUpdates',
+            category: 'VERIFICATION_UPDATES',
             roleScope: 'OWNER',
             entityType: 'store',
             entityId: updatedStore._id,

@@ -98,8 +98,10 @@ export const NotificationProvider = ({ children }) => {
     try {
       const { data } = await api.put("/notifications/preferences", { preferences: newPrefs });
       setPreferences(data);
+      return data;
     } catch (error) {
       console.error("Error updating preferences:", error);
+      throw error; // Re-throw to allow component to handle toast
     }
   };
 

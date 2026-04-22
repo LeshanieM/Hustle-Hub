@@ -32,7 +32,7 @@ const createTicket = async (req, res) => {
                 type: 'NEW_SUPPORT_TICKET',
                 title: 'New Support Inquiry',
                 message: `You have a new support request regarding "${subject}".`,
-                category: 'supportResponses',
+                category: 'SUPPORT_MESSAGES',
                 roleScope: 'OWNER',
                 entityType: 'support',
                 entityId: ticket._id,

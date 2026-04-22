@@ -115,35 +115,41 @@ const updatePreferences = async (req, res) => {
     const { preferences } = req.body;
     const userRole = req.user.role;
 
-    // Define allowed keys per role
+    // Define canonical allowed keys per role
     const ALLOWED_KEYS = {
-      CUSTOMER: ["promotions", "supportResponses"],
-      OWNER: ["promotions", "supportResponses", "ownerOrderAlerts", "lowStockAlerts", "newReviews"],
-      ADMIN: ["adminBusinessAlerts", "adminUserAlerts"],
+      CUSTOMER: ["PROMOTIONS", "SUPPORT_MESSAGES"],
+      OWNER: ["PROMOTIONS", "SUPPORT_MESSAGES", "NEW_ORDER_ALERTS", "LOW_STOCK_ALERTS", "NEW_REVIEW_ALERTS"],
+      ADMIN: ["ADMIN_BUSINESS_ALERTS", "ADMIN_USER_ALERTS"],
     };
 
-    // Filter preferences to only include allowed keys for this role
-    const filteredPreferences = {};
-    const allowedForRole = ALLOWED_KEYS[userRole] || [];
-    
-    // Also allow mandatory keys just in case they are sent (though they are always bypassed in service)
-    const mandatoryKeys = ["systemUpdates", "verificationDecisions"];
-    const allAllowed = [...allowedForRole, ...mandatoryKeys];
+    // Mandatory keys that are always allowed (and always bypassed in service)
+    const MANDATORY_KEYS = ["SYSTEM_SECURITY", "VERIFICATION_UPDATES"];
 
+    const allowedForRole = ALLOWED_KEYS[userRole] || [];
+    const allAllowed = [...allowedForRole, ...MANDATORY_KEYS];
+
+    // Fetch current user to perform a safe merge
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentPrefs = user.notificationPreferences || {};
+    const updatedPrefs = { ...currentPrefs };
+
+    // Only update allowed keys from the request
     Object.keys(preferences).forEach((key) => {
       if (allAllowed.includes(key)) {
-        filteredPreferences[key] = !!preferences[key];
+        updatedPrefs[key] = !!preferences[key];
       }
     });
 
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { notificationPreferences: filteredPreferences },
-      { new: true }
-    ).select("notificationPreferences");
+    user.notificationPreferences = updatedPrefs;
+    await user.save();
 
     res.json(user.notificationPreferences);
   } catch (error) {
+    console.error("Update Preferences Error:", error);
     res.status(500).json({ message: error.message });
   }
 };

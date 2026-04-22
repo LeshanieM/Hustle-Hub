@@ -150,7 +150,7 @@ exports.updateProduct = async (req, res) => {
         type: 'LOW_STOCK_ALERT',
         title: 'Low Stock Alert',
         message: `Product ${updatedProduct.name} is running low on stock (${updatedProduct.stock} left).`,
-        category: 'lowStockAlerts',
+        category: 'LOW_STOCK_ALERTS',
         roleScope: 'OWNER',
         entityType: 'product',
         entityId: updatedProduct._id,

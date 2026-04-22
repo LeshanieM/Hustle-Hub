@@ -23,18 +23,27 @@ const NotificationSettingsPage = () => {
   }, [preferences]);
 
   const handleToggle = (key) => {
-    setLocalPrefs((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setLocalPrefs((prev) => {
+      // If key is undefined, it defaults to true (ON), so clicking it should make it false (OFF)
+      const currentValue = prev[key] === undefined ? true : prev[key];
+      return {
+        ...prev,
+        [key]: !currentValue,
+      };
+    });
   };
 
+  const [saving, setSaving] = useState(false);
   const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       await updatePreferences(localPrefs);
-      toast.success("Preferences saved successfully!");
+      toast.success("Notification settings saved successfully.");
     } catch (error) {
-      toast.error("Failed to save preferences.");
+      toast.error(error.response?.data?.message || "Failed to save notification settings.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -55,8 +64,8 @@ const NotificationSettingsPage = () => {
       title: "System Notifications",
       description: "Critical updates regarding your account and verification status. These cannot be disabled.",
       items: [
-        { key: "systemUpdates", label: "Security & Account", description: "Password changes, login alerts, and security updates.", icon: Shield, required: true },
-        { key: "verificationDecisions", label: "Verification Status", description: "Updates on your student or store verification requests.", icon: Info, required: true },
+        { key: "SYSTEM_SECURITY", label: "Security & Account", description: "Password changes, login alerts, and security updates.", icon: Shield, required: true },
+        { key: "VERIFICATION_UPDATES", label: "Verification Status", description: "Updates on your student or store verification requests.", icon: Info, required: true },
       ]
     },
     {
@@ -65,8 +74,8 @@ const NotificationSettingsPage = () => {
       description: "Preferences for your shopping and support experience.",
       roleScope: ["CUSTOMER", "OWNER"],
       items: [
-        { key: "promotions", label: "Promotions & Offers", description: "Special deals, new arrivals, and community announcements.", icon: Bell },
-        { key: "supportResponses", label: "Support Inquiries", description: "Receive updates when support or sellers respond to your messages.", icon: MessageSquare },
+        { key: "PROMOTIONS", label: "Promotions & Offers", description: "Special deals, new arrivals, and community announcements.", icon: Bell },
+        { key: "SUPPORT_MESSAGES", label: "Support Inquiries", description: "Receive updates when support or sellers respond to your messages.", icon: MessageSquare },
       ]
     },
     {
@@ -75,9 +84,9 @@ const NotificationSettingsPage = () => {
       description: "Operational alerts for your business storefront.",
       roleScope: ["OWNER"],
       items: [
-        { key: "ownerOrderAlerts", label: "New Order Alerts", description: "Get notified immediately when customers place or cancel orders.", icon: ShoppingBag },
-        { key: "lowStockAlerts", label: "Low Stock Alerts", description: "Receive alerts when your products fall below the alert threshold.", icon: Info },
-        { key: "newReviews", label: "Product Reviews", description: "Get notified when customers leave feedback on your products.", icon: Star },
+        { key: "NEW_ORDER_ALERTS", label: "New Order Alerts", description: "Get notified immediately when customers place or cancel orders.", icon: ShoppingBag },
+        { key: "LOW_STOCK_ALERTS", label: "Low Stock Alerts", description: "Receive alerts when your products fall below the alert threshold.", icon: Info },
+        { key: "NEW_REVIEW_ALERTS", label: "Product Reviews", description: "Get notified when customers leave feedback on your products.", icon: Star },
       ]
     },
     {
@@ -86,8 +95,8 @@ const NotificationSettingsPage = () => {
       description: "Management alerts for platform moderation and oversight.",
       roleScope: ["ADMIN"],
       items: [
-        { key: "adminBusinessAlerts", label: "Store Requests", description: "Notifications for new business verification requests.", icon: ShoppingBag },
-        { key: "adminUserAlerts", label: "User Registrations", description: "Notifications for new user verification and audit alerts.", icon: Shield },
+        { key: "ADMIN_BUSINESS_ALERTS", label: "Store Requests", description: "Notifications for new business verification requests.", icon: ShoppingBag },
+        { key: "ADMIN_USER_ALERTS", label: "User Registrations", description: "Notifications for new user verification and audit alerts.", icon: Shield },
       ]
     }
   ];
@@ -106,10 +115,17 @@ const NotificationSettingsPage = () => {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#0000ff] text-white rounded-xl text-sm font-bold hover:bg-[#051094] transition-all shadow-md hover:-translate-y-0.5 border-none cursor-pointer"
+          disabled={saving}
+          className={`flex items-center gap-2 px-6 py-2.5 bg-[#0000ff] text-white rounded-xl text-sm font-bold hover:bg-[#051094] transition-all shadow-md hover:-translate-y-0.5 border-none cursor-pointer ${
+            saving ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
-          <Save size={18} />
-          <span>Save Changes</span>
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Save size={18} />
+          )}
+          <span>{saving ? "Saving..." : "Save Changes"}</span>
         </button>
       </div>
 
@@ -146,13 +162,13 @@ const NotificationSettingsPage = () => {
                       disabled={item.required}
                       onClick={() => handleToggle(item.key)}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        localPrefs[item.key] ? "bg-[#0000ff]" : "bg-gray-200"
+                        localPrefs[item.key] !== false ? "bg-[#0000ff]" : "bg-gray-200"
                       } ${item.required ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <span
                         aria-hidden="true"
                         className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          localPrefs[item.key] ? "translate-x-5" : "translate-x-0"
+                          localPrefs[item.key] !== false ? "translate-x-5" : "translate-x-0"
                         }`}
                       />
                     </button>

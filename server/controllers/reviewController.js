@@ -60,7 +60,7 @@ const createReview = async (req, res) => {
                     type: 'NEW_REVIEW',
                     title: 'New Product Review',
                     message: `Someone left a ${rating}-star review for ${product.name}.`,
-                    category: 'newReviews',
+                    category: 'NEW_REVIEW_ALERTS',
                     roleScope: 'OWNER',
                     entityType: 'review',
                     entityId: review._id,
