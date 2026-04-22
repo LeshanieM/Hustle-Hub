@@ -36,17 +36,17 @@ const OwnerHeader = () => {
       </div>
 
       {/* Center Navigation Links */}
-      <div className="hidden xl:flex flex-1 items-center justify-center gap-6 text-sm px-8">
+      <div className="flex flex-1 items-center justify-center gap-6 text-sm px-8">
         <Link
           to="/owner-dashboard"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
+          className="tour-marketplace text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
           Dashboard
         </Link>
 
         <Link
           to="/store-editor"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
+          className="tour-sell-item text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
           My Shop
         </Link>
@@ -61,7 +61,7 @@ const OwnerHeader = () => {
         </button>
 
         {/* Profile */}
-        <div className="relative">
+        <div className="relative tour-profile">
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
