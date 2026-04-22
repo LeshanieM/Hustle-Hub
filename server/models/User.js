@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+ 
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // ✅ NEW — tracks if user has logged in for the first time
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
+    },
     otp: {
       type: String,
     },
@@ -71,5 +76,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
+ 
 module.exports = mongoose.model("User", userSchema);
+ 

@@ -26,19 +26,19 @@ const Header = () => {
         {user ? (
           <>
             <Link to="/customer-dashboard">
-              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+              <button className="tour-marketplace bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
                 Dashboard
               </button>
             </Link>
 
             <Link to="/profile">
-              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+              <button className="tour-profile bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
                 Profile
               </button>
             </Link>
 
             <Link to="/room-builder">
-              <button className="bg-[#0000ff] text-white border-none cursor-pointer font-bold text-sm px-4 py-2 rounded-lg hover:bg-[#051094] hover:-translate-y-[1px] transition-all shadow-sm">
+              <button className="tour-sell-item bg-[#0000ff] text-white border-none cursor-pointer font-bold text-sm px-4 py-2 rounded-lg hover:bg-[#051094] hover:-translate-y-[1px] transition-all shadow-sm">
                 Simulator
               </button>
             </Link>

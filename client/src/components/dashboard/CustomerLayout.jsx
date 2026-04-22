@@ -36,7 +36,7 @@ const CustomerLayout = ({ children, activeTab = 'dashboard', headerTitle = 'Cust
             <CustomerHeader />
             <div className="flex h-screen overflow-hidden pt-[72px]">
                 {/* Sidebar */}
-                <aside className="w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200">
+                <aside className="tour-sidebar w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200">
                     <div className="pt-6"></div>
                     <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
                         {sidebarItems.map(item => (

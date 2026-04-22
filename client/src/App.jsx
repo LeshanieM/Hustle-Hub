@@ -37,6 +37,7 @@ import OrderHistory from "./pages/OrderHistory";
 import ChatBot from "./components/ChatBot";
 import RoomBuilder from "./components/RoomBuilder";
 import ManageFaqs from "./pages/admin/ManageFaqs";
+import OnboardingTour from "./components/OnboardingTour";
 
 // Owner Pages
 import OwnerProductsDashboard from "./pages/owner/OwnerProductsDashboard";
@@ -94,6 +95,7 @@ function App() {
   return (
     <Router>
       <Toaster position="top-right" reverseOrder={false} />
+      <OnboardingTour />
 
       <Routes>
         <Route path="/" element={<Homepage />} />
