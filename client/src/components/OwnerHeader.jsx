@@ -1,18 +1,26 @@
 // components/OwnerHeader.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Bell, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  Bell,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  HelpCircle,
+} from "lucide-react";
 
 const OwnerHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, startTour } = useAuth();
+
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const handleLogout = (e) => {
     e.preventDefault();
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -20,7 +28,7 @@ const OwnerHeader = () => {
       {/* Left section - Logo */}
       <div className="flex items-center gap-6 shrink-0">
         <Link
-          to={user ? '/landing' : '/'}
+          to={user ? "/landing" : "/"}
           className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
         >
           <img
@@ -54,6 +62,15 @@ const OwnerHeader = () => {
 
       {/* Right section */}
       <div className="flex items-center gap-4">
+        {/* Tour */}
+        <button
+          onClick={startTour}
+          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors border border-[rgba(10,10,15,0.05)] bg-transparent cursor-pointer text-[#6b6860] hover:text-[#0a0a0f] font-medium text-sm"
+        >
+          <HelpCircle size={18} />
+          <span className="hidden sm:inline">Tour</span>
+        </button>
+
         {/* Notifications */}
         <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer">
           <Bell size={20} className="text-[#6b6860]" />
@@ -70,15 +87,15 @@ const OwnerHeader = () => {
               {user?.profilePicture ? (
                 <img
                   src={
-                    user.profilePicture.startsWith('http')
+                    user.profilePicture.startsWith("http")
                       ? user.profilePicture
-                      : `http://localhost:5000/${user.profilePicture.replace(/\\/g, '/')}`
+                      : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`
                   }
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
-                user?.firstName?.charAt(0) || 'O'
+                user?.firstName?.charAt(0) || "O"
               )}
             </div>
             <ChevronDown size={18} className="text-[#6b6860]" />
