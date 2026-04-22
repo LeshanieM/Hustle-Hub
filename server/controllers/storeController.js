@@ -102,7 +102,7 @@ const createOrUpdateStore = async (req, res) => {
                     type: 'NEW_BUSINESS_REQUEST',
                     title: 'New Business Request',
                     message: `${req.user.firstName} has created a new store: "${storeName}".`,
-                    category: 'systemUpdates',
+                    category: 'adminBusinessAlerts',
                     roleScope: 'ADMIN',
                     entityType: 'store',
                     entityId: store._id,

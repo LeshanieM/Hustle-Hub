@@ -51,71 +51,51 @@ const NotificationSettingsPage = () => {
 
   const sections = [
     {
-      id: "required",
-      title: "Mandatory Notifications",
-      description: "These notifications are essential for your account security and core business operations.",
+      id: "system",
+      title: "System Notifications",
+      description: "Critical updates regarding your account and verification status. These cannot be disabled.",
       items: [
-        {
-          key: "systemUpdates",
-          label: "Security & System Alerts",
-          description: "Important updates about your account, password changes, and system maintenance.",
-          icon: Shield,
-          required: true,
-        },
-        {
-          key: "verificationDecisions",
-          label: "Verification Status",
-          description: "Updates on your student or store verification requests.",
-          icon: Info,
-          required: true,
-        },
-      ],
+        { key: "systemUpdates", label: "Security & Account", description: "Password changes, login alerts, and security updates.", icon: Shield, required: true },
+        { key: "verificationDecisions", label: "Verification Status", description: "Updates on your student or store verification requests.", icon: Info, required: true },
+      ]
     },
     {
-      id: "optional",
-      title: "Optional Notifications",
-      description: "Choose which updates you'd like to receive in-app.",
+      id: "customer",
+      title: "Customer Activity",
+      description: "Preferences for your shopping and support experience.",
+      roleScope: ["CUSTOMER", "OWNER"],
       items: [
-        {
-          key: "orderUpdates",
-          label: "Order & Booking Activity",
-          description: "Get notified about new bookings and cancellations. (Status updates like 'Confirmed' are always sent)",
-          icon: ShoppingBag,
-          required: false,
-        },
-        {
-          key: "lowStockAlerts",
-          label: "Low Stock Alerts",
-          description: "Get notified when your products are running low on stock.",
-          icon: Info,
-          required: false,
-          roleScope: ["OWNER"],
-        },
-        {
-          key: "newReviews",
-          label: "Product Reviews",
-          description: "Receive updates when customers leave feedback on your products.",
-          icon: Star,
-          required: false,
-          roleScope: ["OWNER"],
-        },
-        {
-          key: "supportResponses",
-          label: "Support Inquiries",
-          description: "Updates on support tickets and store communication.",
-          icon: MessageSquare,
-          required: false,
-        },
-        {
-          key: "promotions",
-          label: "Promotions & Offers",
-          description: "Special deals, new arrivals, and community announcements.",
-          icon: Bell,
-          required: false,
-        },
-      ],
+        { key: "promotions", label: "Promotions & Offers", description: "Special deals, new arrivals, and community announcements.", icon: Bell },
+        { key: "supportResponses", label: "Support Inquiries", description: "Receive updates when support or sellers respond to your messages.", icon: MessageSquare },
+      ]
     },
+    {
+      id: "owner",
+      title: "Store Management",
+      description: "Operational alerts for your business storefront.",
+      roleScope: ["OWNER"],
+      items: [
+        { key: "ownerOrderAlerts", label: "New Order Alerts", description: "Get notified immediately when customers place or cancel orders.", icon: ShoppingBag },
+        { key: "lowStockAlerts", label: "Low Stock Alerts", description: "Receive alerts when your products fall below the alert threshold.", icon: Info },
+        { key: "newReviews", label: "Product Reviews", description: "Get notified when customers leave feedback on your products.", icon: Star },
+      ]
+    },
+    {
+      id: "admin",
+      title: "Platform Administration",
+      description: "Management alerts for platform moderation and oversight.",
+      roleScope: ["ADMIN"],
+      items: [
+        { key: "adminBusinessAlerts", label: "Store Requests", description: "Notifications for new business verification requests.", icon: ShoppingBag },
+        { key: "adminUserAlerts", label: "User Registrations", description: "Notifications for new user verification and audit alerts.", icon: Shield },
+      ]
+    }
   ];
+
+  // Filter sections based on user role
+  const visibleSections = sections.filter(section => 
+    !section.roleScope || section.roleScope.includes(user?.role)
+  );
 
   const SettingsContent = (
     <div className="max-w-3xl mx-auto">
@@ -134,16 +114,14 @@ const NotificationSettingsPage = () => {
       </div>
 
       <div className="space-y-6">
-        {sections.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-50 bg-gray-50/30">
               <h2 className="text-lg font-bold text-gray-900 m-0">{section.title}</h2>
               <p className="text-sm text-gray-500 mt-1 m-0">{section.description}</p>
             </div>
             <div className="divide-y divide-gray-50">
-              {section.items
-                .filter(item => !item.roleScope || item.roleScope.includes(user?.role))
-                .map((item) => (
+              {section.items.map((item) => (
                 <div key={item.key} className="p-6 flex items-start justify-between gap-4">
                   <div className="flex gap-4">
                     <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0000ff] flex items-center justify-center shrink-0">

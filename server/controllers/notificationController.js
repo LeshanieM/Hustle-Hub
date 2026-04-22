@@ -113,13 +113,32 @@ const getPreferences = async (req, res) => {
 const updatePreferences = async (req, res) => {
   try {
     const { preferences } = req.body;
+    const userRole = req.user.role;
+
+    // Define allowed keys per role
+    const ALLOWED_KEYS = {
+      CUSTOMER: ["promotions", "supportResponses"],
+      OWNER: ["promotions", "supportResponses", "ownerOrderAlerts", "lowStockAlerts", "newReviews"],
+      ADMIN: ["adminBusinessAlerts", "adminUserAlerts"],
+    };
+
+    // Filter preferences to only include allowed keys for this role
+    const filteredPreferences = {};
+    const allowedForRole = ALLOWED_KEYS[userRole] || [];
     
-    // Validate mandatory fields are not disabled if sent from frontend
-    // (Though we handle bypass in service, it's good practice)
-    
+    // Also allow mandatory keys just in case they are sent (though they are always bypassed in service)
+    const mandatoryKeys = ["systemUpdates", "verificationDecisions"];
+    const allAllowed = [...allowedForRole, ...mandatoryKeys];
+
+    Object.keys(preferences).forEach((key) => {
+      if (allAllowed.includes(key)) {
+        filteredPreferences[key] = !!preferences[key];
+      }
+    });
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { notificationPreferences: preferences },
+      { notificationPreferences: filteredPreferences },
       { new: true }
     ).select("notificationPreferences");
 

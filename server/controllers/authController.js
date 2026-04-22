@@ -155,7 +155,7 @@ const verifyOTP = async (req, res) => {
             type: 'NEW_VERIFICATION_REQUEST',
             title: 'New User Registered',
             message: `${user.firstName} ${user.lastName} has registered as a ${user.role}.`,
-            category: 'systemUpdates',
+            category: 'adminUserAlerts',
             roleScope: 'ADMIN',
             entityType: 'user',
             entityId: user._id,
