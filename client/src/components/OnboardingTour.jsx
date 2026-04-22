@@ -6,7 +6,8 @@ import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 
 const OnboardingTour = () => {
-  const { user } = useAuth();
+  const { user, tourTriggered, setTourTriggered } = useAuth();
+
   const location = useLocation();
 
   const userRole = (user?.role || "").toUpperCase();
@@ -16,7 +17,11 @@ const OnboardingTour = () => {
     ? location.pathname.toLowerCase().includes("owner") ||
       location.pathname.toLowerCase().includes("landing")
     : location.pathname.toLowerCase().includes("landing") ||
-      location.pathname.toLowerCase().includes("customer");
+      location.pathname.toLowerCase().includes("customer") ||
+      location.pathname.toLowerCase().includes("saved-items") ||
+      location.pathname.toLowerCase().includes("profile");
+
+  const canRun = tourTriggered || isEligiblePage;
 
   const [run, setRun] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -88,10 +93,22 @@ const OnboardingTour = () => {
   const steps = isOwner ? ownerSteps : customerSteps;
 
   useEffect(() => {
-    if (!user || !user.isFirstLogin || !isEligiblePage) return;
-    const timer = setTimeout(() => setRun(true), 1500);
-    return () => clearTimeout(timer);
-  }, [user, user?.isFirstLogin, isOwner, isEligiblePage, location.pathname]);
+    if (!user || !canRun) return;
+
+    if (user.isFirstLogin || tourTriggered) {
+      const timer = setTimeout(() => {
+        setRun(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    user,
+    user?.isFirstLogin,
+    tourTriggered,
+    isOwner,
+    canRun,
+    location.pathname,
+  ]);
 
   const handleJoyrideCallback = (data) => {
     const { status, type, action } = data;
@@ -107,6 +124,7 @@ const OnboardingTour = () => {
 
     if (action === "close" || type === EVENTS.TOUR_END) {
       setRun(false);
+      setTourTriggered(false);
     }
   };
 
@@ -139,15 +157,16 @@ const OnboardingTour = () => {
     isLastStep,
     size,
   }) => {
+    if (!step) return null;
     const progressPercent = ((index + 1) / size) * 100;
 
     return (
       <div
         {...tooltipProps}
-        className="w-80 sm:w-96 rounded-2xl border border-white/40 bg-white/70 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-6 flex flex-col font-sans transition-all duration-300 ease-in-out relative overflow-hidden"
+        className="w-80 sm:w-96 rounded-2xl border border-white/40 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-6 flex flex-col font-sans transition-all duration-300 ease-in-out relative overflow-hidden"
         style={{
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          zIndex: 99999,
+          ...tooltipProps.style,
         }}
       >
         <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#051094]/10 rounded-full blur-3xl" />
