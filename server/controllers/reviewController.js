@@ -39,7 +39,15 @@ const createReview = async (req, res) => {
             feedback
         });
 
-        res.status(201).json(review);
+        let newBadges = [];
+        try {
+          const { checkAndAwardBadges } = require('../services/badgeService');
+          newBadges = await checkAndAwardBadges(req.user._id);
+        } catch(err) {
+          console.error('Badge service error:', err);
+        }
+
+        res.status(201).json({ ...review.toJSON(), newBadges });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -93,6 +101,15 @@ const deleteReview = async (req, res) => {
         }
 
         await review.deleteOne();
+        
+        // Recalculate badges — review count dropped, so some may need to be revoked
+        try {
+            const { checkAndAwardBadges } = require('../services/badgeService');
+            await checkAndAwardBadges(review.user_id);
+        } catch (badgeErr) {
+            console.error('Badge recalc error on review delete:', badgeErr);
+        }
+
         res.status(200).json({ message: 'Review removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -152,6 +169,7 @@ const getReviewSummary = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 // @desc    Get all reviews for products owned by the logged-in owner
 // @route   GET /api/reviews/owner/my-reviews
 // @access  Private (OWNER)
@@ -174,6 +192,19 @@ const getOwnerReviews = async (req, res) => {
     }
 };
 
+// @desc    Get all reviews written by the logged-in user
+// @route   GET /api/reviews/my
+// @access  Private (CUSTOMER)
+const getMyReviews = async (req, res) => {
+    try {
+        const reviews = await Review.find({ user_id: req.user._id })
+            .populate('product_id', 'name imageUrl type price')
+            .sort({ created_at: -1 });
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 module.exports = {
     createReview,
@@ -183,5 +214,6 @@ module.exports = {
     updateReview,
     getReviewSummary,
     getAllReviews,
-     getOwnerReviews
+    getOwnerReviews,
+    getMyReviews
 };

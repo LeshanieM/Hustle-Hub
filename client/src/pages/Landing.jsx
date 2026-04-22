@@ -105,8 +105,10 @@ const MaterialIcon = ({ name, size = 24, className = '', fill = false }) => {
   return <span className={`inline-flex items-center justify-center ${className}`}>{icons[name] || name}</span>;
 };
 
+import ProductCard from '../components/products/ProductCard';
+
 export default function Landing() {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,28 +123,6 @@ export default function Landing() {
       else navigate('/customer/products', { state: { search: searchQuery.trim() } });
     } else {
       navigate(searchType === 'stores' ? '/stores' : '/customer/products');
-    }
-  };
-
-  const handleToggleFavorite = async (e, productId) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!user) { toast.error('Please login to save items'); return; }
-    try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.post(`${API_URL}/user/favorite/${productId}`, {}, config);
-      
-      // Update AuthContext user object to keep it in sync across components
-      if (res.data.isFavorite) {
-        updateUser({ savedItems: [...(user.savedItems || []), productId] });
-      } else {
-        updateUser({ savedItems: (user.savedItems || []).filter(id => id !== productId) });
-      }
-      
-      toast.success(res.data.message);
-    } catch (error) {
-      console.error('Toggle Favorite Error:', error);
-      toast.error('Failed to update favorite');
     }
   };
 
@@ -162,7 +142,7 @@ export default function Landing() {
     switch (user.role) {
       case 'OWNER': return <OwnerHeader />;
       case 'ADMIN': return <AdminHeader />;
-      case 'CUSTOMER': default: return <CustomerHeader />;
+      default: return <CustomerHeader />;
     }
   };
 
@@ -224,24 +204,9 @@ export default function Landing() {
           <div className="flex items-center justify-between mb-8"><h2 className="text-2xl font-bold tracking-tight text-slate-900">Trending Now</h2><Link className="text-[#1111d4] font-bold text-sm hover:underline no-underline" to="/customer/products">View All</Link></div>
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((prod) => {
-                const isFavorite = user?.savedItems?.includes(prod._id);
-                return (
-                  <Link key={prod._id} to={`/customer/products/${prod._id}`} className="group cursor-pointer no-underline text-inherit">
-                    <div className="relative rounded-3xl overflow-hidden aspect-square bg-slate-100 mb-4 shadow-sm group-hover:shadow-lg transition-all duration-500">
-                      {prod.imageUrl ? <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src={prod.imageUrl} alt={prod.name} /> : <div className="w-full h-full flex items-center justify-center bg-slate-100"><span className="material-symbols-outlined text-6xl text-slate-300">image</span></div>}
-                      <button onClick={(e) => handleToggleFavorite(e, prod._id)} className={`absolute top-3 right-3 w-10 h-10 backdrop-blur rounded-xl flex items-center justify-center transition-all shadow-md active:scale-90 border-none cursor-pointer z-20 ${isFavorite ? 'bg-rose-500 text-white' : 'bg-white/95 text-slate-300 hover:text-rose-500'}`}>
-                        <MaterialIcon name="favorite" size={20} fill={isFavorite} />
-                      </button>
-                    </div>
-                    <div className="space-y-1.5 px-0.5">
-                      <p className="text-[10px] font-bold text-[#1111d4] uppercase tracking-widest">{prod.type || 'General'}</p>
-                      <h3 className="font-bold text-slate-900 text-sm leading-tight truncate">{prod.name}</h3>
-                      <div className="flex items-center justify-between pt-1"><span className="text-lg font-black text-slate-900">${Number(prod.price).toFixed(2)}</span><span className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center group-hover:bg-[#1111d4] transition-all shadow-md"><MaterialIcon name="add_shopping_cart" size={20} /></span></div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {products.map((prod) => (
+                <ProductCard key={prod._id} product={prod} />
+              ))}
             </div>
           ) : <div className="text-center py-16 text-slate-400"><span className="material-symbols-outlined text-5xl mb-3 opacity-40">shopping_bag</span><p className="text-sm font-bold text-slate-500">No products yet</p></div>}
         </section>

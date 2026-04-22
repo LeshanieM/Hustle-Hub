@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
+import { showBadgeToast } from '../badges/BadgeToast';
 
 const AddReviewModal = ({ isOpen, onClose, targetType, targetId, onSuccess, reviewToEdit }) => {
   const [rating, setRating] = useState(0);
@@ -57,6 +58,10 @@ const AddReviewModal = ({ isOpen, onClose, targetType, targetId, onSuccess, revi
       const response = isEdit 
         ? await api.put(url, payload)
         : await api.post(url, payload);
+
+      if (response.data && response.data.newBadges && response.data.newBadges.length > 0) {
+        showBadgeToast(response.data.newBadges);
+      }
 
       toast.success('Review published successfully!');
       

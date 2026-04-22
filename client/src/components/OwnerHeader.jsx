@@ -1,18 +1,26 @@
 // components/OwnerHeader.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Bell, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  Bell,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  HelpCircle,
+} from "lucide-react";
 
 const OwnerHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, startTour } = useAuth();
+
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const handleLogout = (e) => {
     e.preventDefault();
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -20,7 +28,7 @@ const OwnerHeader = () => {
       {/* Left section - Logo */}
       <div className="flex items-center gap-6 shrink-0">
         <Link
-          to={user ? '/landing' : '/'}
+          to={user ? "/landing" : "/"}
           className="flex items-center gap-2 font-bold text-lg no-underline text-[#0a0a0f] hover:opacity-80 transition-opacity"
         >
           <img
@@ -36,48 +44,33 @@ const OwnerHeader = () => {
       </div>
 
       {/* Center Navigation Links */}
-      <div className="hidden xl:flex flex-1 items-center justify-center gap-6 text-sm px-8">
+      <div className="flex flex-1 items-center justify-center gap-6 text-sm px-8">
         <Link
           to="/owner-dashboard"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
+          className="tour-marketplace text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
-          Owner Dashboard
+          Dashboard
         </Link>
 
         <Link
           to="/store-editor"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
+          className="tour-sell-item text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
         >
           My Shop
-        </Link>
-        <Link
-          to="/owner/products"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Products
-        </Link>
-        <Link
-          to="/owner/orders"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Orders
-        </Link>
-          <Link
-          to="/owner/alerts"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Alerts
-        </Link>
-        <Link
-          to="/owner/contact"
-          className="text-[#6b6860] hover:text-[#0a0a0f] transition-colors no-underline font-medium"
-        >
-          Support
         </Link>
       </div>
 
       {/* Right section */}
       <div className="flex items-center gap-4">
+        {/* Tour */}
+        <button
+          onClick={startTour}
+          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors border border-[rgba(10,10,15,0.05)] bg-transparent cursor-pointer text-[#6b6860] hover:text-[#0a0a0f] font-medium text-sm"
+        >
+          <HelpCircle size={18} />
+          <span className="hidden sm:inline">Tour</span>
+        </button>
+
         {/* Notifications */}
         <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer">
           <Bell size={20} className="text-[#6b6860]" />
@@ -85,16 +78,24 @@ const OwnerHeader = () => {
         </button>
 
         {/* Profile */}
-        <div className="relative">
+        <div className="relative tour-profile">
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#051094] to-[#0a0a0f] flex items-center justify-center text-white font-bold text-sm border border-gray-200 overflow-hidden">
               {user?.profilePicture ? (
-                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={
+                    user.profilePicture.startsWith("http")
+                      ? user.profilePicture
+                      : `http://localhost:5000/${user.profilePicture.replace(/\\/g, "/")}`
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                user?.firstName?.charAt(0) || 'O'
+                user?.firstName?.charAt(0) || "O"
               )}
             </div>
             <ChevronDown size={18} className="text-[#6b6860]" />

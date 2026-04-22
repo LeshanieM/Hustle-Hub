@@ -9,13 +9,15 @@ const {
     updateReview,
     getReviewSummary,
     getAllReviews,
-     getOwnerReviews
+     getOwnerReviews,
+     getMyReviews
 } = require('../controllers/reviewController');
 
 // All review routes require authentication
 router.use(protect);
 
 router.post('/', isCustomer, createReview);
+router.get('/my', getMyReviews);
 router.get('/owner/my-reviews', getOwnerReviews);
 router.get('/product/:id', getProductReviews); 
 router.get('/store/:id', getStorefrontReviews);

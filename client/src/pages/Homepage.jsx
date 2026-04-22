@@ -1,21 +1,12 @@
 // pages/HomePage.jsx
-import React from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CustomerHeader from '../components/CustomerHeader';
 import OwnerHeader from '../components/OwnerHeader';
 import AdminHeader from '../components/AdminHeader';
 import Footer from '../components/Footer';
-
-const MaterialIcon = ({ name, size = 20 }) => (
-  <span
-    className="material-symbols-rounded"
-    style={{ fontSize: size, lineHeight: 1 }}
-  >
-    {name}
-  </span>
-);
+import { ShoppingBag, Store, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const useReveal = () => {
   useEffect(() => {
@@ -43,241 +34,156 @@ export default function HomePage() {
 
   const renderHeader = () => {
     if (!user) return <CustomerHeader />;
-    
     switch(user.role) {
-      case 'OWNER':
-        return <OwnerHeader />;
-      case 'ADMIN':
-        return <AdminHeader />;
-      case 'CUSTOMER':
-      default:
-        return <CustomerHeader />;
+      case 'OWNER': return <OwnerHeader />;
+      case 'ADMIN': return <AdminHeader />;
+      default: return <CustomerHeader />;
     }
   };
 
-  const handleStartSelling = () => {
-    navigate('/register?role=seller');
-  };
-
-  const handleExploreMarketplace = () => {
-    navigate('/landing');
-  };
-
-  const handleCreateAccount = () => {
-    navigate('/register');
-  };
-
-  const handleBrowseMarketplace = () => {
-    navigate('/stores');
-  };
-
   return (
-    <>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-      />
+    <div className="min-h-screen bg-[#ffffff] text-[#0a0a0f] font-sans selection:bg-[#051094] selection:text-white">
+      {renderHeader()}
 
-      <div className="min-h-screen bg-[#f5f3ee] text-[#0a0a0f]">
-        {renderHeader()}
-
-        {/* HERO */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-10 pt-[120px] pb-20 relative overflow-hidden text-center">
-          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(10,10,15,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,15,0.1)_1px,transparent_1px)] bg-[length:60px_60px] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_50%,black,transparent)]" />
-
-          <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(5,16,148,0.12),transparent_70%)] top-[-100px] right-[-100px] pointer-events-none animate-[float1_8s_ease-in-out_infinite]" />
-          <div className="absolute w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(5,16,148,0.10),transparent_70%)] bottom-[-50px] left-[-80px] pointer-events-none animate-[float2_10s_ease-in-out_infinite]" />
-
-          <style>{`
-            @keyframes float1 {
-              0%,
-              100% {
-                transform: translate(0, 0);
-              }
-              50% {
-                transform: translate(-30px, 20px);
-              }
-            }
-            @keyframes float2 {
-              0%,
-              100% {
-                transform: translate(0, 0);
-              }
-              50% {
-                transform: translate(20px, -25px);
-              }
-            }
-          `}</style>
-
-          <div className="inline-flex items-center gap-1.5 bg-[#ede9e0] border border-[rgba(10,10,15,0.1)] rounded-full px-4 py-1.5 mb-8 text-xs font-medium text-[#6b6860] animate-[fadeUp_0.6s_ease_both]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#051094] animate-[pulse_2s_ease-in-out_infinite]" />
-            Now live on 12+ campuses
+      <main>
+        {/* HERO SECTION */}
+        <section className="relative min-h-[90vh] flex items-center pt-24 overflow-hidden">
+          {/* Background Shape */}
+          <div className="absolute top-0 right-0 w-[65%] h-full bg-[#C4E8FF] rounded-bl-[120px] hidden lg:block overflow-hidden">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[length:40px_40px]" />
+            <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
           </div>
 
-          <style>{`
-            @keyframes pulse {
-              0%,
-              100% {
-                opacity: 1;
-                transform: scale(1);
-              }
-              50% {
-                opacity: 0.6;
-                transform: scale(1.3);
-              }
-            }
-            @keyframes fadeUp {
-              from {
-                opacity: 0;
-                transform: translateY(24px);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
-            }
-          `}</style>
-
-          <h1 className="text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[1.0] tracking-[-3px] text-[#0a0a0f] max-w-[800px] animate-[fadeUp_0.7s_ease_0.1s_both]">
-            Empowering
-            <br />
-            <span className="text-[#051094] relative inline-block">
-              Campus
-              <span className="absolute bottom-1 left-0 right-0 h-1 bg-[#051094] rounded-full scale-x-0 animate-[underlineIn_0.5s_ease_0.8s_both]" />
-            </span>
-            <br />
-            Hustlers
-          </h1>
-
-          <style>{`
-            @keyframes underlineIn {
-              to {
-                transform: scaleX(1);
-              }
-            }
-          `}</style>
-
-          <p className="text-base sm:text-lg text-[#6b6860] max-w-[500px] leading-relaxed mt-6 animate-[fadeUp_0.7s_ease_0.2s_both]">
-            The all-in-one platform for student entrepreneurs to manage orders,
-            inventory, and campus deliveries.
-          </p>
-
-          <div className="flex gap-3 mt-10 flex-wrap justify-center animate-[fadeUp_0.7s_ease_0.35s_both]">
-            <button
-              onClick={handleStartSelling}
-              className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-base px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.3)] hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(5,16,148,0.4)] transition-all"
-            >
-              <MaterialIcon name="storefront" size={18} />
-              Start Selling
-            </button>
-            <button
-              onClick={handleExploreMarketplace}
-              className="bg-transparent text-[#051094] border border-[rgba(10,10,15,0.1)] cursor-pointer font-medium text-base px-7 py-3.5 rounded-lg flex items-center gap-2 hover:border-[#0a0a0f] hover:bg-[#ede9e0] transition-all"
-            >
-              <MaterialIcon name="shopping_bag" size={18} />
-              Explore Marketplace
-            </button>
-          </div>
-        </section>
-
-        {/* FOR ENTREPRENEURS */}
-        <section className="px-4 sm:px-10 py-16 sm:py-24 max-w-[1100px] mx-auto">
-          <div className="mb-12 sm:mb-16 reveal">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[#051094] mb-4">
-              <span className="w-5 h-0.5 bg-[#051094] rounded-full" />
-              For Entrepreneurs
-            </div>
-            <h2 className="text-[clamp(2rem,4vw,3rem)] font-extrabold tracking-[-2px] text-[#0a0a0f] leading-[1.1] max-w-[560px]">
-              Run your hustle like a real business
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
-              to="/register?role=seller"
-              className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-pointer no-underline block reveal"
-            >
-              <div className="w-11 h-11 rounded-lg bg-[rgba(5,16,148,0.1)] text-[#051094] grid place-items-center text-xl mb-5">
-                <MaterialIcon name="dashboard" />
+          <div className="container mx-auto px-6 sm:px-12 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            {/* Text Content */}
+            <div className="max-w-2xl reveal">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#051094]/10 text-[#051094] font-bold text-sm mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#051094] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#051094]"></span>
+                </span>
+                The Campus Standard
               </div>
-              <div className="font-bold text-lg text-[#0a0a0f] tracking-[-0.5px] mb-2.5">
-                Professional Dashboard
-              </div>
-              <p className="text-sm text-[#6b6860] leading-relaxed">
-                Manage orders, customer inquiries, and payout history in one
-                place.
+              
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-[#0a0a0f] leading-[0.95] tracking-tighter mb-8">
+                Your <span className="text-[#051094]">Campus</span><br />
+                Marketplace.
+              </h1>
+              
+              <p className="text-xl text-[#6b6860] font-medium leading-relaxed mb-10 max-w-lg">
+                The smarter way to buy and sell on campus. Connect with students, manage your hustle, and grow your university business effortlessly.
               </p>
-            </Link>
 
-            <Link
-              to="/register?role=seller"
-              className="bg-white border border-[rgba(10,10,15,0.1)] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all cursor-pointer no-underline block reveal"
-            >
-              <div className="w-11 h-11 rounded-lg bg-[rgba(5,16,148,0.1)] text-[#051094] grid place-items-center text-xl mb-5">
-                <MaterialIcon name="analytics" />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => navigate('/landing')}
+                  className="px-10 py-5 bg-[#051094] text-white font-black rounded-2xl text-lg hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3 cursor-pointer border-none"
+                >
+                  Explore Marketplace <ArrowRight size={20} />
+                </button>
+                <button 
+                  onClick={() => navigate('/register?role=seller')}
+                  className="px-10 py-5 bg-white text-[#051094] font-black rounded-2xl text-lg border-2 border-[#051094] hover:bg-[#051094]/5 transition-all cursor-pointer"
+                >
+                  Start Selling
+                </button>
               </div>
-              <div className="font-bold text-lg text-[#0a0a0f] tracking-[-0.5px] mb-2.5">
-                Sales Analytics
-              </div>
-              <p className="text-sm text-[#6b6860] leading-relaxed">
-                Track your revenue, popular products, and customer insights.
-              </p>
-            </Link>
-          </div>
-        </section>
 
-        {/* FOR BUYERS */}
-        <section className="px-4 sm:px-10 pb-16 sm:pb-24 max-w-[1100px] mx-auto">
-          <div className="mb-12 sm:mb-16 reveal">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[#051094] mb-4">
-              <span className="w-5 h-0.5 bg-[#051094] rounded-full" />
-              For Buyers
+              <div className="mt-12 flex items-center gap-8 grayscale opacity-50">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-black text-[#0a0a0f]">12k+</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#6b6860]">Students</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-black text-[#0a0a0f]">500+</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#6b6860]">Sellers</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-black text-[#0a0a0f]">15</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#6b6860]">Campuses</span>
+                </div>
+              </div>
             </div>
-            <h2 className="text-[clamp(2rem,4vw,3rem)] font-extrabold tracking-[-2px] text-[#0a0a0f] leading-[1.1] max-w-[560px]">
-              Delivered to your dorm in minutes
-            </h2>
+
+            {/* Visual Content */}
+            <div className="relative hidden lg:block reveal delay-200">
+              <div className="relative z-10 animate-[float_6s_ease-in-out_infinite]">
+                <img 
+                  src="/uni_marketplace_hero_graphic_1776693502028.png" 
+                  alt="Marketplace Graphic" 
+                  className="w-full max-w-[650px] drop-shadow-[0_32px_64px_rgba(0,0,0,0.3)] rounded-[40px]"
+                />
+              </div>
+              
+              {/* Floating Cards */}
+              <div className="absolute -top-10 -right-10 bg-white/90 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-white/20 z-20 animate-[float_5s_ease-in-out_infinite_1s]">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-500/10 text-green-600 rounded-2xl grid place-items-center">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <div>
+                    <div className="font-black text-[#0a0a0f]">Order Secured</div>
+                    <div className="text-xs font-bold text-[#6b6860]">Delivery in 15 mins</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -bottom-10 -left-10 bg-white/90 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-white/20 z-20 animate-[float_7s_ease-in-out_infinite_0.5s]">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#051094]/10 text-[#051094] rounded-2xl grid place-items-center">
+                    <ShoppingBag size={24} />
+                  </div>
+                  <div>
+                    <div className="font-black text-[#0a0a0f]">New Sale</div>
+                    <div className="text-xs font-bold text-[#6b6860]">+$250.00 today</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <div className="px-4 sm:px-10 py-16 sm:py-24 text-center max-w-[700px] mx-auto reveal">
-          <h2 className="text-[clamp(2.2rem,5vw,3.5rem)] font-extrabold tracking-[-2px] text-[#0a0a0f] leading-[1.1]">
-            Ready to start your
-            <br />
-            <span className="text-[#051094]">campus hustle?</span>
-          </h2>
-          <div className="flex gap-3 mt-10 justify-center flex-wrap">
-            <button
-              onClick={handleCreateAccount}
-              className="bg-[#051094] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 shadow-[0_4px_20px_rgba(5,16,148,0.25)] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(5,16,148,0.35)] transition-all"
-            >
-              <MaterialIcon name="person_add" size={18} />
-              Create Account
-            </button>
-            <button
-              onClick={handleBrowseMarketplace}
-              className="bg-[#0a0a0f] text-white border-none cursor-pointer font-semibold text-sm px-7 py-3.5 rounded-lg flex items-center gap-2 hover:-translate-y-[2px] transition-all"
-            >
-              <MaterialIcon name="shopping_cart" size={18} />
-              Browse Marketplace
-            </button>
+        {/* STATS SECTION */}
+        <section className="py-24">
+          <div className="container mx-auto px-6 grid md:grid-cols-3 gap-12 text-center">
+            <div className="reveal">
+              <Users className="text-[#051094] mb-6 mx-auto" size={48} />
+              <h3 className="text-2xl font-black mb-2">Connect Students</h3>
+              <p className="text-[#6b6860] font-medium">Built by students, for students. The biggest campus network.</p>
+            </div>
+            <div className="reveal delay-100">
+              <Store className="text-[#051094] mb-6 mx-auto" size={48} />
+              <h3 className="text-2xl font-black mb-2">Boost Sales</h3>
+              <p className="text-[#6b6860] font-medium">Professional tools to manage inventory and track your growth.</p>
+            </div>
+            <div className="reveal delay-200">
+              <CheckCircle2 className="text-[#051094] mb-6 mx-auto" size={48} />
+              <h3 className="text-2xl font-black mb-2">Verified Only</h3>
+              <p className="text-[#6b6860] font-medium">Secure transactions with campus-verified buyers and sellers.</p>
+            </div>
           </div>
-        </div>
+        </section>
+      </main>
 
-        <Footer />
-      </div>
+      <Footer />
 
       <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
         .reveal {
           opacity: 0;
-          transform: translateY(32px);
-          transition: opacity 0.6s ease, transform 0.6s ease;
+          transform: translateY(40px);
+          transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
         }
         .reveal.visible {
           opacity: 1;
           transform: translateY(0);
         }
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
       `}</style>
-    </>
+    </div>
   );
 }
