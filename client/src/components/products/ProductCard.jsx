@@ -80,13 +80,6 @@ const ProductCard = ({ product, isOwner = false, onDelete }) => {
           </div>
         )}
 
-        {/* 3D Indicator Badge */}
-        {product.modelUrl && !isHovered && (
-          <div className="absolute top-2 left-2 bg-[#051094]/80 backdrop-blur-sm text-white px-2 py-1 rounded shadow-sm text-[10px] font-bold flex items-center z-10 animate-pulse">
-            <span className="material-symbols-outlined text-[12px] mr-1">3d_rotation</span>
-            Hover for 3D
-          </div>
-        )}
         
         {/* Favorite Button */}
         {!isOwner && user && (
