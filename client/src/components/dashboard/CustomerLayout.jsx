@@ -14,6 +14,7 @@ const CustomerLayout = ({ children, activeTab = 'dashboard', headerTitle = 'Cust
         { id: 'saved', label: 'Saved Items', icon: 'favorite', path: '/saved-items' },
         { id: 'contact', label: 'Contact Us', icon: 'mail', path: '/customer/contact' },
         { id: 'settings', label: 'Settings', icon: 'settings', path: '/profile' },
+        { id: 'notifications', label: 'Notifications', icon: 'notifications', path: '/notifications' },
     ];
 
     const handleLogout = () => {

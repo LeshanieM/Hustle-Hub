@@ -48,6 +48,26 @@ const createReview = async (req, res) => {
         }
 
         res.status(201).json({ ...review.toJSON(), newBadges });
+
+        // Notify OWNER
+        if (product_id) {
+            const product = await Product.findById(product_id);
+            if (product && product.ownerId) {
+                const { sendNotification } = require('../services/notificationService');
+                await sendNotification({
+                    recipientId: product.ownerId,
+                    actorId: req.user._id,
+                    type: 'NEW_REVIEW',
+                    title: 'New Product Review',
+                    message: `Someone left a ${rating}-star review for ${product.name}.`,
+                    category: 'newReviews',
+                    roleScope: 'OWNER',
+                    entityType: 'review',
+                    entityId: review._id,
+                    link: `/owner-dashboard`, // Adjust as needed
+                });
+            }
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

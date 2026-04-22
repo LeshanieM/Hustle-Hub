@@ -142,6 +142,23 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    // Low Stock Alert
+    if (updatedProduct.trackStock && updatedProduct.stock <= updatedProduct.alertThreshold) {
+      const { sendNotification } = require('../services/notificationService');
+      await sendNotification({
+        recipientId: updatedProduct.ownerId,
+        type: 'LOW_STOCK_ALERT',
+        title: 'Low Stock Alert',
+        message: `Product ${updatedProduct.name} is running low on stock (${updatedProduct.stock} left).`,
+        category: 'lowStockAlerts',
+        roleScope: 'OWNER',
+        entityType: 'product',
+        entityId: updatedProduct._id,
+        link: `/store-editor`,
+        dedupeKey: `low-stock-${updatedProduct._id}-${updatedProduct.stock}`, // Dedupe by stock count to avoid spam if updated frequently
+      });
+    }
+
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);

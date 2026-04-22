@@ -90,6 +90,27 @@ const createOrUpdateStore = async (req, res) => {
                 themeSettings: typeof themeSettings === 'string' ? JSON.parse(themeSettings) : themeSettings
             });
             await store.save();
+
+            // Notify ADMINS
+            const { sendNotification } = require('../services/notificationService');
+            const User = require('../models/User');
+            const admins = await User.find({ role: 'ADMIN' }).select('_id');
+            for (const admin of admins) {
+                await sendNotification({
+                    recipientId: admin._id,
+                    actorId: req.user._id,
+                    type: 'NEW_BUSINESS_REQUEST',
+                    title: 'New Business Request',
+                    message: `${req.user.firstName} has created a new store: "${storeName}".`,
+                    category: 'systemUpdates',
+                    roleScope: 'ADMIN',
+                    entityType: 'store',
+                    entityId: store._id,
+                    link: `/admin/businesses`,
+                    required: true,
+                });
+            }
+
             return res.status(201).json({ success: true, store });
         }
 

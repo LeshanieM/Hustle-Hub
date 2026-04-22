@@ -21,6 +21,24 @@ const createTicket = async (req, res) => {
         });
 
         res.status(201).json({ success: true, ticket });
+
+        // Notify OWNER
+        const store = await Store.findOne({ storeName: targetStore });
+        if (store && store.ownerId) {
+            const { sendNotification } = require('../services/notificationService');
+            await sendNotification({
+                recipientId: store.ownerId,
+                actorId: req.user._id,
+                type: 'NEW_SUPPORT_TICKET',
+                title: 'New Support Inquiry',
+                message: `You have a new support request regarding "${subject}".`,
+                category: 'supportResponses',
+                roleScope: 'OWNER',
+                entityType: 'support',
+                entityId: ticket._id,
+                link: `/owner-dashboard`, // Adjust as needed
+            });
+        }
     } catch (error) {
         console.error('Support Ticket Creation Error:', error);
         res.status(500).json({ success: false, message: 'Server error while creating ticket' });
@@ -79,6 +97,22 @@ const replyToTicket = async (req, res) => {
         await ticket.save();
 
         res.status(200).json({ success: true, ticket });
+
+        // Notify CUSTOMER
+        const { sendNotification } = require('../services/notificationService');
+        await sendNotification({
+            recipientId: ticket.sender,
+            actorId: req.user._id,
+            type: 'SUPPORT_RESPONSE',
+            title: 'Support Request Update',
+            message: `The store owner has replied to your inquiry: "${ticket.subject}".`,
+            category: 'supportResponses',
+            roleScope: 'CUSTOMER',
+            entityType: 'support',
+            entityId: ticket._id,
+            link: `/customer-dashboard`, // Adjust as needed
+            required: true,
+        });
     } catch (error) {
         console.error('Reply to Ticket Error:', error);
         res.status(500).json({ success: false, message: 'Server error replying to ticket' });
