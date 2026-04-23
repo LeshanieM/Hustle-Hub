@@ -73,6 +73,17 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    notificationPreferences: {
+      SYSTEM_SECURITY: { type: Boolean, default: true },
+      VERIFICATION_UPDATES: { type: Boolean, default: true },
+      PROMOTIONS: { type: Boolean, default: true },
+      SUPPORT_MESSAGES: { type: Boolean, default: true },
+      NEW_ORDER_ALERTS: { type: Boolean, default: true },
+      LOW_STOCK_ALERTS: { type: Boolean, default: true },
+      NEW_REVIEW_ALERTS: { type: Boolean, default: true },
+      ADMIN_BUSINESS_ALERTS: { type: Boolean, default: true },
+      ADMIN_USER_ALERTS: { type: Boolean, default: true },
+    },
   },
   { timestamps: true },
 );

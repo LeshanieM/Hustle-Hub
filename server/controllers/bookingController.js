@@ -2,6 +2,7 @@ const Booking = require('../models/Booking');
 const Product = require('../models/Product');
 const Store = require('../models/Store');
 const User = require('../models/User');
+const { sendNotification } = require('../services/notificationService');
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -97,6 +98,22 @@ const createBooking = async (req, res) => {
     }
 
     res.status(201).json({ ...populatedObj, newBadges });
+
+    // Send notification to OWNER
+    if (populated.product_id && populated.product_id.ownerId) {
+      await sendNotification({
+        recipientId: populated.product_id.ownerId,
+        actorId: req.user._id,
+        type: 'ORDER_PLACED',
+        title: 'New Booking Received',
+        message: `You have received a new booking for ${populated.product_id.name}.`,
+        category: 'NEW_ORDER_ALERTS',
+        roleScope: 'OWNER',
+        entityType: 'booking',
+        entityId: booking._id,
+        link: `/owner/orders`, // Point to orders management
+      });
+    }
   } catch (error) {
     console.error('[createBooking]', error);
     res.status(500).json({ message: error.message });
@@ -227,6 +244,23 @@ const cancelBooking = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Booking cancelled', booking });
+
+    // Notify OWNER about cancellation
+    const populated = await Booking.findById(booking._id).populate('product_id', 'ownerId name');
+    if (populated && populated.product_id && populated.product_id.ownerId) {
+      await sendNotification({
+        recipientId: populated.product_id.ownerId,
+        actorId: req.user._id,
+        type: 'ORDER_CANCELLED',
+        title: 'Booking Cancelled',
+        message: `A booking for ${populated.product_id.name} has been cancelled by the customer.`,
+        category: 'NEW_ORDER_ALERTS',
+        roleScope: 'OWNER',
+        entityType: 'booking',
+        entityId: booking._id,
+        link: `/owner/orders`,
+      });
+    }
   } catch (error) {
     console.error('[cancelBooking]', error);
     res.status(500).json({ message: error.message });
@@ -436,6 +470,21 @@ const acceptBooking = async (req, res) => {
     }
     
     res.status(200).json({ ...updated.toObject(), newBadges });
+
+    // Notify CUSTOMER
+    await sendNotification({
+      recipientId: updated.customer_id._id,
+      actorId: req.user._id,
+      type: 'ORDER_CONFIRMED',
+      title: 'Booking Confirmed!',
+      message: `Your booking for ${updated.product_id.name} has been confirmed.`,
+      category: 'VERIFICATION_UPDATES',
+      roleScope: 'CUSTOMER',
+      entityType: 'booking',
+      entityId: updated._id,
+      link: `/orders`,
+      required: true, // Mandatory
+    });
   } catch (error) {
     console.error('[acceptBooking]', error);
     res.status(500).json({ message: error.message });
@@ -470,6 +519,21 @@ const rejectBooking = async (req, res) => {
       .populate('product_id', 'name price type category')
       .populate('customer_id', 'firstName lastName username studentEmail');
     res.status(200).json(updated);
+
+    // Notify CUSTOMER
+    await sendNotification({
+      recipientId: updated.customer_id._id,
+      actorId: req.user._id,
+      type: 'ORDER_REJECTED',
+      title: 'Booking Rejected',
+      message: `Your booking for ${updated.product_id.name} was rejected. Reason: ${rejection_reason.replace(/_/g, ' ')}.`,
+      category: 'VERIFICATION_UPDATES',
+      roleScope: 'CUSTOMER',
+      entityType: 'booking',
+      entityId: updated._id,
+      link: `/orders`,
+      required: true, // Mandatory
+    });
   } catch (error) {
     console.error('[rejectBooking]', error);
     res.status(500).json({ message: error.message });
@@ -507,6 +571,21 @@ const markReady = async (req, res) => {
     }
 
     res.status(200).json({ ...updated.toObject(), newBadges });
+
+    // Notify CUSTOMER
+    await sendNotification({
+      recipientId: updated.customer_id._id,
+      actorId: req.user._id,
+      type: 'ORDER_READY',
+      title: 'Order Ready!',
+      message: `Your order for ${updated.product_id.name} is ready for pickup/delivery.`,
+      category: 'VERIFICATION_UPDATES',
+      roleScope: 'CUSTOMER',
+      entityType: 'booking',
+      entityId: updated._id,
+      link: `/orders`,
+      required: true, // Mandatory
+    });
   } catch (error) {
     console.error('[markReady]', error);
     res.status(500).json({ message: error.message });

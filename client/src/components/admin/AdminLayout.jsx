@@ -20,6 +20,7 @@ const AdminLayout = ({
     { label: 'AI Forecasting & Insights', icon: 'auto_graph', path: '/admin/ai-insights' },
     { label: 'Audit Logs', icon: 'history', path: '/admin/audit-logs' },
     { label: 'Support Inbox', icon: 'mail', path: '/admin/contact' },
+    { label: 'Notifications', icon: 'notifications', path: '/notifications' },
   ];
 
   return (

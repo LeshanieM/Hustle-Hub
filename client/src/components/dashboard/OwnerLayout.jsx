@@ -15,6 +15,7 @@ const OwnerLayout = ({ children, activeTab = 'dashboard', headerTitle = 'Owner D
         { id: 'reports', label: 'Reports', icon: 'bar_chart', path: '/owner/reports' },
         { id: 'store-editor', label: 'Store Editor', icon: 'brush', path: '/store-editor' },
         { id: 'contact', label: 'Support', icon: 'mail', path: '/owner/contact' },
+        { id: 'notifications', label: 'Notifications', icon: 'notifications', path: '/notifications' },
     ];
 
     const handleLogout = () => {

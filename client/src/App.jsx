@@ -33,6 +33,8 @@ import AdminAIInsights from "./pages/admin/AdminAIInsights";
 import AuditLogs from "./pages/admin/AuditLogs";
 import AdminReports from "./pages/admin/AdminReports";
 import OrderHistory from "./pages/OrderHistory";
+import NotificationsPage from "./pages/NotificationsPage";
+import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 
 import ChatBot from "./components/ChatBot";
 import RoomBuilder from "./components/RoomBuilder";
@@ -127,6 +129,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Landing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notification-settings"
+          element={
+            <ProtectedRoute>
+              <NotificationSettingsPage />
             </ProtectedRoute>
           }
         />

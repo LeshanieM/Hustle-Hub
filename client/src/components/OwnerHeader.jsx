@@ -10,6 +10,7 @@ import {
   LogOut,
   HelpCircle,
 } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 
 const OwnerHeader = () => {
   const { user, logout, startTour } = useAuth();
@@ -72,10 +73,7 @@ const OwnerHeader = () => {
         </button>
 
         {/* Notifications */}
-        <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer">
-          <Bell size={20} className="text-[#6b6860]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ff4444] rounded-full"></span>
-        </button>
+        <NotificationBell />
 
         {/* Profile */}
         <div className="relative tour-profile">
@@ -130,6 +128,13 @@ const OwnerHeader = () => {
                 >
                   <Settings size={18} />
                   <span>Customer Dashboard</span>
+                </Link>
+                <Link
+                  to="/notification-settings"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-[#6b6860] hover:bg-gray-50 hover:text-[#0a0a0f] rounded-lg transition-colors no-underline"
+                >
+                  <Bell size={18} />
+                  <span>Notification Settings</span>
                 </Link>
 
                 <div className="border-t border-gray-100 my-2"></div>
