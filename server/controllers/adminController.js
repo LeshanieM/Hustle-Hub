@@ -61,6 +61,22 @@ const updateStoreStatus = async (req, res) => {
         });
 
         res.json(updatedStore);
+
+        // Notify OWNER
+        const { sendNotification } = require('../services/notificationService');
+        await sendNotification({
+            recipientId: updatedStore.ownerId,
+            actorId: req.user._id,
+            type: 'STORE_STATUS_UPDATED',
+            title: `Store ${status.replace('_', ' ')}`,
+            message: `Your store "${updatedStore.storeName}" has been ${status === 'ACTIVE' ? 'approved' : status === 'SUSPENDED' ? 'suspended' : 'updated to ' + status}.`,
+            category: 'VERIFICATION_UPDATES',
+            roleScope: 'OWNER',
+            entityType: 'store',
+            entityId: updatedStore._id,
+            link: `/store-editor`,
+            required: true, // Mandatory
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

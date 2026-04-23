@@ -145,6 +145,25 @@ const verifyOTP = async (req, res) => {
 
     await TempUser.deleteOne({ _id: tempUser._id });
 
+    // Notify ADMINS
+    const { sendNotification } = require('../services/notificationService');
+    const admins = await User.find({ role: 'ADMIN' }).select('_id');
+    for (const admin of admins) {
+        await sendNotification({
+            recipientId: admin._id,
+            actorId: user._id,
+            type: 'NEW_VERIFICATION_REQUEST',
+            title: 'New User Registered',
+            message: `${user.firstName} ${user.lastName} has registered as a ${user.role}.`,
+            category: 'ADMIN_USER_ALERTS',
+            roleScope: 'ADMIN',
+            entityType: 'user',
+            entityId: user._id,
+            link: `/admin/users`,
+            required: true,
+        });
+    }
+
     res.status(200).json({
       message:
         "Account successfully registered and verified! You can now login.",

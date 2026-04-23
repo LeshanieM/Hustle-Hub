@@ -17,6 +17,7 @@ import {
   X,
   ShoppingBag,
 } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 const AdminHeader = () => {
   const { logout, user } = useAuth();
@@ -142,42 +143,7 @@ const AdminHeader = () => {
         </Link>
 
         {/* Notifications */}
-        <div className="relative" ref={notificationsRef}>
-          <button
-            onClick={() => {
-              setIsNotificationsOpen(!isNotificationsOpen);
-              setIsMessagesOpen(false);
-              setIsProfileMenuOpen(false);
-            }}
-            className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <Bell size={20} className="text-[#6b6860]" />
-          </button>
-
-          {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-[rgba(10,10,15,0.1)] rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-sm text-[#0a0a0f] m-0">
-                  Notifications
-                </h3>
-                <span className="text-xs text-[#0000ff] cursor-pointer hover:underline">
-                  Mark all read
-                </span>
-              </div>
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
-                  <Bell size={20} className="text-gray-400" />
-                </div>
-                <p className="text-sm font-medium text-gray-900 m-0">
-                  No new notifications
-                </p>
-                <p className="text-xs text-gray-500 mt-1 m-0">
-                  You're all caught up!
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationBell />
 
         {/* Messages */}
         <div className="relative" ref={messagesRef}>
@@ -279,6 +245,12 @@ const AdminHeader = () => {
                     icon: User,
                     label: 'My Profile',
                     path: '/profile',
+                    badge: null,
+                  },
+                  {
+                    icon: Bell,
+                    label: 'Notifications',
+                    path: '/notification-settings',
                     badge: null,
                   },
                 ].map((item) => (

@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { HelpCircle } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 
 const Header = () => {
   const { user, logout, startTour } = useAuth();
@@ -52,6 +53,8 @@ const Header = () => {
               </button>
             </Link>
 
+            <NotificationBell />
+
             <button
               onClick={startTour}
               className="flex items-center gap-2 bg-[#f5f3ee] text-[#6b6860] border border-[rgba(10,10,15,0.1)] cursor-pointer font-semibold text-sm px-4 py-2 rounded-lg hover:bg-[#e8e6e1] hover:text-[#0a0a0f] transition-all"
@@ -59,6 +62,12 @@ const Header = () => {
               <HelpCircle size={16} />
               <span>Tour</span>
             </button>
+
+            <Link to="/notification-settings">
+              <button className="bg-none border-none cursor-pointer text-sm text-[#6b6860] px-4 py-2 rounded-lg font-medium hover:text-[#0a0a0f]">
+                Notification Settings
+              </button>
+            </Link>
 
             <button
               onClick={handleLogout}
